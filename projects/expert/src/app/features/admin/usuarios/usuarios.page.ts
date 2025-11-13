@@ -172,7 +172,7 @@ interface ExportColumn {
               inputId="inventoryStatus"
               [options]="roles"
               optionLabel="label"
-              optionValue="label"
+              optionValue="value"
               placeholder="Selecciona el rol"
               fluid
             />
@@ -327,15 +327,6 @@ export class UsuariosPage implements OnInit {
     return index;
   }
 
-  createId(): string {
-    let id = '';
-    var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    for (var i = 0; i < 5; i++) {
-      id += chars.charAt(Math.floor(Math.random() * chars.length));
-    }
-    return id;
-  }
-
   getRolColor(role: Role) {
     switch (role) {
       case Role.EURODAC:
@@ -355,30 +346,32 @@ export class UsuariosPage implements OnInit {
 
   saveProduct() {
     this.submitted = true;
-    let _products = this.usuarios();
-    if (this.usuario.id?.trim()) {
-      if (this.usuario.id) {
-        _products[this.findIndexById(this.usuario.id)] = this.usuario;
-        this.usuarios.set([..._products]);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Successful',
-          detail: 'Product Updated',
-          life: 3000,
-        });
-      } else {
-        this.usuario.id = this.createId();
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Successful',
-          detail: 'Product Created',
-          life: 3000,
-        });
-        this.usuarios.set([..._products, this.usuario]);
-      }
 
-      this.editDialog = false;
-      this.usuario = {};
+    if (this.usuario.id) {
+      this.usuarioService.update(this.usuario.id, this.usuario).subscribe((data) => {
+        this.messageService.add({
+          severity: data ? 'success' : 'error',
+          summary: data ? 'Correcto' : 'Error',
+          detail: data ? 'Usuario actualizado' : 'Usuario no encontrado',
+          life: 3000,
+        });
+        if (data) {
+          this.loadDemoData();
+        }
+      });
+    } else {
+      this.usuarioService.create(this.usuario).subscribe((_) => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Successful',
+          detail: 'Usuario creado',
+          life: 3000,
+        });
+        this.loadDemoData();
+      });
     }
+
+    this.editDialog = false;
+    this.usuario = {};
   }
 }

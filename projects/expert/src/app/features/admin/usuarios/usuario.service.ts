@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 
-import { UserRepositoryService } from '@shared/services/user-repository.service';
+import { IUser, UserRepositoryService } from '@shared/services/user-repository.service';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class UsuarioService {
@@ -8,5 +9,13 @@ export class UsuarioService {
 
   getUsers() {
     return this.userRepositoryService.getAll();
+  }
+
+  update(id: string, user: IUser): Observable<IUser | undefined> {
+    return this.userRepositoryService.update(id, user);
+  }
+
+  create(user: IUser): Observable<IUser> {
+    return this.userRepositoryService.create(user);
   }
 }
