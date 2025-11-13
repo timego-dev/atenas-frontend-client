@@ -23,7 +23,7 @@ jobs:
 
   - task: NodeTool@0
     inputs:
-      versionSpec: '18.x'  # Asegura la versión correcta de Node.js
+      versionSpec: '22.x'  # Asegura la versión correcta de Node.js
     displayName: 'Instalar Node.js'
 
   - script: npm install --force
