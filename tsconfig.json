@@ -11,6 +11,10 @@
     "skipLibCheck": true,
     "isolatedModules": true,
     "experimentalDecorators": true,
+    "paths": {
+      "@shared/*": ["./projects/shared/src/lib/*"],
+      "@shared": ["./projects/shared/src/public-api.ts"]
+    },
     "importHelpers": true,
     "target": "ES2022",
     "module": "preserve"
@@ -22,5 +26,37 @@
     "typeCheckHostBindings": true,
     "strictTemplates": true
   },
-  "files": []
+  "files": [],
+  "references": [
+    {
+      "path": "./projects/expert/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/expert/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/eurodac/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/eurodac/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/atenas-client/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/atenas-client/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/mbi-idv-atenas/tsconfig.app.json"
+    },
+    {
+      "path": "./projects/mbi-idv-atenas/tsconfig.spec.json"
+    },
+    {
+      "path": "./projects/shared/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/shared/tsconfig.spec.json"
+    }
+  ]
 }
