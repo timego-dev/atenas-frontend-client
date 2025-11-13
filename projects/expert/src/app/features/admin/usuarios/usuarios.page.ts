@@ -18,8 +18,8 @@ import { TagModule } from 'primeng/tag';
 import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { Product, UsuarioService } from './usuario.service';
-import { Role } from '@shared/services/user-repository.service';
+import { UsuarioService } from './usuario.service';
+import { IUser, Role } from '@shared/services/user-repository.service';
 
 interface Column {
   field: string;
@@ -83,7 +83,7 @@ interface ExportColumn {
       [rows]="10"
       [columns]="cols"
       [paginator]="true"
-      [globalFilterFields]="['name', 'country.name', 'representative.name', 'status']"
+      [globalFilterFields]="['username', 'email', 'role', 'locked']"
       [tableStyle]="{ 'min-width': '75rem' }"
       [(selection)]="selectedUsuarios"
       [rowHover]="true"
@@ -117,151 +117,72 @@ interface ExportColumn {
           <th style="min-width: 8rem">Estado</th>
         </tr>
       </ng-template>
-      <ng-template #body let-product>
+      <ng-template #body let-usuario>
         <tr>
           <td style="width: 3rem">
-            <p-tableCheckbox [value]="product" />
+            <p-tableCheckbox [value]="usuario" />
           </td>
           <td style="min-width: 12rem">
-            <button (click)="editProduct(product)" class="p-button p-button-text">
-              {{ product.code }}
+            <button (click)="editProduct(usuario)" class="p-button p-button-text">
+              {{ usuario.username }}
             </button>
           </td>
-          <td style="min-width: 16rem">{{ product.name }}</td>
+          <td style="min-width: 16rem">{{ usuario.email }}</td>
           <td style="width: 64px">
-            <p-tag
-              [value]="product.inventoryStatus"
-              [severity]="getSeverity(product.inventoryStatus)"
-            />
+            <p-tag [value]="nombreRol(usuario.role)" [severity]="getRolColor(usuario.role)" />
           </td>
           <td>
             <p-tag
-              [value]="product.inventoryStatus"
-              [severity]="getSeverity(product.inventoryStatus)"
+              [value]="usuario.locked ? 'Bloqueado' : 'Activo'"
+              [severity]="getStatusColor(usuario.locked)"
             />
           </td>
         </tr>
       </ng-template>
     </p-table>
 
-    <p-dialog
-      [(visible)]="editDialog"
-      [style]="{ width: '450px' }"
-      header="Product Details"
-      [modal]="true"
-    >
+    <p-dialog [(visible)]="editDialog" [style]="{ width: '450px' }" header="Usuario" [modal]="true">
       <ng-template #content>
         <div class="flex flex-col gap-6">
-          <img
-            [src]="'https://primefaces.org/cdn/primeng/images/demo/product/' + usuario.image"
-            [alt]="usuario.image"
-            class="block m-auto pb-4"
-            *ngIf="usuario.image"
-          />
           <div>
-            <label for="name" class="block font-bold mb-3">Name</label>
+            <label for="nombre" class="block font-bold mb-3">Nombre</label>
             <input
               type="text"
               pInputText
-              id="name"
-              [(ngModel)]="usuario.name"
+              id="nombre"
+              [(ngModel)]="usuario.username"
               required
               autofocus
               fluid
             />
-            <small class="text-red-500" *ngIf="submitted && !usuario.name">Name is required.</small>
-          </div>
-          <div>
-            <label for="description" class="block font-bold mb-3">Description</label>
-            <textarea
-              id="description"
-              pTextarea
-              [(ngModel)]="usuario.description"
-              required
-              rows="3"
-              cols="20"
-              fluid
-            ></textarea>
+            <small class="text-red-500" *ngIf="submitted && !usuario.username"
+              >El nombre es obligatorio</small
+            >
           </div>
 
           <div>
-            <label for="inventoryStatus" class="block font-bold mb-3">Inventory Status</label>
+            <label for="email" class="block font-bold mb-3">EMail</label>
+            <input type="email" id="email" pInputText [(ngModel)]="usuario.email" required fluid />
+          </div>
+
+          <div>
+            <label for="inventoryStatus" class="block font-bold mb-3">Rol</label>
             <p-select
-              [(ngModel)]="usuario.inventoryStatus"
+              [(ngModel)]="usuario.role"
               inputId="inventoryStatus"
               [options]="roles"
               optionLabel="label"
               optionValue="label"
-              placeholder="Select a Status"
+              placeholder="Selecciona el rol"
               fluid
             />
-          </div>
-
-          <div>
-            <span class="block font-bold mb-4">Category</span>
-            <div class="grid grid-cols-12 gap-4">
-              <div class="flex items-center gap-2 col-span-6">
-                <p-radiobutton
-                  id="category1"
-                  name="category"
-                  value="Accessories"
-                  [(ngModel)]="usuario.category"
-                />
-                <label for="category1">Accessories</label>
-              </div>
-              <div class="flex items-center gap-2 col-span-6">
-                <p-radiobutton
-                  id="category2"
-                  name="category"
-                  value="Clothing"
-                  [(ngModel)]="usuario.category"
-                />
-                <label for="category2">Clothing</label>
-              </div>
-              <div class="flex items-center gap-2 col-span-6">
-                <p-radiobutton
-                  id="category3"
-                  name="category"
-                  value="Electronics"
-                  [(ngModel)]="usuario.category"
-                />
-                <label for="category3">Electronics</label>
-              </div>
-              <div class="flex items-center gap-2 col-span-6">
-                <p-radiobutton
-                  id="category4"
-                  name="category"
-                  value="Fitness"
-                  [(ngModel)]="usuario.category"
-                />
-                <label for="category4">Fitness</label>
-              </div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-12 gap-4">
-            <div class="col-span-6">
-              <label for="price" class="block font-bold mb-3">Price</label>
-              <p-inputnumber
-                id="price"
-                [(ngModel)]="usuario.price"
-                mode="currency"
-                currency="USD"
-                locale="en-US"
-                fluid
-              />
-            </div>
-            <div class="col-span-6">
-              <label for="quantity" class="block font-bold mb-3">Quantity</label>
-              <p-inputnumber id="quantity" [(ngModel)]="usuario.quantity" fluid />
-            </div>
           </div>
         </div>
       </ng-template>
 
       <ng-template #footer>
-        <p-button label="Cancel" icon="pi pi-times" text (click)="hideDialog()" />
-        <p-button label="Save" icon="pi pi-check" (click)="saveProduct()" />
+        <p-button label="Cancelar" icon="pi pi-times" text (click)="hideDialog()" />
+        <p-button label="Guardar" icon="pi pi-check" (click)="saveProduct()" />
       </ng-template>
     </p-dialog>
 
@@ -271,11 +192,11 @@ interface ExportColumn {
 export class UsuariosPage implements OnInit {
   editDialog: boolean = false;
 
-  usuarios = signal<Product[]>([]);
+  usuarios = signal<IUser[]>([]);
 
-  usuario!: Product;
+  usuario!: IUser;
 
-  selectedUsuarios!: Product[] | null;
+  selectedUsuarios!: IUser[] | null;
 
   submitted: boolean = false;
 
@@ -296,7 +217,7 @@ export class UsuariosPage implements OnInit {
   }
 
   loadDemoData() {
-    this.usuarioService.getProducts().then((data) => {
+    this.usuarioService.getUsers().subscribe((data) => {
       this.usuarios.set(data);
     });
 
@@ -310,14 +231,32 @@ export class UsuariosPage implements OnInit {
     ];
 
     this.cols = [
-      { field: 'code', header: 'Code', customExportHeader: 'Product Code' },
-      { field: 'name', header: 'Name' },
-      { field: 'image', header: 'Image' },
-      { field: 'price', header: 'Price' },
-      { field: 'category', header: 'Category' },
+      { field: 'nombre', header: 'Nombre' },
+      { field: 'email', header: 'EMail' },
+      { field: 'rol', header: 'Rol' },
+      { field: 'estado', header: 'Estado' },
     ];
 
     this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
+  }
+
+  nombreRol(role: Role) {
+    switch (role) {
+      case Role.ADMINISTRATOR:
+        return 'Administrador';
+      case Role.CLIENT:
+        return 'Cliente';
+      case Role.EURODAC:
+        return 'Eurodac';
+      case Role.MBI:
+        return 'MBI';
+      case Role.OPERATOR:
+        return 'Operador';
+      case Role.SUPERVISOR:
+        return 'Supervisor';
+      default:
+        return '';
+    }
   }
 
   onGlobalFilter(table: Table, event: Event) {
@@ -330,23 +269,23 @@ export class UsuariosPage implements OnInit {
     this.editDialog = true;
   }
 
-  editProduct(product: Product) {
+  editProduct(product: IUser) {
     this.usuario = { ...product };
     this.editDialog = true;
   }
 
   deleteSelected() {
     this.confirmationService.confirm({
-      message: 'Are you sure you want to delete the selected products?',
-      header: 'Confirm',
+      message: '¿Estás seguro de eliminar los usuarios seleccionados?',
+      header: 'Confirmación',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.usuarios.set(this.usuarios().filter((val) => !this.selectedUsuarios?.includes(val)));
         this.selectedUsuarios = null;
         this.messageService.add({
           severity: 'success',
-          summary: 'Successful',
-          detail: 'Products Deleted',
+          summary: 'Correcto',
+          detail: 'Usuarios eliminados',
           life: 3000,
         });
       },
@@ -358,18 +297,18 @@ export class UsuariosPage implements OnInit {
     this.submitted = false;
   }
 
-  deleteProduct(product: Product) {
+  deleteUser(user: IUser) {
     this.confirmationService.confirm({
-      message: 'Are you sure you want to delete ' + product.name + '?',
-      header: 'Confirm',
+      message: '¿Estás seguro de eliminar ' + user.username + '?',
+      header: 'Confirmación',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.usuarios.set(this.usuarios().filter((val) => val.id !== product.id));
+        this.usuarios.set(this.usuarios().filter((val) => val.id !== user.id));
         this.usuario = {};
         this.messageService.add({
           severity: 'success',
-          summary: 'Successful',
-          detail: 'Product Deleted',
+          summary: 'Correcto',
+          detail: 'Usuario eliminado',
           life: 3000,
         });
       },
@@ -397,23 +336,27 @@ export class UsuariosPage implements OnInit {
     return id;
   }
 
-  getSeverity(status: string) {
-    switch (status) {
-      case 'INSTOCK':
+  getRolColor(role: Role) {
+    switch (role) {
+      case Role.EURODAC:
         return 'success';
-      case 'LOWSTOCK':
+      case Role.SUPERVISOR:
         return 'warn';
-      case 'OUTOFSTOCK':
+      case Role.ADMINISTRATOR:
         return 'danger';
       default:
         return 'info';
     }
   }
 
+  getStatusColor(locked: boolean) {
+    return locked ? 'danger' : 'success';
+  }
+
   saveProduct() {
     this.submitted = true;
     let _products = this.usuarios();
-    if (this.usuario.name?.trim()) {
+    if (this.usuario.id?.trim()) {
       if (this.usuario.id) {
         _products[this.findIndexById(this.usuario.id)] = this.usuario;
         this.usuarios.set([..._products]);
@@ -425,7 +368,6 @@ export class UsuariosPage implements OnInit {
         });
       } else {
         this.usuario.id = this.createId();
-        this.usuario.image = 'product-placeholder.svg';
         this.messageService.add({
           severity: 'success',
           summary: 'Successful',

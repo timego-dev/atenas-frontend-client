@@ -1,3 +1,9 @@
-export abstract class ConfigurationService {
-  abstract getValue(key: string, defaultValue?: any): any;
+export interface SharedConfig {
+  backend: {
+    usersBaseUrl: string;
+  };
+}
+
+export abstract class ConfigurationService<T extends SharedConfig> {
+  abstract getConfig(): T;
 }

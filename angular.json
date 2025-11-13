@@ -25,11 +25,6 @@
               {
                 "glob": "**/*",
                 "input": "projects/expert/public"
-              },
-              {
-                "glob": "staticwebapp.config.json",
-                "input": "projects/expert/src",
-                "output": "/"
               }
             ],
             "styles": ["projects/expert/src/assets/styles.scss"]

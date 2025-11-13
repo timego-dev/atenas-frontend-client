@@ -17,7 +17,7 @@ export class UserRepositoryRemoteService implements UserRepositoryService {
   private readonly baseUrl: string;
 
   constructor() {
-    this.baseUrl = this.configurationService.getValue('backend.usersBaseUrl');
+    this.baseUrl = this.configurationService.getConfig().backend.usersBaseUrl;
   }
 
   getAll(): Observable<IUser[]> {
@@ -38,11 +38,11 @@ export class UserRepositoryRemoteService implements UserRepositoryService {
 }
 
 export interface IUser {
-  id: string;
-  username: string;
-  email: string;
-  role: Role;
-  locked: boolean;
+  id?: string;
+  username?: string;
+  email?: string;
+  role?: Role;
+  locked?: boolean;
 }
 
 export enum Role {

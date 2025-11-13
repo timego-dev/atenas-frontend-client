@@ -1,5 +1,7 @@
 import {
   ApplicationConfig,
+  inject,
+  provideAppInitializer,
   provideBrowserGlobalErrorListeners,
   provideZoneChangeDetection,
 } from '@angular/core';
@@ -13,6 +15,8 @@ import Aura from '@primeuix/themes/aura';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { UserRepositoryService } from '@shared/services/user-repository.service';
 import { UserRepositoryMockService } from '@shared/services/mock/user-repository-mock.service';
+import { ConfigurationService } from '@shared/services/configuration.service';
+import { ConfigurationFileService } from './shared/services/configuration-file.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,9 +26,17 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimationsAsync(),
     providePrimeNG({ theme: { preset: Aura } }),
+    provideAppInitializer(() => {
+      const configService = inject(ConfigurationFileService);
+      return configService.initialize();
+    }),
     {
       provide: UserRepositoryService,
       useClass: UserRepositoryMockService,
+    },
+    {
+      provide: ConfigurationService,
+      useClass: ConfigurationFileService,
     },
   ],
 };

@@ -5,17 +5,31 @@ export class UserRepositoryMockService implements UserRepositoryService {
   private users: IUser[] = <IUser[]>[
     {
       id: '1',
-      username: 'admin',
-      email: 'admin@localhost',
+      username: 'joan.vilaseca',
+      email: 'joan.vilaseca@bioidenti.com',
       role: Role.ADMINISTRATOR,
       locked: false,
     },
     {
       id: '2',
-      username: 'user',
-      email: 'user@localhost',
+      username: 'jcarles.vilaseca',
+      email: 'jcarles.vilaseca@bioidenti.com',
+      role: Role.SUPERVISOR,
+      locked: false,
+    },
+    {
+      id: '3',
+      username: 'joan.valls',
+      email: 'joan.valls@bioidenti.com',
       role: Role.CLIENT,
       locked: false,
+    },
+    {
+      id: '4',
+      username: 'jluis.iglesias',
+      email: 'jluis.iglesias@bioidenti.com',
+      role: Role.MBI,
+      locked: true,
     },
   ];
 

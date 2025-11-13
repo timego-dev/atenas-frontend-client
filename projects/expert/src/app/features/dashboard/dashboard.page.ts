@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
   selector: 'page-dashboard',
   standalone: true,
   imports: [],
-  template: `<h2>Dashboard</h2>`,
+  template: `<h1>Dashboard</h1>`,
   providers: [],
 })
 export class DashboardPage {}
