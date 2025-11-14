@@ -18,4 +18,8 @@ export class UsuarioService {
   create(user: IUser): Observable<IUser> {
     return this.userRepositoryService.create(user);
   }
+
+  delete(id: string): Observable<void> {
+    return this.userRepositoryService.delete(id);
+  }
 }

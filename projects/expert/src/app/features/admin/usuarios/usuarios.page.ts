@@ -1,4 +1,4 @@
-import { Component, inject, Injectable, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Table, TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
@@ -18,7 +18,7 @@ import { TagModule } from 'primeng/tag';
 import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { UsuarioService } from './usuario.service';
+import { UsuarioService } from './usuarios.service';
 import { IUser, Role } from '@shared/services/user-repository.service';
 
 interface Column {
@@ -55,27 +55,8 @@ interface ExportColumn {
     IconFieldModule,
     ConfirmDialogModule,
   ],
-  template: `<p-toolbar styleClass="mb-6">
-      <ng-template #start>
-        <p-button
-          label="Añadir usuario"
-          icon="pi pi-plus"
-          severity="secondary"
-          class="mr-2"
-          (onClick)="openNew()"
-        />
-        <p-button
-          severity="secondary"
-          label="Eliminar"
-          icon="pi pi-trash"
-          outlined
-          (onClick)="deleteSelected()"
-          [disabled]="!selectedUsuarios || !selectedUsuarios.length"
-        />
-      </ng-template>
-
-      <ng-template #end> </ng-template>
-    </p-toolbar>
+  template: `
+    <h1>Usuarios</h1>
 
     <p-table
       #dt
@@ -85,7 +66,6 @@ interface ExportColumn {
       [paginator]="true"
       [globalFilterFields]="['username', 'email', 'role', 'locked']"
       [tableStyle]="{ 'min-width': '75rem' }"
-      [(selection)]="selectedUsuarios"
       [rowHover]="true"
       dataKey="id"
       currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} usuarios"
@@ -93,37 +73,44 @@ interface ExportColumn {
       [rowsPerPageOptions]="[10, 20, 30]"
     >
       <ng-template #caption>
-        <div class="flex items-center justify-between">
-          <h5 class="m-0">Usuarios</h5>
-          <p-iconfield>
-            <p-inputicon styleClass="pi pi-search" />
-            <input
-              pInputText
-              type="text"
-              (input)="onGlobalFilter(dt, $event)"
-              placeholder="Buscar..."
+        <nav style="display:flex;align-items:center" role="navigation" aria-label="Barra superior">
+          <div style="margin-right:auto;">
+            <p-button
+              label="Añadir"
+              icon="pi pi-plus"
+              severity="primary"
+              class="mr-2"
+              (onClick)="openNew()"
             />
-          </p-iconfield>
-        </div>
+          </div>
+
+          <div>
+            <p-iconfield>
+              <p-inputicon styleClass="pi pi-search" />
+              <input
+                pInputText
+                type="text"
+                (input)="onGlobalFilter(dt, $event)"
+                placeholder="Buscar..."
+              />
+            </p-iconfield>
+          </div>
+        </nav>
       </ng-template>
+
       <ng-template #header>
         <tr>
-          <th style="width: 3rem">
-            <p-tableHeaderCheckbox />
-          </th>
           <th style="min-width: 16rem">Nombre</th>
           <th style="min-width:16rem">eMail</th>
           <th>Rol</th>
           <th style="min-width: 8rem">Estado</th>
         </tr>
       </ng-template>
+
       <ng-template #body let-usuario>
         <tr>
-          <td style="width: 3rem">
-            <p-tableCheckbox [value]="usuario" />
-          </td>
           <td style="min-width: 12rem">
-            <button (click)="editProduct(usuario)" class="p-button p-button-text">
+            <button (click)="editUser(usuario)" class="p-button p-button-text">
               {{ usuario.username }}
             </button>
           </td>
@@ -181,12 +168,22 @@ interface ExportColumn {
       </ng-template>
 
       <ng-template #footer>
-        <p-button label="Cancelar" icon="pi pi-times" text (click)="hideDialog()" />
+        <p-button
+          severity="danger"
+          label="Eliminar"
+          icon="pi pi-trash"
+          outlined
+          (onClick)="deleteUser(usuario)"
+        />
+
+        <p-button severity="secondary" label="Cancelar" icon="pi pi-times" (click)="hideDialog()" />
         <p-button label="Guardar" icon="pi pi-check" (click)="saveProduct()" />
       </ng-template>
     </p-dialog>
 
-    <p-confirmdialog [style]="{ width: '450px' }" /> `,
+    <p-confirmdialog [style]="{ width: '450px' }" />
+    <p-toast></p-toast>
+  `,
   providers: [MessageService, UsuarioService, ConfirmationService],
 })
 export class UsuariosPage implements OnInit {
@@ -196,13 +193,9 @@ export class UsuariosPage implements OnInit {
 
   usuario!: IUser;
 
-  selectedUsuarios!: IUser[] | null;
-
   submitted: boolean = false;
 
   roles!: any[];
-
-  @ViewChild('dt') dt!: Table;
 
   exportColumns!: ExportColumn[];
 
@@ -269,27 +262,9 @@ export class UsuariosPage implements OnInit {
     this.editDialog = true;
   }
 
-  editProduct(product: IUser) {
-    this.usuario = { ...product };
+  editUser(user: IUser) {
+    this.usuario = { ...user };
     this.editDialog = true;
-  }
-
-  deleteSelected() {
-    this.confirmationService.confirm({
-      message: '¿Estás seguro de eliminar los usuarios seleccionados?',
-      header: 'Confirmación',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        this.usuarios.set(this.usuarios().filter((val) => !this.selectedUsuarios?.includes(val)));
-        this.selectedUsuarios = null;
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Correcto',
-          detail: 'Usuarios eliminados',
-          life: 3000,
-        });
-      },
-    });
   }
 
   hideDialog() {
@@ -298,33 +273,24 @@ export class UsuariosPage implements OnInit {
   }
 
   deleteUser(user: IUser) {
+    this.hideDialog();
     this.confirmationService.confirm({
       message: '¿Estás seguro de eliminar ' + user.username + '?',
       header: 'Confirmación',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.usuarios.set(this.usuarios().filter((val) => val.id !== user.id));
-        this.usuario = {};
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Correcto',
-          detail: 'Usuario eliminado',
-          life: 3000,
+        this.usuarioService.delete(user.id!).subscribe(() => {
+          this.usuario = {};
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Correcto',
+            detail: 'Usuario eliminado',
+            life: 3000,
+          });
+          this.loadDemoData();
         });
       },
     });
-  }
-
-  findIndexById(id: string): number {
-    let index = -1;
-    for (let i = 0; i < this.usuarios().length; i++) {
-      if (this.usuarios()[i].id === id) {
-        index = i;
-        break;
-      }
-    }
-
-    return index;
   }
 
   getRolColor(role: Role) {
