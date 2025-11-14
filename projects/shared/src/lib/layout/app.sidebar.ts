@@ -1,4 +1,4 @@
-import { Component, ElementRef } from '@angular/core';
+import { Component, ElementRef, Input } from '@angular/core';
 import { AppMenu } from './app.menu';
 
 @Component({
@@ -6,9 +6,11 @@ import { AppMenu } from './app.menu';
   standalone: true,
   imports: [AppMenu],
   template: ` <div class="layout-sidebar">
-    <app-menu></app-menu>
+    <app-menu [projectName]="projectName"></app-menu>
   </div>`,
 })
 export class AppSidebar {
+  @Input() projectName: string = '';
+
   constructor(public el: ElementRef) {}
 }
