@@ -168,6 +168,7 @@ interface ExportColumn {
       </ng-template>
 
       <ng-template #footer>
+        @if (usuario.id) {
         <p-button
           severity="danger"
           label="Eliminar"
@@ -175,6 +176,7 @@ interface ExportColumn {
           outlined
           (onClick)="deleteUser(usuario)"
         />
+        }
 
         <p-button severity="secondary" label="Cancelar" icon="pi pi-times" (click)="hideDialog()" />
         <p-button label="Guardar" icon="pi pi-check" (click)="saveProduct()" />
@@ -195,11 +197,21 @@ export class UsuariosPage implements OnInit {
 
   submitted: boolean = false;
 
-  roles!: any[];
+  roles = [
+    { label: 'Administrador', value: Role.ADMINISTRATOR },
+    { label: 'Cliente', value: Role.CLIENT },
+    { label: 'Eurodac', value: Role.EURODAC },
+    { label: 'MBI', value: Role.MBI },
+    { label: 'Operador', value: Role.OPERATOR },
+    { label: 'Supervisor', value: Role.SUPERVISOR },
+  ];
 
-  exportColumns!: ExportColumn[];
-
-  cols!: Column[];
+  cols: Column[] = [
+    { field: 'nombre', header: 'Nombre' },
+    { field: 'email', header: 'EMail' },
+    { field: 'rol', header: 'Rol' },
+    { field: 'estado', header: 'Estado' },
+  ];
 
   protected readonly usuarioService = inject(UsuarioService);
   protected readonly messageService = inject(MessageService);
@@ -213,24 +225,6 @@ export class UsuariosPage implements OnInit {
     this.usuarioService.getUsers().subscribe((data) => {
       this.usuarios.set(data);
     });
-
-    this.roles = [
-      { label: 'Administrador', value: Role.ADMINISTRATOR },
-      { label: 'Cliente', value: Role.CLIENT },
-      { label: 'Eurodac', value: Role.EURODAC },
-      { label: 'MBI', value: Role.MBI },
-      { label: 'Operador', value: Role.OPERATOR },
-      { label: 'Supervisor', value: Role.SUPERVISOR },
-    ];
-
-    this.cols = [
-      { field: 'nombre', header: 'Nombre' },
-      { field: 'email', header: 'EMail' },
-      { field: 'rol', header: 'Rol' },
-      { field: 'estado', header: 'Estado' },
-    ];
-
-    this.exportColumns = this.cols.map((col) => ({ title: col.header, dataKey: col.field }));
   }
 
   nombreRol(role: Role) {
