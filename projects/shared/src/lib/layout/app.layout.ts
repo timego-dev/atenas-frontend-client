@@ -1,6 +1,7 @@
-import { Component, Renderer2, ViewChild } from '@angular/core';
+import { Component, Input, Renderer2, ViewChild } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
-import { NavigationEnd, Router, RouterModule } from '@angular/router';
+import { NavigationEnd, Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AppTopbar } from './app.topbar';
 import { AppSidebar } from './app.sidebar';
 import { AppFooter } from './app.footer';
@@ -12,7 +13,7 @@ import { LayoutService } from './layout.service';
   standalone: true,
   imports: [CommonModule, RouterModule, AppTopbar, AppSidebar, AppFooter],
   template: `<div class="layout-wrapper" [ngClass]="containerClass">
-    <app-topbar></app-topbar>
+    <app-topbar [projectName]="projectName"></app-topbar>
     <app-sidebar></app-sidebar>
 
     <div class="layout-main-container">
@@ -25,6 +26,8 @@ import { LayoutService } from './layout.service';
   </div> `,
 })
 export class AppLayout {
+  projectName: string = '';
+
   overlayMenuOpenSubscription: Subscription;
 
   menuOutsideClickListener: any;
@@ -36,7 +39,8 @@ export class AppLayout {
   constructor(
     public layoutService: LayoutService,
     public renderer: Renderer2,
-    public router: Router
+    public router: Router,
+    private route: ActivatedRoute
   ) {
     this.overlayMenuOpenSubscription = this.layoutService.overlayOpen$.subscribe(() => {
       if (!this.menuOutsideClickListener) {
@@ -54,6 +58,12 @@ export class AppLayout {
 
     this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
       this.hideMenu();
+    });
+
+    this.route.data.subscribe((data) => {
+      if (data['projectName']) {
+        this.projectName = data['projectName'];
+      }
     });
   }
 

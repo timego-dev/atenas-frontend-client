@@ -1,0 +1,34 @@
+{
+  "common": {
+    "buttons": {
+      "reset": "Reconectar",
+      "close": "Cerrar",
+      "leave": "Salir",
+      "capture": "Capturar"
+    }
+  },
+  "signalr": {
+    "title": "Conexión de Dispositivos",
+    "connection-lost": "La conexión con los dispositivos se ha interrumpido. ¿Quiere intentar restablecerla?",
+    "reconnecting": "La conexión con el dispositivo se ha perdido. Se están realizando intentos para reconectar.",
+    "connecting": "Se está estableciendo la conexión con el dispositivo. Este proceso puede llevar un cierto tiempo."
+  },
+  "document": {
+    "continue": "Pulsa «Continuar» para iniciar la lectura.",
+    "capture": "Pulsa «Capturar» cuando estés listo.",
+    "wait-initialization": "Preparando el lector… espera por favor.",
+    "reading-placeholder": "Leyendo… mantén el documento inmóvil.",
+    "change-side": "Gira el documento y captura la otra cara.",
+    "error": {
+      "error-connection": "No se pudo conectar con el servicio de documentos.",
+      "error-document-msg": "No se ha podido conectar al lector de documentos",
+      "error-document-instructions": "Compruebe que esté conectado a la estación de trabajo mediante el cable USB",
+      "message": "Comprueba que el Bioidenti^ClientServices esté iniciado. Si es así, intenta de nuevo la acción de lectura.",
+      "message-disconnect": "El lector de documentos está fuera de línea. Comprueba la conexión con el lector y el estado del servicio.",
+      "message-not-capture": "No se puede leer desde el lector de documentos. Comprueba la conexión con el lector y el estado del servicio.",
+      "message-timeout": "No se ha detectado ningún documento en el lector. Inténtalo de nuevo.",
+      "message-not-init": "El lector de documentos no se ha iniciado. Comprueba la conexión con el lector y el estado del servicio.",
+      "message-already-started": "El lector de documentos ya se ha iniciado anteriormente."
+    }
+  }
+}

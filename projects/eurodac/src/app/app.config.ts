@@ -9,14 +9,19 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { providePrimeNG } from 'primeng/config';
-
 import Aura from '@primeuix/themes/aura';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { UserRepositoryService } from '@shared/services/user-repository.service';
 import { UserRepositoryMockService } from '@shared/services/mock/user-repository-mock.service';
 import { ConfigurationService } from '@shared/services/configuration.service';
 import { ConfigurationFileService } from './shared/services/configuration-file.service';
+import { BaseDocumentScanner } from './features/document-scanner/types/at10k/BaseDocumentService';
+import { provideTranslateService } from '@ngx-translate/core';
+import { DocumentScannerMockService } from './features/document-scanner/services/at10k/document-scanner-mock.service';
+import { DocumentScannerService } from './features/document-scanner/services/at10k/document-scanner.service';
+import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -38,5 +43,19 @@ export const appConfig: ApplicationConfig = {
       provide: ConfigurationService,
       useClass: ConfigurationFileService,
     },
+    {
+      provide: BaseDocumentScanner,
+      useClass: environment.useDocumentScannerMock
+        ? DocumentScannerMockService
+        : DocumentScannerService,
+    },
+    provideTranslateService({
+      loader: provideTranslateHttpLoader({
+        prefix: '/i18n/',
+        suffix: '.json',
+      }),
+      fallbackLang: 'en',
+      lang: 'es',
+    }),
   ],
 };

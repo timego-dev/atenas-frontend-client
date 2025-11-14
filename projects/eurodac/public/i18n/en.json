@@ -1,0 +1,34 @@
+{
+  "common": {
+    "buttons": {
+      "reset": "Reconnect",
+      "close": "Close",
+      "leave": "Leave",
+      "capture": "Capture"
+    }
+  },
+  "signalr": {
+    "title": "Device Connection",
+    "connection-lost": "The connection to the devices has been interrupted. Do you want to try to re-establish it?",
+    "reconnecting": "The connection to the device has been lost. Attempts are being made to reconnect.",
+    "connecting": "The connection to the device is being established. This process may take some time."
+  },
+  "document": {
+    "continue": "Press «Continue» to start reading.",
+    "capture": "Press «Capture» when you are ready.",
+    "wait-initialization": "Preparing the reader… please wait.",
+    "reading-placeholder": "Reading… keep the document still.",
+    "change-side": "Turn the document over and capture the other side.",
+    "error": {
+      "error-connection": "Could not connect to the document service.",
+      "error-document-msg": "Could not connect to the document reader",
+      "error-document-instructions": "Check that it is connected to the workstation via the USB cable",
+      "message": "Check that Bioidenti^ClientServices is started. If so, try the reading action again.",
+      "message-disconnect": "The document reader is offline. Check the connection to the reader and the service status.",
+      "message-not-capture": "Cannot read from the document reader. Check the connection to the reader and the service status.",
+      "message-timeout": "No document has been detected in the reader. Please try again.",
+      "message-not-init": "The document reader has not started. Check the connection to the reader and the service status.",
+      "message-already-started": "The document reader has already been started."
+    }
+  }
+}

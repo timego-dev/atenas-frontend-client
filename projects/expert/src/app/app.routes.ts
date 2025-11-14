@@ -11,6 +11,7 @@ export const routes: Routes = [
   {
     path: '',
     component: AppLayout,
+    data: { projectName: 'Expert' },
     children: [
       { path: '', component: DashboardPage },
       { path: 'consultas', component: ConsultasPage },

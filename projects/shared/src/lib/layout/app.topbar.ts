@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -19,7 +19,7 @@ import { AppConfigurator } from './app.configurator';
         <i class="pi pi-bars"></i>
       </button>
       <a class="layout-topbar-logo" routerLink="/">
-        <span>Atenas Eurodac</span>
+        <span>Atenas {{ projectName }}</span>
       </a>
     </div>
 
@@ -42,6 +42,8 @@ import { AppConfigurator } from './app.configurator';
   </div>`,
 })
 export class AppTopbar {
+  @Input() projectName: string = '';
+
   items!: MenuItem[];
 
   protected readonly layoutService = inject(LayoutService);

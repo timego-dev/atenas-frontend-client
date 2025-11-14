@@ -118,6 +118,10 @@
             "styles": [
               "projects/eurodac/src/styles.scss",
               "projects/shared/src/assets/styles/styles.scss"
+            ],
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/signalr/jquery.signalR.min.js"
             ]
           },
           "configurations": {
@@ -174,6 +178,10 @@
             "styles": [
               "projects/eurodac/src/styles.scss",
               "projects/shared/src/assets/styles/styles.scss"
+            ],
+            "scripts": [
+              "node_modules/jquery/dist/jquery.min.js",
+              "node_modules/signalr/jquery.signalR.min.js"
             ]
           }
         }
