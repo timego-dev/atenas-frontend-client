@@ -19,7 +19,7 @@ import { AppConfigurator } from './app.configurator';
         <i class="pi pi-bars"></i>
       </button>
       <a class="layout-topbar-logo" routerLink="/">
-        <span>Atenas Expert</span>
+        <span>Atenas Eurodac</span>
       </a>
     </div>
 

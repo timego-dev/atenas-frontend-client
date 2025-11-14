@@ -27,7 +27,10 @@
                 "input": "projects/expert/public"
               }
             ],
-            "styles": ["projects/expert/src/assets/styles.scss"]
+            "styles": [
+              "projects/expert/src/styles.scss",
+              "projects/shared/src/assets/styles/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
@@ -80,7 +83,10 @@
                 "input": "projects/expert/public"
               }
             ],
-            "styles": ["projects/expert/src/assets/styles.scss"]
+            "styles": [
+              "projects/expert/src/styles.scss",
+              "projects/shared/src/assets/styles/styles.scss"
+            ]
           }
         }
       }
@@ -109,7 +115,10 @@
                 "input": "projects/eurodac/public"
               }
             ],
-            "styles": ["projects/eurodac/src/styles.scss"]
+            "styles": [
+              "projects/eurodac/src/styles.scss",
+              "projects/shared/src/assets/styles/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
@@ -162,7 +171,10 @@
                 "input": "projects/eurodac/public"
               }
             ],
-            "styles": ["projects/eurodac/src/styles.scss"]
+            "styles": [
+              "projects/eurodac/src/styles.scss",
+              "projects/shared/src/assets/styles/styles.scss"
+            ]
           }
         }
       }
@@ -191,7 +203,10 @@
                 "input": "projects/atenas-client/public"
               }
             ],
-            "styles": ["projects/atenas-client/src/styles.scss"]
+            "styles": [
+              "projects/atenas-client/src/styles.scss",
+              "projects/shared/src/assets/styles/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
@@ -244,7 +259,10 @@
                 "input": "projects/atenas-client/public"
               }
             ],
-            "styles": ["projects/atenas-client/src/styles.scss"]
+            "styles": [
+              "projects/atenas-client/src/styles.scss",
+              "projects/shared/src/assets/styles/styles.scss"
+            ]
           }
         }
       }
@@ -273,7 +291,10 @@
                 "input": "projects/mbi-idv-atenas/public"
               }
             ],
-            "styles": ["projects/mbi-idv-atenas/src/styles.scss"]
+            "styles": [
+              "projects/mbi-idv-atenas/src/styles.scss",
+              "projects/shared/src/assets/styles/styles.scss"
+            ]
           },
           "configurations": {
             "production": {
@@ -326,7 +347,10 @@
                 "input": "projects/mbi-idv-atenas/public"
               }
             ],
-            "styles": ["projects/mbi-idv-atenas/src/styles.scss"]
+            "styles": [
+              "projects/mbi-idv-atenas/src/styles.scss",
+              "projects/shared/src/assets/styles/styles.scss"
+            ]
           }
         }
       }

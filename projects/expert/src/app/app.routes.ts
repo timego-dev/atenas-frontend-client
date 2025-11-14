@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 import { DashboardPage } from './features/dashboard/dashboard.page';
-import { AppLayout } from './layout/app.layout';
+import { AppLayout } from '@shared/layout/app.layout';
 import { UsuariosPage } from './features/admin/usuarios/usuarios.page';
 import { ConsultasPage } from './features/consultas/consultas.page';
 import { AuxiliaresPage } from './features/admin/auxiliares/auxiliares.page';
