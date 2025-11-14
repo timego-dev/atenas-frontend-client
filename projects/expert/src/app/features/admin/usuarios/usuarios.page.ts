@@ -20,6 +20,7 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { UsuarioService } from './usuarios.service';
 import { IUser, Role } from '@shared/services/user-repository.service';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
 interface Column {
   field: string;
@@ -54,6 +55,7 @@ interface ExportColumn {
     InputIconModule,
     IconFieldModule,
     ConfirmDialogModule,
+    ToggleSwitchModule,
   ],
   template: `
     <h1>Usuarios</h1>
@@ -153,16 +155,22 @@ interface ExportColumn {
           </div>
 
           <div>
-            <label for="inventoryStatus" class="block font-bold mb-3">Rol</label>
+            <label for="role" class="block font-bold mb-3">Rol</label>
             <p-select
               [(ngModel)]="usuario.role"
-              inputId="inventoryStatus"
+              inputId="role"
               [options]="roles"
               optionLabel="label"
               optionValue="value"
               placeholder="Selecciona el rol"
               fluid
             />
+          </div>
+
+          <div>
+            <label for="locked" class="block font-bold mb-3">Bloqueado</label>
+
+            <p-toggleswitch [(ngModel)]="usuario.locked" inputId="locked" />
           </div>
         </div>
       </ng-template>
