@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
+import { DEFAULT_MENU, EURODAC_MENU, EXPERT_MENU } from './menu.models';
 
 @Component({
   selector: 'app-menu',
@@ -16,40 +17,27 @@ import { AppMenuitem } from './app.menuitem';
   </ul> `,
 })
 export class AppMenu {
+  @Input() projectName: string = '';
+
   model: MenuItem[] = [];
 
   ngOnInit() {
-    this.model = [
-      {
-        label: 'Inicio',
-        items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }],
-      },
-      {
-        label: 'Gestión',
-        items: [{ label: 'Consultas', icon: 'pi pi-fw pi-list', routerLink: ['/consultas'] }],
-      },
-      {
-        label: 'Administración',
-        icon: 'pi pi-fw pi-briefcase',
-        routerLink: ['/admin'],
-        items: [
-          {
-            label: 'Usuarios',
-            icon: 'pi pi-fw pi-users',
-            routerLink: ['/admin/usuarios'],
-          },
-          {
-            label: 'Alertas',
-            icon: 'pi pi-fw pi-shield',
-            routerLink: ['/admin/alertas'],
-          },
-          {
-            label: 'Campos auxiliares',
-            icon: 'pi pi-fw pi-cog',
-            routerLink: ['/admin/auxiliares'],
-          },
-        ],
-      },
-    ];
+    this.loadMenu();
+  }
+
+  loadMenu() {
+    const key = this.projectName.toLowerCase();
+
+    switch (key) {
+      case 'eurodac':
+        this.model = EURODAC_MENU;
+        break;
+      case 'expert':
+        this.model = EXPERT_MENU;
+        break;
+      default:
+        this.model = DEFAULT_MENU;
+        break;
+    }
   }
 }

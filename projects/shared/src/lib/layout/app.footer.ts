@@ -1,10 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   standalone: true,
   selector: 'app-footer',
   template: `<div class="layout-footer">
-    Atenas Eurodac by
+    Atenas {{ projectName }} by
     <a
       href="https://bioidenti.com"
       target="_blank"
@@ -14,4 +14,6 @@ import { Component } from '@angular/core';
     >
   </div>`,
 })
-export class AppFooter {}
+export class AppFooter {
+  @Input() projectName: string = '';
+}

@@ -14,13 +14,13 @@ import { LayoutService } from './layout.service';
   imports: [CommonModule, RouterModule, AppTopbar, AppSidebar, AppFooter],
   template: `<div class="layout-wrapper" [ngClass]="containerClass">
     <app-topbar [projectName]="projectName"></app-topbar>
-    <app-sidebar></app-sidebar>
+    <app-sidebar [projectName]="projectName"></app-sidebar>
 
     <div class="layout-main-container">
       <div class="layout-main">
         <router-outlet></router-outlet>
       </div>
-      <app-footer></app-footer>
+      <app-footer [projectName]="projectName"></app-footer>
     </div>
     <div class="layout-mask animate-fadein"></div>
   </div> `,
