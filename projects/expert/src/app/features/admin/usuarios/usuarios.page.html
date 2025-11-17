@@ -1,0 +1,135 @@
+<h1>Usuarios</h1>
+
+<p-table
+  #dt
+  [value]="usuarios()"
+  [rows]="10"
+  [columns]="cols"
+  [paginator]="true"
+  [globalFilterFields]="['username', 'email', 'role', 'locked']"
+  [tableStyle]="{ 'min-width': '75rem' }"
+  [rowHover]="true"
+  dataKey="id"
+  currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} usuarios"
+  [showCurrentPageReport]="true"
+  [rowsPerPageOptions]="[10, 20, 30]"
+>
+  <ng-template #caption>
+    <nav style="display: flex; align-items: center" role="navigation" aria-label="Barra superior">
+      <div style="margin-right: auto">
+        <p-button
+          label="Añadir"
+          icon="pi pi-plus"
+          severity="primary"
+          class="mr-2"
+          (onClick)="openNew()"
+        />
+      </div>
+
+      <div>
+        <p-iconfield>
+          <p-inputicon styleClass="pi pi-search" />
+          <input
+            pInputText
+            type="text"
+            (input)="onGlobalFilter(dt, $event)"
+            placeholder="Buscar..."
+          />
+        </p-iconfield>
+      </div>
+    </nav>
+  </ng-template>
+
+  <ng-template #header>
+    <tr>
+      <th style="min-width: 16rem">Nombre</th>
+      <th style="min-width: 16rem">eMail</th>
+      <th>Rol</th>
+      <th style="min-width: 8rem">Estado</th>
+    </tr>
+  </ng-template>
+
+  <ng-template #body let-usuario>
+    <tr>
+      <td style="min-width: 12rem">
+        <button (click)="editUser(usuario)" class="p-button p-button-text">
+          {{ usuario.username }}
+        </button>
+      </td>
+      <td style="min-width: 16rem">{{ usuario.email }}</td>
+      <td style="width: 64px">
+        <p-tag [value]="nombreRol(usuario.role)" [severity]="getRolColor(usuario.role)" />
+      </td>
+      <td>
+        <p-tag
+          [value]="usuario.locked ? 'Bloqueado' : 'Activo'"
+          [severity]="getStatusColor(usuario.locked)"
+        />
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog [(visible)]="editDialog" [style]="{ width: '450px' }" header="Usuario" [modal]="true">
+  <ng-template #content>
+    <div class="flex flex-col gap-6">
+      <div>
+        <label for="nombre" class="block font-bold mb-3">Nombre</label>
+        <input
+          type="text"
+          pInputText
+          id="nombre"
+          [(ngModel)]="usuario.username"
+          required
+          autofocus
+          fluid
+        />
+        <small class="text-red-500" *ngIf="submitted && !usuario.username"
+          >El nombre es obligatorio</small
+        >
+      </div>
+
+      <div>
+        <label for="email" class="block font-bold mb-3">EMail</label>
+        <input type="email" id="email" pInputText [(ngModel)]="usuario.email" required fluid />
+      </div>
+
+      <div>
+        <label for="role" class="block font-bold mb-3">Rol</label>
+        <p-select
+          [(ngModel)]="usuario.role"
+          inputId="role"
+          [options]="roles"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Selecciona el rol"
+          fluid
+        />
+      </div>
+
+      <div>
+        <label for="locked" class="block font-bold mb-3">Bloqueado</label>
+
+        <p-toggleswitch [(ngModel)]="usuario.locked" inputId="locked" />
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #footer>
+    @if (usuario.id) {
+    <p-button
+      severity="danger"
+      label="Eliminar"
+      icon="pi pi-trash"
+      outlined
+      (onClick)="deleteUser(usuario)"
+    />
+    }
+
+    <p-button severity="secondary" label="Cancelar" icon="pi pi-times" (click)="hideDialog()" />
+    <p-button label="Guardar" icon="pi pi-check" (click)="saveProduct()" />
+  </ng-template>
+</p-dialog>
+
+<p-confirmdialog [style]="{ width: '450px' }" />
+<p-toast></p-toast>
