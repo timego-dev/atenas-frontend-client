@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
   selector: 'page-alertas',
   standalone: true,
   imports: [],
-  template: `<h1>Gestión de alertas</h1>`,
+  template: `<h2>Gestión de alertas</h2>`,
   providers: [],
 })
 export class AlertasPage {}
