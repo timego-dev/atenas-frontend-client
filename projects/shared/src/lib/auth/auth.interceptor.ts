@@ -1,0 +1,49 @@
+/*
+  Intercepta todas las peticiones HTTP y, si el usuario está autenticado,
+  añade automáticamente el token de acceso (JWT) al header Authorization.
+  Si no hay token o la API responde 401/403, redirige al login.
+*/
+
+import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { AuthService } from './auth.service';
+import { catchError } from 'rxjs/operators';
+import { throwError, EMPTY } from 'rxjs';
+
+export const authInterceptor: HttpInterceptorFn = (req, next) => {
+  const authService = inject(AuthService);
+
+  const isAsset = req.url.startsWith('/assets/');
+  const isIssuer = req.url.startsWith('http://localhost:8080');
+  const isOidcMeta =
+    req.url.includes('/.well-known/openid-configuration') ||
+    req.url.includes('/protocol/openid-connect');
+
+  if (isAsset || isIssuer || isOidcMeta || req.headers.has('X-Skip-Auth')) {
+    return next(req);
+  }
+
+  const token = authService.token;
+
+  // Si no hay token, mandamos al login y cancelamos la petición
+  if (!token) {
+    authService.startLoginFlow();
+    return EMPTY;
+  }
+
+  const authReq = req.clone({
+    setHeaders: { Authorization: `Bearer ${token}` },
+  });
+
+  return next(authReq).pipe(
+    catchError((error: HttpErrorResponse) => {
+      // Si el backend responde 401/403, asumimos token caducado o inválido
+      if (error.status === 401 || error.status === 403) {
+        console.warn('[authInterceptor] 401/403 detectado, redirigiendo a login');
+        authService.startLoginFlow();
+      }
+
+      return throwError(() => error);
+    })
+  );
+};

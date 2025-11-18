@@ -1,5 +1,6 @@
 import {
   ApplicationConfig,
+  importProvidersFrom,
   inject,
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
@@ -8,7 +9,7 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
-import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
@@ -22,12 +23,16 @@ import { provideTranslateService } from '@ngx-translate/core';
 import { DocumentScannerMockService } from './features/document-scanner/services/at10k/document-scanner-mock.service';
 import { DocumentScannerService } from './features/document-scanner/services/at10k/document-scanner.service';
 import { environment } from '../environments/environment';
+import { OAuthModule, OAuthStorage } from 'angular-oauth2-oidc';
+import { authInterceptor } from '@shared/auth/auth.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideHttpClient(withFetch()),
+    provideHttpClient(withInterceptors([authInterceptor])),
+    importProvidersFrom(OAuthModule.forRoot()),
+    { provide: OAuthStorage, useFactory: () => localStorage },
     provideRouter(routes),
     provideAnimationsAsync(),
     providePrimeNG({ theme: { preset: Aura } }),
