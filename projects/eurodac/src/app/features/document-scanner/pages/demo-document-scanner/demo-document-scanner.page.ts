@@ -14,8 +14,9 @@ import { DividerModule } from 'primeng/divider';
 import { ChipModule } from 'primeng/chip';
 import { ImageModule } from 'primeng/image';
 import { DynamicDialogModule, DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { environment } from '../../../../../environments/environment';
 import { DocumentScannerModalWrapperComponent } from '../../components/document-scanner-modal-wrapper/document-scanner-modal-wrapper.component';
+import { ConfigurationService } from '@shared/services/configuration.service';
+import { IConfig } from '../../../../shared/services/configuration-file.service';
 
 @Component({
   selector: 'demo-document-scanner',
@@ -64,7 +65,11 @@ export class DemoDocumentScannerPage {
 
   private dialogRef?: DynamicDialogRef<DocumentScannerModalWrapperComponent> | null;
 
-  constructor(private dialogService: DialogService, private uploader: AtenasDvService) {}
+  constructor(
+    private dialogService: DialogService,
+    private uploader: AtenasDvService,
+    private configurationService: ConfigurationService<IConfig>
+  ) {}
 
   openScannerModal(): void {
     this.dialogRef = this.dialogService.open(DocumentScannerModalWrapperComponent, {
@@ -128,7 +133,7 @@ export class DemoDocumentScannerPage {
     const data = this.captured();
     if (!data) return;
 
-    const url = `${environment.atenasApiUrl}/case`;
+    const url = `${this.configurationService.getConfig().backend.atenasApiUrl}/case`;
     this.uploader
       .submit(url, data, 'AT10K_Attach', {
         includeVerifications: true,

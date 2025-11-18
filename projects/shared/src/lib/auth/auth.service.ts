@@ -7,9 +7,6 @@ import { authConfig } from './auth.config';
 export class AuthService {
   constructor(private oauthService: OAuthService) {
     this.oauthService.configure(authConfig);
-    // this.oauthService.setupAutomaticSilentRefresh();
-
-    // 🔹 Escuchar eventos importantes de OAuth
     this.oauthService.events
       .pipe(
         filter(

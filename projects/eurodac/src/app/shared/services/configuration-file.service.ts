@@ -4,7 +4,12 @@ import { ConfigurationService, SharedConfig } from '@shared/services/configurati
 import { firstValueFrom, map, tap } from 'rxjs';
 import { parse } from 'yamljs';
 
-export interface IConfig extends SharedConfig {}
+export interface IConfig extends SharedConfig {
+  backend: SharedConfig['backend'] & {
+    scannerApiUrl: string;
+    atenasApiUrl: string;
+  };
+}
 
 @Injectable({
   providedIn: 'root',

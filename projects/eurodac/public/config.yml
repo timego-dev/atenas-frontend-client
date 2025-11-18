@@ -1,2 +1,4 @@
 backend:
   usersBaseUrl: https://localhost:3000/users
+  scannerApiUrl: 'http://localhost:3001'
+  atenasApiUrl: 'https://localhost:7526'
