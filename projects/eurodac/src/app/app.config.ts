@@ -41,7 +41,7 @@ export const appConfig: ApplicationConfig = {
     },
     {
       provide: ConfigurationService,
-      useClass: ConfigurationFileService,
+      useExisting: ConfigurationFileService,
     },
     {
       provide: BaseDocumentScanner,
