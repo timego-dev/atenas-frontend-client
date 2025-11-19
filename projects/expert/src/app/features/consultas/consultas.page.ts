@@ -13,6 +13,7 @@ import { TiempoRespuesta } from '../../shared/components/tiempo-respuesta.compon
 import { EstadoConsultaComponent } from '../../shared/components/estado-consulta.component';
 import { SelectModule } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 interface Column {
   field: string;
@@ -33,6 +34,7 @@ interface Column {
     EstadoConsultaComponent,
     SelectModule,
     FormsModule,
+    MultiSelectModule,
   ],
   templateUrl: './consultas.page.html',
   providers: [],
@@ -51,25 +53,22 @@ export class ConsultasPage {
   }
 
   estados = [
-    { label: 'Todas', value: 'todas' },
     { label: 'Pendientes', value: 'pendientes' },
     { label: 'En curso', value: 'en-curso' },
     { label: 'Resueltas', value: 'resueltas' },
   ];
 
-  estado = 'todas';
+  estado = [];
 
   respuestas = [
-    { label: 'Todas', value: 'todas' },
     { label: 'Autenticos', value: 'autenticos' },
     { label: 'Falsos', value: 'falsos' },
     { label: 'Falta información', value: 'falta-informacion' },
   ];
 
-  respuesta = 'todas';
+  respuesta = [];
 
   periodos = [
-    { label: 'Todas', value: 'todas' },
     { label: 'Hoy', value: 'hoy' },
     { label: 'Esta semana', value: 'esta-semana' },
     { label: 'Este mes', value: 'este-mes' },
@@ -77,7 +76,7 @@ export class ConsultasPage {
     { label: 'Otro', value: 'otro' },
   ];
 
-  periodo = 'todas';
+  periodo = '';
 
   menuItems = [
     {

@@ -17,28 +17,27 @@
       <div style="display: flex; flex-direction: row; gap: 1rem">
         <p-button label="Añadir" icon="pi pi-plus" severity="primary" />
 
-        <p-select
+        <p-multiselect
           placeholder="Estado"
           [options]="estados"
           [(ngModel)]="estado"
-          optionValue="code"
-          optionLabel="label"
-        ></p-select>
+          filter="false"
+          showClear="true"
+        ></p-multiselect>
 
-        <p-select
+        <p-multiselect
           placeholder="Respuesta"
           [options]="respuestas"
           [(ngModel)]="respuesta"
-          optionValue="code"
-          optionLabel="label"
-        ></p-select>
+          filter="false"
+          showClear="true"
+        ></p-multiselect>
 
         <p-select
+          showClear="true"
           placeholder="Periodo"
           [options]="periodos"
           [(ngModel)]="periodo"
-          optionValue="code"
-          optionLabel="label"
         ></p-select>
       </div>
     </nav>
