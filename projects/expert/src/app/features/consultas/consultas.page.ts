@@ -1,5 +1,4 @@
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
 
 import { PanelModule } from 'primeng/panel';
 import { MenuModule } from 'primeng/menu';
@@ -12,6 +11,8 @@ import { IConsulta } from './consultas.service';
 import { TiempoEntrada } from '../../shared/components/tiempo-entrada.component';
 import { TiempoRespuesta } from '../../shared/components/tiempo-respuesta.component';
 import { EstadoConsultaComponent } from '../../shared/components/estado-consulta.component';
+import { SelectModule } from 'primeng/select';
+import { FormsModule } from '@angular/forms';
 
 interface Column {
   field: string;
@@ -30,6 +31,8 @@ interface Column {
     TiempoEntrada,
     TiempoRespuesta,
     EstadoConsultaComponent,
+    SelectModule,
+    FormsModule,
   ],
   templateUrl: './consultas.page.html',
   providers: [],
@@ -46,6 +49,35 @@ export class ConsultasPage {
     });
     setInterval(() => this.ref.detectChanges(), 1000);
   }
+
+  estados = [
+    { label: 'Todas', value: 'todas' },
+    { label: 'Pendientes', value: 'pendientes' },
+    { label: 'En curso', value: 'en-curso' },
+    { label: 'Resueltas', value: 'resueltas' },
+  ];
+
+  estado = 'todas';
+
+  respuestas = [
+    { label: 'Todas', value: 'todas' },
+    { label: 'Autenticos', value: 'autenticos' },
+    { label: 'Falsos', value: 'falsos' },
+    { label: 'Falta información', value: 'falta-informacion' },
+  ];
+
+  respuesta = 'todas';
+
+  periodos = [
+    { label: 'Todas', value: 'todas' },
+    { label: 'Hoy', value: 'hoy' },
+    { label: 'Esta semana', value: 'esta-semana' },
+    { label: 'Este mes', value: 'este-mes' },
+    { label: 'Este año', value: 'este-año' },
+    { label: 'Otro', value: 'otro' },
+  ];
+
+  periodo = 'todas';
 
   menuItems = [
     {

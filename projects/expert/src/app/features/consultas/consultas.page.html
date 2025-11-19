@@ -1,48 +1,71 @@
-<h2 style="display: flex; align-items: center; gap: 1rem">
-  Consultas
-  <p-button label="Añadir" icon="pi pi-plus" severity="primary" />
-</h2>
+<p-table
+  [value]="consultas"
+  [rows]="10"
+  [columns]="cols"
+  [paginator]="true"
+  [rowHover]="false"
+  currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} consultas"
+  [showCurrentPageReport]="true"
+  [rowsPerPageOptions]="[10, 20, 30]"
+>
+  <ng-template #caption>
+    <nav style="display: flex; align-items: center">
+      <div style="margin-right: auto">
+        <h2 style="margin: 0">Consultas</h2>
+      </div>
 
-<div class="flex flex-col md:flex-row gap-2">
-  <div class="md">
-    <p-menu [model]="menuItems"></p-menu>
-  </div>
+      <div style="display: flex; flex-direction: row; gap: 1rem">
+        <p-button label="Añadir" icon="pi pi-plus" severity="primary" />
 
-  <div class="md:w-full">
-    <p-table
-      [value]="consultas"
-      [rows]="10"
-      [columns]="cols"
-      [paginator]="true"
-      [rowHover]="false"
-      currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} consultas"
-      [showCurrentPageReport]="true"
-      [rowsPerPageOptions]="[10, 20, 30]"
-    >
-      <ng-template #header>
-        <tr>
-          <th style="min-width: 8rem">Referencia</th>
-          <th style="min-width: 8rem">Entrada</th>
-          <th style="min-width: 8rem">Origen</th>
-          <th style="min-width: 10rem">Tiempo respuesta</th>
-          <th style="min-width: 12rem">Operador</th>
-          <th style="min-width: 12rem">Estado</th>
-        </tr>
-      </ng-template>
-      <ng-template #body let-consulta>
-        <tr>
-          <td style="min-width: 12rem">
-            <button (click)="editConsulta(consulta)" class="p-button p-button-text">
-              {{ consulta.referencia }}
-            </button>
-          </td>
-          <td><lib-tiempo-entrada [consulta]="consulta" /></td>
-          <td>{{ consulta.origen }}</td>
-          <td><lib-tiempo-respuesta [consulta]="consulta" /></td>
-          <td>{{ consulta.operador }}</td>
-          <td><lib-estado-consulta [consulta]="consulta" /></td>
-        </tr>
-      </ng-template>
-    </p-table>
-  </div>
-</div>
+        <p-select
+          placeholder="Estado"
+          [options]="estados"
+          [(ngModel)]="estado"
+          optionValue="code"
+          optionLabel="label"
+        ></p-select>
+
+        <p-select
+          placeholder="Respuesta"
+          [options]="respuestas"
+          [(ngModel)]="respuesta"
+          optionValue="code"
+          optionLabel="label"
+        ></p-select>
+
+        <p-select
+          placeholder="Periodo"
+          [options]="periodos"
+          [(ngModel)]="periodo"
+          optionValue="code"
+          optionLabel="label"
+        ></p-select>
+      </div>
+    </nav>
+  </ng-template>
+
+  <ng-template #header>
+    <tr>
+      <th style="min-width: 8rem">Referencia</th>
+      <th style="min-width: 8rem">Entrada</th>
+      <th style="min-width: 8rem">Origen</th>
+      <th style="min-width: 10rem">Tiempo respuesta</th>
+      <th style="min-width: 12rem">Operador</th>
+      <th style="min-width: 12rem">Estado</th>
+    </tr>
+  </ng-template>
+  <ng-template #body let-consulta>
+    <tr>
+      <td style="min-width: 12rem">
+        <button (click)="editConsulta(consulta)" class="p-button p-button-text">
+          {{ consulta.referencia }}
+        </button>
+      </td>
+      <td><lib-tiempo-entrada [consulta]="consulta" /></td>
+      <td>{{ consulta.origen }}</td>
+      <td><lib-tiempo-respuesta [consulta]="consulta" /></td>
+      <td>{{ consulta.operador }}</td>
+      <td><lib-estado-consulta [consulta]="consulta" /></td>
+    </tr>
+  </ng-template>
+</p-table>
