@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+import { inject, Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { BaseDocumentScanner } from '../../types/at10k/BaseDocumentService';
@@ -6,7 +6,7 @@ import { ConnectionStatus } from '../../types/at10k/ConnectionStatus';
 import { DocumentError } from '../../types/at10k/DocumentError';
 import { CaptureOptions, DocumentReaderErrorCodes } from '../../types/at10k/ScannerDVData';
 import { MessageError } from '../../types/at10k/MessageError';
-import { environment } from '../../../../../environments/environment';
+import { ConfigurationService } from '@shared/services/configuration.service';
 
 declare var $: any;
 
@@ -14,12 +14,14 @@ declare var $: any;
   providedIn: 'root',
 })
 export class DocumentScannerService extends BaseDocumentScanner {
+  private readonly configurationService = inject(ConfigurationService);
+
   private currentStatus?: ConnectionStatus;
   private connection?: SignalR.Hub.Connection;
   private hubProxy?: SignalR.Hub.Proxy;
   private eventCallbackMap: Map<string, (...args: any[]) => void> = new Map();
 
-  public host?: string = environment.scannerApiUrl;
+  public host?: string = this.configurationService.getConfig().scannerApiUrl;
   private readonly hubName: string = 'document-reader';
 
   constructor(private zone: NgZone) {

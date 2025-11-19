@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { ConfigurationService, SharedConfig } from '@shared/services/configuration.service';
 import { firstValueFrom, map, tap } from 'rxjs';
@@ -18,6 +18,9 @@ export class ConfigurationFileService implements ConfigurationService<IConfig> {
     return firstValueFrom(
       this.httpClient
         .get('./config.yml', {
+          headers: new HttpHeaders({
+            'X-Skip-Auth': 'true',
+          }),
           observe: 'body',
           responseType: 'text',
         })

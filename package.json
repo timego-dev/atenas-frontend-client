@@ -34,6 +34,7 @@
     "@tailwindcss/postcss": "^4.1.17",
     "@types/signalr": "^2.4.3",
     "dayjs": "^1.11.19",
+    "angular-oauth2-oidc": "^20.0.2",
     "primeicons": "^7.0.0",
     "primeng": "^20.3.0",
     "rxjs": "~7.8.0",
