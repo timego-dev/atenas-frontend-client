@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Table, TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
@@ -21,6 +21,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { UsuarioService } from './usuarios.service';
 import { IUser, Role } from '@shared/services/user-repository.service';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { UsuarioEditComponent } from './usuario-edit.component';
 
 interface Column {
   field: string;
@@ -51,6 +52,7 @@ interface Column {
     IconFieldModule,
     ConfirmDialogModule,
     ToggleSwitchModule,
+    UsuarioEditComponent,
   ],
   templateUrl: './usuarios.page.html',
   providers: [MessageService, UsuarioService, ConfirmationService],
@@ -63,15 +65,6 @@ export class UsuariosPage implements OnInit {
   usuario!: IUser;
 
   submitted: boolean = false;
-
-  roles = [
-    { label: 'Administrador', value: Role.ADMINISTRATOR },
-    { label: 'Cliente', value: Role.CLIENT },
-    { label: 'Eurodac', value: Role.EURODAC },
-    { label: 'MBI', value: Role.MBI },
-    { label: 'Operador', value: Role.OPERATOR },
-    { label: 'Supervisor', value: Role.SUPERVISOR },
-  ];
 
   cols: Column[] = [
     { field: 'nombre', header: 'Nombre' },

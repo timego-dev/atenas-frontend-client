@@ -129,4 +129,8 @@ export class ConsultasPage {
     { field: 'category', header: 'Operador' },
     { field: 'category', header: 'Estado' },
   ];
+
+  editConsulta(consulta: IConsulta) {
+    console.log('Edit');
+  }
 }

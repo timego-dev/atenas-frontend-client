@@ -72,48 +72,7 @@
 
 <p-dialog [(visible)]="editDialog" [style]="{ width: '450px' }" header="Usuario" [modal]="true">
   <ng-template #content>
-    <div class="flex flex-col gap-6">
-      <div>
-        <label for="nombre" class="block font-bold mb-3">Nombre</label>
-        <input
-          type="text"
-          pInputText
-          id="nombre"
-          [(ngModel)]="usuario.username"
-          required
-          autofocus
-          fluid
-        />
-        <small class="text-red-500" *ngIf="submitted && !usuario.username"
-          >El nombre es obligatorio</small
-        >
-      </div>
-
-      <div>
-        <label for="email" class="block font-bold mb-3">EMail</label>
-        <input type="email" id="email" pInputText [(ngModel)]="usuario.email" required fluid />
-      </div>
-
-      <div>
-        <label for="role" class="block font-bold mb-3">Rol</label>
-        <p-select
-          [(ngModel)]="usuario.role"
-          inputId="role"
-          [options]="roles"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Selecciona el rol"
-          fluid
-          appendTo="body"
-        />
-      </div>
-
-      <div>
-        <label for="locked" class="block font-bold mb-3">Bloqueado</label>
-
-        <p-toggleswitch [(ngModel)]="usuario.locked" inputId="locked" />
-      </div>
-    </div>
+    <edit-usuario [usuario]="usuario" [submitted]="submitted" />
   </ng-template>
 
   <ng-template #footer>

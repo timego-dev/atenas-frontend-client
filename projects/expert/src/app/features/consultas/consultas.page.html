@@ -21,7 +21,6 @@
     >
       <ng-template #header>
         <tr>
-          <th></th>
           <th style="min-width: 8rem">Referencia</th>
           <th style="min-width: 8rem">Entrada</th>
           <th style="min-width: 8rem">Origen</th>
@@ -32,11 +31,10 @@
       </ng-template>
       <ng-template #body let-consulta>
         <tr>
-          <td>
-            <p-button icon="pi pi-pen-to-square" variant="outlined" />
-          </td>
           <td style="min-width: 12rem">
-            {{ consulta.referencia }}
+            <button (click)="editConsulta(consulta)" class="p-button p-button-text">
+              {{ consulta.referencia }}
+            </button>
           </td>
           <td><lib-tiempo-entrada [consulta]="consulta" /></td>
           <td>{{ consulta.origen }}</td>
