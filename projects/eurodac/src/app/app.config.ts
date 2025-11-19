@@ -7,7 +7,6 @@ import {
   provideZoneChangeDetection,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
-
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -25,6 +24,8 @@ import { DocumentScannerService } from './features/document-scanner/services/at1
 import { environment } from '../environments/environment';
 import { OAuthModule, OAuthStorage } from 'angular-oauth2-oidc';
 import { authInterceptor } from '@shared/auth/auth.interceptor';
+import { AuthService } from '@shared/auth/auth.service';
+import { MockAuthService } from '@shared/auth/auth.mock.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -40,6 +41,19 @@ export const appConfig: ApplicationConfig = {
       const configService = inject(ConfigurationFileService);
       return configService.initialize();
     }),
+    ...(environment.useMockAuth
+      ? [
+          {
+            provide: AuthService,
+            useClass: MockAuthService,
+          },
+        ]
+      : [
+          {
+            provide: AuthService,
+            useClass: AuthService,
+          },
+        ]),
     {
       provide: UserRepositoryService,
       useClass: UserRepositoryMockService,

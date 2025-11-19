@@ -18,6 +18,9 @@ import { ConfigurationService } from '@shared/services/configuration.service';
 import { ConfigurationFileService } from './shared/services/configuration-file.service';
 import { OAuthModule, OAuthStorage } from 'angular-oauth2-oidc';
 import { authInterceptor } from '@shared/auth/auth.interceptor';
+import { environment } from '../environments/environment';
+import { AuthService } from '@shared/auth/auth.service';
+import { MockAuthService } from '@shared/auth/auth.mock.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -33,6 +36,19 @@ export const appConfig: ApplicationConfig = {
       const configService = inject(ConfigurationFileService);
       return configService.initialize();
     }),
+    ...(environment.useMockAuth
+      ? [
+          {
+            provide: AuthService,
+            useClass: MockAuthService,
+          },
+        ]
+      : [
+          {
+            provide: AuthService,
+            useClass: AuthService,
+          },
+        ]),
     {
       provide: UserRepositoryService,
       useClass: UserRepositoryMockService,
