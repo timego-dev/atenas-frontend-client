@@ -18,6 +18,12 @@ import { UserRepositoryMockService } from '@shared/services/mock/user-repository
 import { ConfigurationService } from '@shared/services/configuration.service';
 import { ConfigurationFileService } from './shared/services/configuration-file.service';
 
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import 'dayjs/locale/es';
+dayjs.extend(relativeTime);
+dayjs.locale('es');
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
