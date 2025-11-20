@@ -46,7 +46,7 @@ export class MediaRepositoryMockService extends MediaRepositoryService {
   }
 }
 
-export const DOCUMENT_DV_ATTACHMENT_CHIP = '"9b995d4b-ad4d-4096-983f-2f7a459d3642"';
+export const DOCUMENT_DV_ATTACHMENT_CHIP = '9b995d4b-ad4d-4096-983f-2f7a459d3642';
 export const DOCUMENT_DV_ATTACHMENT_VISUAL = 'fc96282c-b340-4016-92de-af736282fb94';
 export const DOCUMENT_DV_ATTACHMENT_IR = '9e352a3a-7fb8-4058-b861-2efdc5ead21b';
 export const DOCUMENT_DV_ATTACHMENT_UV = '14f8635b-3386-40ce-9386-9d3d5f6d6d2f';
