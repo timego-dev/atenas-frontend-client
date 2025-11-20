@@ -33,20 +33,16 @@ export class ConsultasService {
     let resultado = [...consultas];
 
     if (filters.respuesta?.length) {
-      resultado = resultado.filter((c) => filters.respuesta.includes(c.respuesta!));
+      resultado = resultado.filter((c) => filters.respuesta.includes(c.caseResolution!));
     }
 
     if (filters.estado?.length) {
       resultado = resultado.filter(
         (c) =>
-          (c.estado === EstadoConsulta.PENDIENTE &&
-            filters.estado.includes(EstadoConsulta.PENDIENTE)) ||
-          (c.estado === EstadoConsulta.ASIGNADA &&
-            filters.estado.includes(EstadoConsulta.ASIGNADA)) ||
-          (c.estado === EstadoConsulta.RESUELTA &&
-            filters.estado.includes(EstadoConsulta.RESUELTA)) ||
-          (c.estado === EstadoConsulta.ARCHIVADA &&
-            filters.estado.includes(EstadoConsulta.ARCHIVADA))
+          (c.caseStatus === CaseStatus.PENDING && filters.estado.includes(CaseStatus.PENDING)) ||
+          (c.caseStatus === CaseStatus.OPEN && filters.estado.includes(CaseStatus.OPEN)) ||
+          (c.caseStatus === CaseStatus.SOLVED && filters.estado.includes(CaseStatus.SOLVED)) ||
+          (c.caseStatus === CaseStatus.ARCHIVED && filters.estado.includes(CaseStatus.ARCHIVED))
       );
     }
 
@@ -54,21 +50,21 @@ export class ConsultasService {
       const ahora = dayjs();
       switch (filters.periodo) {
         case FiltroPeriodo.HOY: {
-          resultado = resultado.filter((c) => dayjs(c.fechaEntrada).isSame(ahora, 'day'));
+          resultado = resultado.filter((c) => dayjs(c.creationDate).isSame(ahora, 'day'));
           break;
         }
         case FiltroPeriodo.ESTA_SEMANA: {
-          resultado = resultado.filter((c) => dayjs(c.fechaEntrada).isAfter(ahora.startOf('week')));
+          resultado = resultado.filter((c) => dayjs(c.creationDate).isAfter(ahora.startOf('week')));
           break;
         }
         case FiltroPeriodo.ESTE_MES: {
           resultado = resultado.filter((c) =>
-            dayjs(c.fechaEntrada).isAfter(ahora.startOf('month'))
+            dayjs(c.creationDate).isAfter(ahora.startOf('month'))
           );
           break;
         }
         case FiltroPeriodo.ESTE_AÑO: {
-          resultado = resultado.filter((c) => dayjs(c.fechaEntrada).isAfter(ahora.startOf('year')));
+          resultado = resultado.filter((c) => dayjs(c.creationDate).isAfter(ahora.startOf('year')));
           break;
         }
       }
@@ -80,10 +76,12 @@ export class ConsultasService {
 
 // TODO: Move to shared
 
-export enum RespuestaConsulta {
-  FALSO,
-  AUTENTICO,
-  FALTA_INFORMACION,
+export enum CaseResolution {
+  WITH_EVIDENCES,
+  WITHOUT_EVIDENCES,
+  PENDING,
+  INVALID_DOCUMENT,
+  INSUFFICIENT_QUALITY,
 }
 export enum FiltroPeriodo {
   HOY,
@@ -93,27 +91,28 @@ export enum FiltroPeriodo {
 }
 
 export interface FiltroConsultas {
-  estado: EstadoConsulta[];
-  respuesta: RespuestaConsulta[];
+  estado: CaseStatus[];
+  respuesta: CaseResolution[];
   periodo: FiltroPeriodo | undefined;
 }
 
-export enum EstadoConsulta {
-  PENDIENTE,
-  ASIGNADA,
-  RESUELTA,
-  ARCHIVADA,
+export enum CaseStatus {
+  PENDING,
+  OPEN,
+  SOLVED,
+  ARCHIVED,
+  CLARIFICATION_PENDING,
 }
 
 export interface IConsulta {
   id: string;
-  referencia: string;
-  origen: string;
-  fechaEntrada: Date;
-  fechaRespuesta: Date | undefined;
-  operador: string | undefined;
-  estado: EstadoConsulta;
-  respuesta: RespuestaConsulta | undefined;
+  trackingNumber: string;
+  creatorName: string;
+  creationDate: Date;
+  lastUpdated: Date | undefined;
+  expertName: string | undefined;
+  caseStatus: CaseStatus;
+  caseResolution: CaseResolution | undefined;
 }
 
 @Injectable({
@@ -123,109 +122,109 @@ export class ConsultasRepositoryService {
   getAll(): Observable<IConsulta[]> {
     return of(<IConsulta[]>[
       {
-        referencia: '123456',
-        origen: 'Patrulla1',
-        fechaEntrada: dayjs().add(-10, 'second').toDate(),
-        fechaRespuesta: undefined,
-        operador: undefined,
-        estado: EstadoConsulta.PENDIENTE,
+        trackingNumber: '123456',
+        creatorName: 'Patrulla1',
+        creationDate: dayjs().add(-10, 'second').toDate(),
+        lastUpdated: undefined,
+        expertName: undefined,
+        caseStatus: CaseStatus.PENDING,
       },
       {
-        referencia: '123456',
-        origen: 'Patrulla1',
-        fechaEntrada: dayjs().add(-30, 'second').toDate(),
-        fechaRespuesta: undefined,
-        operador: 'Operador1',
-        estado: EstadoConsulta.ASIGNADA,
+        trackingNumber: '123456',
+        creatorName: 'Patrulla1',
+        creationDate: dayjs().add(-30, 'second').toDate(),
+        lastUpdated: undefined,
+        expertName: 'Operador1',
+        caseStatus: CaseStatus.OPEN,
       },
       {
-        referencia: '128431',
-        origen: 'Patrulla2',
-        fechaEntrada: dayjs().add(-5, 'minute').toDate(),
-        fechaRespuesta: undefined,
-        operador: undefined,
-        estado: EstadoConsulta.PENDIENTE,
+        trackingNumber: '128431',
+        creatorName: 'Patrulla2',
+        creationDate: dayjs().add(-5, 'minute').toDate(),
+        lastUpdated: undefined,
+        expertName: undefined,
+        caseStatus: CaseStatus.PENDING,
       },
       {
-        referencia: '128930',
-        origen: 'Patrulla2',
-        fechaEntrada: dayjs().add(-8, 'minute').toDate(),
-        fechaRespuesta: dayjs().add(-6, 'minute').toDate(),
-        operador: 'Operador1',
-        estado: EstadoConsulta.RESUELTA,
-        respuesta: RespuestaConsulta.AUTENTICO,
+        trackingNumber: '128930',
+        creatorName: 'Patrulla2',
+        creationDate: dayjs().add(-8, 'minute').toDate(),
+        lastUpdated: dayjs().add(-6, 'minute').toDate(),
+        expertName: 'Operador1',
+        caseStatus: CaseStatus.SOLVED,
+        caseResolution: CaseResolution.WITHOUT_EVIDENCES,
       },
       {
-        referencia: '128787',
-        origen: 'Patrulla2',
-        fechaEntrada: dayjs().add(-15, 'minute').toDate(),
-        fechaRespuesta: dayjs().add(-12, 'minute').toDate(),
-        operador: 'Operador1',
-        estado: EstadoConsulta.RESUELTA,
-        respuesta: RespuestaConsulta.FALSO,
+        trackingNumber: '128787',
+        creatorName: 'Patrulla2',
+        creationDate: dayjs().add(-15, 'minute').toDate(),
+        lastUpdated: dayjs().add(-12, 'minute').toDate(),
+        expertName: 'Operador1',
+        caseStatus: CaseStatus.SOLVED,
+        caseResolution: CaseResolution.WITH_EVIDENCES,
       },
       {
-        referencia: '128787',
-        origen: 'Patrulla2',
-        fechaEntrada: dayjs().add(-25, 'minute').toDate(),
-        fechaRespuesta: dayjs().add(-24, 'minute').toDate(),
-        operador: 'Operador2',
-        estado: EstadoConsulta.RESUELTA,
-        respuesta: RespuestaConsulta.FALTA_INFORMACION,
+        trackingNumber: '128787',
+        creatorName: 'Patrulla2',
+        creationDate: dayjs().add(-25, 'minute').toDate(),
+        lastUpdated: dayjs().add(-24, 'minute').toDate(),
+        expertName: 'Operador2',
+        caseStatus: CaseStatus.SOLVED,
+        caseResolution: CaseResolution.PENDING,
       },
       {
-        referencia: '456789',
-        origen: 'Patrulla1',
-        fechaEntrada: dayjs().add(-3, 'day').toDate(),
-        fechaRespuesta: dayjs().add(-3, 'day').add(2, 'minute').toDate(),
-        operador: 'Operador1',
-        estado: EstadoConsulta.RESUELTA,
-        respuesta: RespuestaConsulta.AUTENTICO,
+        trackingNumber: '456789',
+        creatorName: 'Patrulla1',
+        creationDate: dayjs().add(-3, 'day').toDate(),
+        lastUpdated: dayjs().add(-3, 'day').add(2, 'minute').toDate(),
+        expertName: 'Operador1',
+        caseStatus: CaseStatus.SOLVED,
+        caseResolution: CaseResolution.WITHOUT_EVIDENCES,
       },
       {
-        referencia: '784743',
-        origen: 'Patrulla6',
-        fechaEntrada: dayjs().add(-7, 'day').toDate(),
-        fechaRespuesta: dayjs().add(-7, 'day').add(1, 'minute').toDate(),
-        operador: 'Operador3',
-        estado: EstadoConsulta.RESUELTA,
-        respuesta: RespuestaConsulta.AUTENTICO,
+        trackingNumber: '784743',
+        creatorName: 'Patrulla6',
+        creationDate: dayjs().add(-7, 'day').toDate(),
+        lastUpdated: dayjs().add(-7, 'day').add(1, 'minute').toDate(),
+        expertName: 'Operador3',
+        caseStatus: CaseStatus.SOLVED,
+        caseResolution: CaseResolution.WITHOUT_EVIDENCES,
       },
       {
-        referencia: '846765',
-        origen: 'Patrulla3',
-        fechaEntrada: dayjs().add(-9, 'day').toDate(),
-        fechaRespuesta: dayjs().add(-9, 'day').add(5, 'minute').toDate(),
-        operador: 'Operador3',
-        estado: EstadoConsulta.RESUELTA,
-        respuesta: RespuestaConsulta.AUTENTICO,
+        trackingNumber: '846765',
+        creatorName: 'Patrulla3',
+        creationDate: dayjs().add(-9, 'day').toDate(),
+        lastUpdated: dayjs().add(-9, 'day').add(5, 'minute').toDate(),
+        expertName: 'Operador3',
+        caseStatus: CaseStatus.SOLVED,
+        caseResolution: CaseResolution.WITHOUT_EVIDENCES,
       },
       {
-        referencia: '567832',
-        origen: 'Patrulla2',
-        fechaEntrada: dayjs().add(-30, 'day').toDate(),
-        fechaRespuesta: dayjs().add(-30, 'day').add(5, 'minute').toDate(),
-        operador: 'Operador4',
-        estado: EstadoConsulta.ARCHIVADA,
-        respuesta: RespuestaConsulta.AUTENTICO,
+        trackingNumber: '567832',
+        creatorName: 'Patrulla2',
+        creationDate: dayjs().add(-30, 'day').toDate(),
+        lastUpdated: dayjs().add(-30, 'day').add(5, 'minute').toDate(),
+        expertName: 'Operador4',
+        caseStatus: CaseStatus.ARCHIVED,
+        caseResolution: CaseResolution.WITHOUT_EVIDENCES,
       },
       {
-        referencia: '846745',
-        origen: 'Patrulla1',
-        fechaEntrada: dayjs().add(-34, 'day').toDate(),
-        fechaRespuesta: dayjs().add(-34, 'day').add(2, 'minute').toDate(),
-        operador: 'Operador3',
-        estado: EstadoConsulta.RESUELTA,
-        respuesta: RespuestaConsulta.FALTA_INFORMACION,
+        trackingNumber: '846745',
+        creatorName: 'Patrulla1',
+        creationDate: dayjs().add(-34, 'day').toDate(),
+        lastUpdated: dayjs().add(-34, 'day').add(2, 'minute').toDate(),
+        expertName: 'Operador3',
+        caseStatus: CaseStatus.SOLVED,
+        caseResolution: CaseResolution.PENDING,
       },
       {
-        referencia: '111552',
-        origen: 'Patrulla1',
-        fechaEntrada: dayjs().add(-370, 'day').toDate(),
-        fechaRespuesta: dayjs().add(-370, 'day').add(2, 'minute').toDate(),
-        operador: 'Operador3',
-        estado: EstadoConsulta.RESUELTA,
-        respuesta: RespuestaConsulta.FALTA_INFORMACION,
+        trackingNumber: '111552',
+        creatorName: 'Patrulla1',
+        creationDate: dayjs().add(-370, 'day').toDate(),
+        lastUpdated: dayjs().add(-370, 'day').add(2, 'minute').toDate(),
+        expertName: 'Operador3',
+        caseStatus: CaseStatus.SOLVED,
+        caseResolution: CaseResolution.PENDING,
       },
     ]);
   }

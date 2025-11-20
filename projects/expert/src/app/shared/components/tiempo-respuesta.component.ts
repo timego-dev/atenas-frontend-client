@@ -6,7 +6,7 @@ import { IConsulta } from '../../features/consultas/consultas.service';
 @Component({
   selector: 'lib-tiempo-respuesta',
   imports: [TagModule],
-  template: ` @if (consulta().fechaRespuesta) {
+  template: ` @if (consulta().lastUpdated) {
     <p-tag [severity]="severityColor()" [value]="value()" />
     }`,
 })
@@ -15,12 +15,12 @@ export class TiempoRespuesta {
 
   severityColor() {
     const diff =
-      dayjs(this.consulta().fechaRespuesta).diff(dayjs(this.consulta().fechaEntrada)) / 1000;
+      dayjs(this.consulta().lastUpdated).diff(dayjs(this.consulta().creationDate)) / 1000;
 
     return diff > 60 * 3 ? 'danger' : 'success';
   }
 
   value() {
-    return dayjs(this.consulta().fechaRespuesta).from(dayjs(this.consulta().fechaEntrada));
+    return dayjs(this.consulta().lastUpdated).from(dayjs(this.consulta().creationDate));
   }
 }

@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { TagModule } from 'primeng/tag';
 import dayjs from 'dayjs';
-import { EstadoConsulta, IConsulta } from '../../features/consultas/consultas.service';
+import { CaseStatus, IConsulta } from '../../features/consultas/consultas.service';
 
 @Component({
   selector: 'lib-tiempo-entrada',
@@ -13,12 +13,12 @@ export class TiempoEntrada {
 
   severityColor() {
     if (
-      this.consulta().estado == EstadoConsulta.RESUELTA ||
-      this.consulta().estado == EstadoConsulta.ARCHIVADA
+      this.consulta().caseStatus == CaseStatus.SOLVED ||
+      this.consulta().caseStatus == CaseStatus.ARCHIVED
     )
       return 'secondary';
 
-    const diff = dayjs().diff(dayjs(this.consulta().fechaEntrada)) / 1000;
+    const diff = dayjs().diff(dayjs(this.consulta().creationDate)) / 1000;
 
     if (diff >= 60 * 3) return 'danger';
     else if (diff >= 60 * 2) return 'warn';
@@ -27,6 +27,6 @@ export class TiempoEntrada {
   }
 
   value() {
-    return dayjs(this.consulta().fechaEntrada).fromNow();
+    return dayjs(this.consulta().creationDate).fromNow();
   }
 }

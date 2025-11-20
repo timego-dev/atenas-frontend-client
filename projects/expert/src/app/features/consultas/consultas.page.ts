@@ -5,12 +5,7 @@ import { MenuModule } from 'primeng/menu';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
-import {
-  ConsultasService,
-  EstadoConsulta,
-  FiltroPeriodo,
-  RespuestaConsulta,
-} from './consultas.service';
+import { ConsultasService, CaseStatus, FiltroPeriodo, CaseResolution } from './consultas.service';
 
 import { IConsulta } from './consultas.service';
 import { TiempoEntrada } from '../../shared/components/tiempo-entrada.component';
@@ -58,21 +53,24 @@ export class ConsultasPage {
   }
 
   estados = [
-    { label: 'Pendientes', value: EstadoConsulta.PENDIENTE },
-    { label: 'En curso', value: EstadoConsulta.ASIGNADA },
-    { label: 'Resueltas', value: EstadoConsulta.RESUELTA },
-    { label: 'Archivadas', value: EstadoConsulta.ARCHIVADA },
+    { label: 'Pendientes', value: CaseStatus.PENDING },
+    { label: 'En curso', value: CaseStatus.OPEN },
+    { label: 'Resueltas', value: CaseStatus.SOLVED },
+    { label: 'Pendientes de aclaración', value: CaseStatus.CLARIFICATION_PENDING },
+    { label: 'Archivadas', value: CaseStatus.ARCHIVED },
   ];
 
-  estado = <EstadoConsulta[]>[];
+  estado = <CaseStatus[]>[];
 
   respuestas = [
-    { label: 'Autenticos', value: RespuestaConsulta.AUTENTICO },
-    { label: 'Falsos', value: RespuestaConsulta.FALSO },
-    { label: 'Falta información', value: RespuestaConsulta.FALTA_INFORMACION },
+    { label: 'Pendientes', value: CaseResolution.PENDING },
+    { label: 'Sin evidencias de falsificación', value: CaseResolution.WITHOUT_EVIDENCES },
+    { label: 'Con evidencias de falsificación', value: CaseResolution.WITH_EVIDENCES },
+    { label: 'Con mala calidad', value: CaseResolution.INSUFFICIENT_QUALITY },
+    { label: 'Documento no válido', value: CaseResolution.INVALID_DOCUMENT },
   ];
 
-  respuesta = <RespuestaConsulta[]>[];
+  respuesta = <CaseResolution[]>[];
 
   periodos = [
     { label: 'Hoy', value: FiltroPeriodo.HOY },
@@ -84,12 +82,12 @@ export class ConsultasPage {
   periodo = <FiltroPeriodo | undefined>undefined;
 
   cols: Column[] = [
-    { field: 'code', header: 'Referencia' },
-    { field: 'name', header: 'Entrada' },
-    { field: 'image', header: 'Origen' },
+    { field: 'trackingNumber', header: 'Referencia' },
+    { field: 'entrada', header: 'Entrada' },
+    { field: 'origen', header: 'Origen' },
     { field: 'price', header: 'Tiempo respuesta' },
-    { field: 'category', header: 'Operador' },
-    { field: 'category', header: 'Estado' },
+    { field: 'operador', header: 'Operador' },
+    { field: 'estado', header: 'Estado' },
   ];
 
   editConsulta(consulta: IConsulta) {

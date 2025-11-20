@@ -48,25 +48,25 @@
 
   <ng-template #header>
     <tr>
-      <th style="min-width: 8rem">Referencia</th>
+      <th style="min-width: 4rem">Referencia</th>
       <th style="min-width: 8rem">Entrada</th>
       <th style="min-width: 8rem">Origen</th>
-      <th style="min-width: 10rem">Tiempo respuesta</th>
-      <th style="min-width: 12rem">Operador</th>
-      <th style="min-width: 12rem">Estado</th>
+      <th style="min-width: 8rem">Tiempo respuesta</th>
+      <th style="min-width: 8rem">Operador</th>
+      <th style="min-width: 10rem">Estado</th>
     </tr>
   </ng-template>
   <ng-template #body let-consulta>
     <tr>
       <td style="min-width: 12rem">
         <button (click)="editConsulta(consulta)" class="p-button p-button-text">
-          {{ consulta.referencia }}
+          {{ consulta.trackingNumber }}
         </button>
       </td>
       <td><lib-tiempo-entrada [consulta]="consulta" /></td>
-      <td>{{ consulta.origen }}</td>
+      <td>{{ consulta.creatorName }}</td>
       <td><lib-tiempo-respuesta [consulta]="consulta" /></td>
-      <td>{{ consulta.operador }}</td>
+      <td>{{ consulta.expertName }}</td>
       <td><lib-estado-consulta [consulta]="consulta" /></td>
     </tr>
   </ng-template>
