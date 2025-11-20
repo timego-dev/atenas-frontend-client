@@ -10,3 +10,8 @@ export * from './lib/layout/app.layout';
 export * from './lib/services/configuration.service';
 export * from './lib/services/user-repository.service';
 export * from './lib/services/mock/user-repository-mock.service';
+export * from './lib/services/case-repository.service';
+export * from './lib/services/mock/case-repository-mock.service';
+export * from './lib/services/media-repository.service';
+export * from './lib/services/mock/media-repository-mock.service';
+

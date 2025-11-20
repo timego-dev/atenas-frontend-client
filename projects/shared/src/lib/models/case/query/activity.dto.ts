@@ -1,0 +1,33 @@
+import { ActivityType, CaseResolution } from "@shared/models/shared.enums";
+import { ConsultationActivityDto } from "./attachment.dto";
+import { DocumentVerificationAutomaticActivityDto } from "./document-verification-automatic-activity.dto";
+
+export interface ActivityDto {
+  type: ActivityType;
+
+  consultation?: ConsultationActivityDto | null;
+  resolution?: ResolutionActivityDto | null;
+  faceVerification?: FaceVerificationAutomaticActivityDto | null;
+  documentVerification?: DocumentVerificationAutomaticActivityDto | null;
+}
+
+export interface FaceVerificationAutomaticActivityDto {
+  faceVerificationResults: FaceVerificationResultDto[];
+}
+
+export interface FaceVerificationResultDto {
+  key: string;
+  idFaceTransaction?: string;
+  type?: string;
+  isAnalyzed: boolean;
+  result?: string;
+  subKey?: string;
+  errorMessage?: string;
+  score: number;
+  correlationId?: string;
+  times: Record<string, unknown>;
+}
+
+export interface ResolutionActivityDto {
+  resolution: CaseResolution;
+}
