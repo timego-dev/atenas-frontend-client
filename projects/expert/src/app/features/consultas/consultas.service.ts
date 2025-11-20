@@ -9,52 +9,69 @@ import { map } from 'rxjs/operators';
 export class ConsultasService {
   private readonly consultasRepositoryService = inject(ConsultasRepositoryService);
 
-  // Datos originales (sin filtrar)
   private readonly consultasCompletas$ = new ReplaySubject<IConsulta[]>(1);
 
-  // Filtros actuales
   private readonly filtros$ = new BehaviorSubject<FiltroConsultas>(<FiltroConsultas>{});
 
-  // Lista filtrada, combinando datos + filtros
   public readonly consultasFiltradas$: Observable<IConsulta[]> = combineLatest([
     this.consultasCompletas$,
     this.filtros$,
   ]).pipe(map(([consultas, filtros]) => this.filtrarConsultas(consultas, filtros)));
 
   constructor() {
-    // Cargar datos una sola vez al iniciar
     this.consultasRepositoryService.getAll().subscribe({
       next: (data) => this.consultasCompletas$.next(data),
       error: (err) => console.error('Error al cargar consultas:', err),
     });
   }
 
-  /**
-   * Método público que la UI puede llamar para aplicar nuevos filtros.
-   * Esto actualiza el BehaviorSubject de filtros, lo que dispara una nueva emisión en `consultasFiltradas$`.
-   */
   applyFilter(filters: FiltroConsultas): void {
     this.filtros$.next(filters);
   }
 
-  /**
-   * Lógica de filtrado (ajusta según tu modelo de `ConsultasFilters` y `IConsulta`)
-   */
   private filtrarConsultas(consultas: IConsulta[], filters: FiltroConsultas): IConsulta[] {
     let resultado = [...consultas];
 
-    if (filters.respuesta) {
-      resultado = resultado.filter((c) => c.respuesta === filters.respuesta);
+    if (filters.respuesta?.length) {
+      resultado = resultado.filter((c) => filters.respuesta.includes(c.respuesta!));
     }
 
-    if (filters.estado) {
+    if (filters.estado?.length) {
       resultado = resultado.filter(
         (c) =>
-          filters.estado == EstadoFiltro.TODAS ||
-          (c.estado === EstadoConsulta.PENDIENTE && filters.estado === EstadoFiltro.PENDIENTES) ||
-          (c.estado === EstadoConsulta.RESUELTA && filters.estado === EstadoFiltro.RESUELTAS) ||
-          (c.estado === EstadoConsulta.ARCHIVADA && filters.estado === EstadoFiltro.ARCHIVADAS)
+          (c.estado === EstadoConsulta.PENDIENTE &&
+            filters.estado.includes(EstadoConsulta.PENDIENTE)) ||
+          (c.estado === EstadoConsulta.ASIGNADA &&
+            filters.estado.includes(EstadoConsulta.ASIGNADA)) ||
+          (c.estado === EstadoConsulta.RESUELTA &&
+            filters.estado.includes(EstadoConsulta.RESUELTA)) ||
+          (c.estado === EstadoConsulta.ARCHIVADA &&
+            filters.estado.includes(EstadoConsulta.ARCHIVADA))
       );
+    }
+
+    if (filters.periodo !== undefined) {
+      const ahora = dayjs();
+      switch (filters.periodo) {
+        case FiltroPeriodo.HOY: {
+          resultado = resultado.filter((c) => dayjs(c.fechaEntrada).isSame(ahora, 'day'));
+          break;
+        }
+        case FiltroPeriodo.ESTA_SEMANA: {
+          resultado = resultado.filter((c) => dayjs(c.fechaEntrada).isAfter(ahora.startOf('week')));
+          break;
+        }
+        case FiltroPeriodo.ESTE_MES: {
+          resultado = resultado.filter((c) =>
+            dayjs(c.fechaEntrada).isAfter(ahora.startOf('month'))
+          );
+          break;
+        }
+        case FiltroPeriodo.ESTE_AÑO: {
+          resultado = resultado.filter((c) => dayjs(c.fechaEntrada).isAfter(ahora.startOf('year')));
+          break;
+        }
+      }
     }
 
     return resultado;
@@ -63,18 +80,12 @@ export class ConsultasService {
 
 // TODO: Move to shared
 
-enum EstadoFiltro {
-  TODAS,
-  PENDIENTES,
-  RESUELTAS,
-  ARCHIVADAS,
-}
 export enum RespuestaConsulta {
   FALSO,
   AUTENTICO,
   FALTA_INFORMACION,
 }
-enum PeriodFilter {
+export enum FiltroPeriodo {
   HOY,
   ESTA_SEMANA,
   ESTE_MES,
@@ -82,9 +93,9 @@ enum PeriodFilter {
 }
 
 export interface FiltroConsultas {
-  estado: EstadoFiltro | undefined;
-  respuesta: RespuestaConsulta | undefined;
-  periodo: PeriodFilter | undefined;
+  estado: EstadoConsulta[];
+  respuesta: RespuestaConsulta[];
+  periodo: FiltroPeriodo | undefined;
 }
 
 export enum EstadoConsulta {
@@ -165,9 +176,27 @@ export class ConsultasRepositoryService {
       {
         referencia: '456789',
         origen: 'Patrulla1',
-        fechaEntrada: dayjs().add(-30, 'minute').toDate(),
-        fechaRespuesta: dayjs().add(-29, 'minute').toDate(),
+        fechaEntrada: dayjs().add(-3, 'day').toDate(),
+        fechaRespuesta: dayjs().add(-3, 'day').add(2, 'minute').toDate(),
         operador: 'Operador1',
+        estado: EstadoConsulta.RESUELTA,
+        respuesta: RespuestaConsulta.AUTENTICO,
+      },
+      {
+        referencia: '784743',
+        origen: 'Patrulla6',
+        fechaEntrada: dayjs().add(-7, 'day').toDate(),
+        fechaRespuesta: dayjs().add(-7, 'day').add(1, 'minute').toDate(),
+        operador: 'Operador3',
+        estado: EstadoConsulta.RESUELTA,
+        respuesta: RespuestaConsulta.AUTENTICO,
+      },
+      {
+        referencia: '846765',
+        origen: 'Patrulla3',
+        fechaEntrada: dayjs().add(-9, 'day').toDate(),
+        fechaRespuesta: dayjs().add(-9, 'day').add(5, 'minute').toDate(),
+        operador: 'Operador3',
         estado: EstadoConsulta.RESUELTA,
         respuesta: RespuestaConsulta.AUTENTICO,
       },
@@ -179,6 +208,24 @@ export class ConsultasRepositoryService {
         operador: 'Operador4',
         estado: EstadoConsulta.ARCHIVADA,
         respuesta: RespuestaConsulta.AUTENTICO,
+      },
+      {
+        referencia: '846745',
+        origen: 'Patrulla1',
+        fechaEntrada: dayjs().add(-34, 'day').toDate(),
+        fechaRespuesta: dayjs().add(-34, 'day').add(2, 'minute').toDate(),
+        operador: 'Operador3',
+        estado: EstadoConsulta.RESUELTA,
+        respuesta: RespuestaConsulta.FALTA_INFORMACION,
+      },
+      {
+        referencia: '111552',
+        origen: 'Patrulla1',
+        fechaEntrada: dayjs().add(-370, 'day').toDate(),
+        fechaRespuesta: dayjs().add(-370, 'day').add(2, 'minute').toDate(),
+        operador: 'Operador3',
+        estado: EstadoConsulta.RESUELTA,
+        respuesta: RespuestaConsulta.FALTA_INFORMACION,
       },
     ]);
   }

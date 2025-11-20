@@ -5,13 +5,18 @@ import { MenuModule } from 'primeng/menu';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
-import { ConsultasService } from './consultas.service';
+import {
+  ConsultasService,
+  EstadoConsulta,
+  FiltroPeriodo,
+  RespuestaConsulta,
+} from './consultas.service';
 
 import { IConsulta } from './consultas.service';
 import { TiempoEntrada } from '../../shared/components/tiempo-entrada.component';
 import { TiempoRespuesta } from '../../shared/components/tiempo-respuesta.component';
 import { EstadoConsultaComponent } from '../../shared/components/estado-consulta.component';
-import { SelectModule } from 'primeng/select';
+import { SelectChangeEvent, SelectModule } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { MultiSelectModule } from 'primeng/multiselect';
 
@@ -53,104 +58,30 @@ export class ConsultasPage {
   }
 
   estados = [
-    { label: 'Pendientes', value: 'pendientes' },
-    { label: 'En curso', value: 'en-curso' },
-    { label: 'Resueltas', value: 'resueltas' },
+    { label: 'Pendientes', value: EstadoConsulta.PENDIENTE },
+    { label: 'En curso', value: EstadoConsulta.ASIGNADA },
+    { label: 'Resueltas', value: EstadoConsulta.RESUELTA },
+    { label: 'Archivadas', value: EstadoConsulta.ARCHIVADA },
   ];
 
-  estado = [];
+  estado = <EstadoConsulta[]>[];
 
   respuestas = [
-    { label: 'Autenticos', value: 'autenticos' },
-    { label: 'Falsos', value: 'falsos' },
-    { label: 'Falta información', value: 'falta-informacion' },
+    { label: 'Autenticos', value: RespuestaConsulta.AUTENTICO },
+    { label: 'Falsos', value: RespuestaConsulta.FALSO },
+    { label: 'Falta información', value: RespuestaConsulta.FALTA_INFORMACION },
   ];
 
-  respuesta = [];
+  respuesta = <RespuestaConsulta[]>[];
 
   periodos = [
-    { label: 'Hoy', value: 'hoy' },
-    { label: 'Esta semana', value: 'esta-semana' },
-    { label: 'Este mes', value: 'este-mes' },
-    { label: 'Este año', value: 'este-año' },
-    { label: 'Otro', value: 'otro' },
+    { label: 'Hoy', value: FiltroPeriodo.HOY },
+    { label: 'Esta semana', value: FiltroPeriodo.ESTA_SEMANA },
+    { label: 'Este mes', value: FiltroPeriodo.ESTE_MES },
+    { label: 'Este año', value: FiltroPeriodo.ESTE_AÑO },
   ];
 
-  periodo = '';
-
-  menuItems = [
-    {
-      label: 'Estado',
-      items: [
-        {
-          label: 'Todas',
-          icon: 'pi pi-fw pi-list',
-        },
-        {
-          label: 'Pendientes',
-          icon: 'pi pi-fw pi-clock',
-        },
-        {
-          label: 'En curso',
-          icon: 'pi pi-fw pi-file',
-        },
-        {
-          label: 'Resueltas',
-          icon: 'pi pi-fw pi-check',
-        },
-      ],
-    },
-    {
-      label: 'Resolución',
-      items: [
-        {
-          label: 'Todas',
-          icon: 'pi pi-fw pi-list',
-        },
-        {
-          label: 'Auténticos',
-          icon: 'pi pi-fw pi-thumbs-up',
-        },
-        {
-          label: 'Falsos',
-          icon: 'pi pi-fw pi-thumbs-down',
-        },
-        {
-          label: 'Falta información',
-          icon: 'pi pi-fw pi-question-circle',
-        },
-      ],
-    },
-    {
-      label: 'Periodo',
-      items: [
-        {
-          label: 'Todas',
-          icon: 'pi pi-fw pi-list',
-        },
-        {
-          label: 'Hoy',
-          icon: 'pi pi-fw pi-calendar',
-        },
-        {
-          label: 'Esta semana',
-          icon: 'pi pi-fw pi-calendar',
-        },
-        {
-          label: 'Este mes',
-          icon: 'pi pi-fw pi-calendar',
-        },
-        {
-          label: 'Este año',
-          icon: 'pi pi-fw pi-calendar',
-        },
-        {
-          label: 'Otro',
-          icon: 'pi pi-fw pi-calendar',
-        },
-      ],
-    },
-  ];
+  periodo = <FiltroPeriodo | undefined>undefined;
 
   cols: Column[] = [
     { field: 'code', header: 'Referencia' },
@@ -162,6 +93,14 @@ export class ConsultasPage {
   ];
 
   editConsulta(consulta: IConsulta) {
-    console.log('Edit');
+    console.log('Edit', consulta);
+  }
+
+  filterChange(event: SelectChangeEvent) {
+    this.consultasService.applyFilter({
+      estado: this.estado,
+      respuesta: this.respuesta,
+      periodo: this.periodo,
+    });
   }
 }
