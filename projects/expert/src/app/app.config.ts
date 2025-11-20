@@ -16,6 +16,8 @@ import { UserRepositoryRemoteService, UserRepositoryService } from '@shared/serv
 import { UserRepositoryMockService } from '@shared/services/mock/user-repository-mock.service';
 import { CaseRepositoryService } from '@shared/services/case-repository.service';
 import { CaseRepositoryMockService } from '@shared/services/mock/case-repository-mock.service';
+import { AuxiliarRepositoryService } from '@shared/services/auxiliar-repository.service';
+import { AuxiliarRepositoryMockService } from '@shared/services/mock/auxiliar-repository-mock.service';
 import { ConfigurationService } from '@shared/services/configuration.service';
 import { ConfigurationFileService } from './shared/services/configuration-file.service';
 import { OAuthModule, OAuthStorage } from 'angular-oauth2-oidc';
@@ -69,5 +71,9 @@ export const appConfig: ApplicationConfig = {
       provide: CaseRepositoryService,
       useClass: CaseRepositoryMockService,
     },
+    {
+      provide: AuxiliarRepositoryService,
+      useClass: AuxiliarRepositoryMockService,
+    }
   ],
 };
