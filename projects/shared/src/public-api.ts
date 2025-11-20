@@ -14,4 +14,6 @@ export * from './lib/services/case-repository.service';
 export * from './lib/services/mock/case-repository-mock.service';
 export * from './lib/services/media-repository.service';
 export * from './lib/services/mock/media-repository-mock.service';
+export * from './lib/services/auxiliar-repository.service';
+export * from './lib/services/mock/auxiliar-repository-mock.service';
 
