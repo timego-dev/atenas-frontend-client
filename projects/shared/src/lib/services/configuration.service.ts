@@ -1,6 +1,7 @@
 export interface SharedConfig {
   backend: {
     usersBaseUrl: string;
+    mediaBaseUrl: string;
   };
 }
 
