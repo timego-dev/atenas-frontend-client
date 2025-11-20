@@ -14,6 +14,9 @@ import { EstadoConsultaComponent } from '../../shared/components/estado-consulta
 import { SelectChangeEvent, SelectModule } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { DialogModule } from 'primeng/dialog';
+
+import { ConsultaEditComponent } from './consulta-edit.component';
 
 interface Column {
   field: string;
@@ -35,11 +38,16 @@ interface Column {
     SelectModule,
     FormsModule,
     MultiSelectModule,
+    DialogModule,
+    ConsultaEditComponent,
   ],
   templateUrl: './consultas.page.html',
   providers: [],
 })
 export class ConsultasPage {
+  protected editDialog: boolean = false;
+  protected consulta!: IConsulta;
+
   private readonly consultasService = inject(ConsultasService);
 
   protected consultas: IConsulta[] = [];
@@ -90,10 +98,6 @@ export class ConsultasPage {
     { field: 'estado', header: 'Estado' },
   ];
 
-  editConsulta(consulta: IConsulta) {
-    console.log('Edit', consulta);
-  }
-
   filterChange(event: SelectChangeEvent) {
     this.consultasService.applyFilter({
       estado: this.estado,
@@ -101,4 +105,15 @@ export class ConsultasPage {
       periodo: this.periodo,
     });
   }
+
+  hideDialog() {
+    this.editDialog = false;
+  }
+
+  editConsulta(consulta: IConsulta) {
+    this.consulta = { ...consulta };
+    this.editDialog = true;
+  }
+
+  guardar() {}
 }

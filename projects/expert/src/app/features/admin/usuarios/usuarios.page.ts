@@ -164,7 +164,7 @@ export class UsuariosPage implements OnInit {
     return locked ? 'danger' : 'success';
   }
 
-  saveProduct() {
+  guardar() {
     this.submitted = true;
 
     if (this.usuario.id) {
