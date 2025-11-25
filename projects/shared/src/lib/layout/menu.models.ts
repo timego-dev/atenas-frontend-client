@@ -16,7 +16,12 @@ export const EXPERT_MENU: MenuItem[] = [
     items: [
       { label: 'Usuarios', icon: 'pi pi-fw pi-users', routerLink: ['/admin/usuarios'] },
       { label: 'Alertas', icon: 'pi pi-fw pi-shield', routerLink: ['/admin/alertas'] },
-      { label: 'Campos auxiliares', icon: 'pi pi-fw pi-cog', routerLink: ['/admin/auxiliares'] },
+      {
+        label: 'Campos auxiliares',
+        icon: 'pi pi-fw pi-paperclip',
+        routerLink: ['/admin/auxiliares'],
+      },
+      { label: 'Configuration', icon: 'pi pi-fw pi-cog', routerLink: ['/admin/configuration'] },
     ],
   },
 ];

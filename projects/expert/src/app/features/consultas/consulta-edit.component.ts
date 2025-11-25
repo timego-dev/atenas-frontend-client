@@ -9,9 +9,9 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { CommonModule } from '@angular/common';
-import { CaseResolution, IConsulta } from './consultas.service';
 import { PanelModule } from 'primeng/panel';
 import { EstadoConsultaComponent } from '../../shared/components/estado-consulta.component';
+import { CaseDto, CaseSummaryDto } from '@shared/models/case/query/case.dto';
 
 @Component({
   selector: 'edit-consulta',
@@ -48,7 +48,7 @@ import { EstadoConsultaComponent } from '../../shared/components/estado-consulta
           <div class="flex flex-row gap-6">
             <div style="margin-right: auto"><strong>Emisor</strong></div>
             <div>
-              {{ consulta().creatorName }}
+              {{ consulta().creatorId }}
             </div>
           </div>
         </p-panel>
@@ -62,7 +62,7 @@ import { EstadoConsultaComponent } from '../../shared/components/estado-consulta
           <div class="flex flex-row gap-6">
             <div style="margin-right: auto"><strong>Experto</strong></div>
             <div>
-              {{ consulta().expertName }}
+              {{ consulta().expertId }}
             </div>
           </div>
           <div class="flex flex-row gap-6">
@@ -81,5 +81,5 @@ import { EstadoConsultaComponent } from '../../shared/components/estado-consulta
   providers: [MessageService, ConfirmationService],
 })
 export class ConsultaEditComponent {
-  consulta = input.required<IConsulta>();
+  consulta = input.required<CaseDto>();
 }

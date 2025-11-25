@@ -5,9 +5,8 @@ import { MenuModule } from 'primeng/menu';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
-import { ConsultasService, CaseStatus, FiltroPeriodo, CaseResolution } from './consultas.service';
+import { ConsultasService, FiltroPeriodo } from './consultas.service';
 
-import { IConsulta } from './consultas.service';
 import { TiempoEntrada } from '../../shared/components/tiempo-entrada.component';
 import { TiempoRespuesta } from '../../shared/components/tiempo-respuesta.component';
 import { EstadoConsultaComponent } from '../../shared/components/estado-consulta.component';
@@ -17,6 +16,8 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogModule } from 'primeng/dialog';
 
 import { ConsultaEditComponent } from './consulta-edit.component';
+import { CaseDto, CaseSummaryDto } from '@shared/models/case/query/case.dto';
+import { CaseResolution, CaseStatus } from '@shared/models/shared.enums';
 
 interface Column {
   field: string;
@@ -46,11 +47,11 @@ interface Column {
 })
 export class ConsultasPage {
   protected editDialog: boolean = false;
-  protected consulta!: IConsulta;
+  protected consulta!: CaseDto;
 
   private readonly consultasService = inject(ConsultasService);
 
-  protected consultas: IConsulta[] = [];
+  protected consultas: CaseSummaryDto[] = [];
   private readonly ref = inject(ChangeDetectorRef);
 
   constructor() {
@@ -110,9 +111,11 @@ export class ConsultasPage {
     this.editDialog = false;
   }
 
-  editConsulta(consulta: IConsulta) {
-    this.consulta = { ...consulta };
-    this.editDialog = true;
+  editConsulta(consulta: CaseSummaryDto) {
+    this.consultasService.getById(consulta.id).subscribe((data) => {
+      this.consulta = data;
+      this.editDialog = true;
+    });
   }
 
   guardar() {}

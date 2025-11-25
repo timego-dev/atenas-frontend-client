@@ -1,6 +1,7 @@
 import { Component, input } from '@angular/core';
+import { CaseSummaryDto } from '@shared/models/case/query/case.dto';
+import { CaseResolution, CaseStatus } from '@shared/models/shared.enums';
 import { TagModule } from 'primeng/tag';
-import { CaseStatus, IConsulta, CaseResolution } from '../../features/consultas/consultas.service';
 
 @Component({
   selector: 'lib-estado-consulta',
@@ -23,7 +24,7 @@ import { CaseStatus, IConsulta, CaseResolution } from '../../features/consultas/
   `,
 })
 export class EstadoConsultaComponent {
-  consulta = input.required<IConsulta>();
+  consulta = input.required<CaseSummaryDto>();
   EstadoConsulta = CaseStatus;
   RespuestaConsulta = CaseResolution;
 }

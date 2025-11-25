@@ -1,4 +1,7 @@
 import { Injectable, inject } from '@angular/core';
+import { CaseRepositoryService } from '@shared';
+import { CaseDto, CaseSummaryDto } from '@shared/models/case/query/case.dto';
+import { CaseResolution, CaseStatus } from '@shared/models/shared.enums';
 import dayjs from 'dayjs';
 import { BehaviorSubject, combineLatest, Observable, ReplaySubject, of } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -7,19 +10,19 @@ import { map } from 'rxjs/operators';
   providedIn: 'root',
 })
 export class ConsultasService {
-  private readonly consultasRepositoryService = inject(ConsultasRepositoryService);
+  private readonly caseRepositoryService = inject(CaseRepositoryService);
 
-  private readonly consultasCompletas$ = new ReplaySubject<IConsulta[]>(1);
+  private readonly consultasCompletas$ = new ReplaySubject<CaseSummaryDto[]>(1);
 
   private readonly filtros$ = new BehaviorSubject<FiltroConsultas>(<FiltroConsultas>{});
 
-  public readonly consultasFiltradas$: Observable<IConsulta[]> = combineLatest([
+  public readonly consultasFiltradas$: Observable<CaseSummaryDto[]> = combineLatest([
     this.consultasCompletas$,
     this.filtros$,
   ]).pipe(map(([consultas, filtros]) => this.filtrarConsultas(consultas, filtros)));
 
   constructor() {
-    this.consultasRepositoryService.getAll().subscribe({
+    this.caseRepositoryService.getAll().subscribe({
       next: (data) => this.consultasCompletas$.next(data),
       error: (err) => console.error('Error al cargar consultas:', err),
     });
@@ -29,7 +32,14 @@ export class ConsultasService {
     this.filtros$.next(filters);
   }
 
-  private filtrarConsultas(consultas: IConsulta[], filters: FiltroConsultas): IConsulta[] {
+  getById(id: string): Observable<CaseDto> {
+    return this.caseRepositoryService.getById(id);
+  }
+
+  private filtrarConsultas(
+    consultas: CaseSummaryDto[],
+    filters: FiltroConsultas
+  ): CaseSummaryDto[] {
     let resultado = [...consultas];
 
     if (filters.respuesta?.length) {
@@ -74,15 +84,6 @@ export class ConsultasService {
   }
 }
 
-// TODO: Move to shared
-
-export enum CaseResolution {
-  WITH_EVIDENCES,
-  WITHOUT_EVIDENCES,
-  PENDING,
-  INVALID_DOCUMENT,
-  INSUFFICIENT_QUALITY,
-}
 export enum FiltroPeriodo {
   HOY,
   ESTA_SEMANA,
@@ -96,6 +97,16 @@ export interface FiltroConsultas {
   periodo: FiltroPeriodo | undefined;
 }
 
+/*
+// TODO: Move to shared
+
+export enum CaseResolution {
+  WITH_EVIDENCES,
+  WITHOUT_EVIDENCES,
+  PENDING,
+  INVALID_DOCUMENT,
+  INSUFFICIENT_QUALITY,
+}
 export enum CaseStatus {
   PENDING,
   OPEN,
@@ -229,3 +240,4 @@ export class ConsultasRepositoryService {
     ]);
   }
 }
+*/

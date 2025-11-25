@@ -12,7 +12,10 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { UserRepositoryRemoteService, UserRepositoryService } from '@shared/services/user-repository.service';
+import {
+  UserRepositoryRemoteService,
+  UserRepositoryService,
+} from '@shared/services/user-repository.service';
 import { UserRepositoryMockService } from '@shared/services/mock/user-repository-mock.service';
 import { CaseRepositoryService } from '@shared/services/case-repository.service';
 import { CaseRepositoryMockService } from '@shared/services/mock/case-repository-mock.service';
@@ -65,7 +68,7 @@ export const appConfig: ApplicationConfig = {
     },
     {
       provide: UserRepositoryService,
-      useClass: UserRepositoryRemoteService,
+      useClass: UserRepositoryMockService,
     },
     {
       provide: CaseRepositoryService,
@@ -74,6 +77,6 @@ export const appConfig: ApplicationConfig = {
     {
       provide: AuxiliarRepositoryService,
       useClass: AuxiliarRepositoryMockService,
-    }
+    },
   ],
 };

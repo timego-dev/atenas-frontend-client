@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 import { TagModule } from 'primeng/tag';
 import dayjs from 'dayjs';
-import { IConsulta } from '../../features/consultas/consultas.service';
+import { CaseSummaryDto } from '@shared/models/case/query/case.dto';
 
 @Component({
   selector: 'lib-tiempo-respuesta',
@@ -11,7 +11,7 @@ import { IConsulta } from '../../features/consultas/consultas.service';
     }`,
 })
 export class TiempoRespuesta {
-  consulta = input.required<IConsulta>();
+  consulta = input.required<CaseSummaryDto>();
 
   severityColor() {
     const diff =

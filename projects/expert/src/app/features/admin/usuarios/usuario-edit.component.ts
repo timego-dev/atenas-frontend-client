@@ -39,9 +39,9 @@ import { CommonModule } from '@angular/common';
           autofocus
           fluid
         />
-        <small class="text-red-500" *ngIf="submitted() && !usuario().username"
-          >El nombre es obligatorio</small
-        >
+        @if (submitted() && !usuario().username) {
+        <small class="text-red-500">El nombre es obligatorio</small>
+        }
       </div>
 
       <div>

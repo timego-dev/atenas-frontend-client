@@ -1,7 +1,8 @@
 import { Component, input } from '@angular/core';
 import { TagModule } from 'primeng/tag';
 import dayjs from 'dayjs';
-import { CaseStatus, IConsulta } from '../../features/consultas/consultas.service';
+import { CaseSummaryDto } from '@shared/models/case/query/case.dto';
+import { CaseStatus } from '@shared/models/shared.enums';
 
 @Component({
   selector: 'lib-tiempo-entrada',
@@ -9,7 +10,7 @@ import { CaseStatus, IConsulta } from '../../features/consultas/consultas.servic
   template: ` <p-tag [severity]="severityColor()" [value]="value()" /> `,
 })
 export class TiempoEntrada {
-  consulta = input.required<IConsulta>();
+  consulta = input.required<CaseSummaryDto>();
 
   severityColor() {
     if (
