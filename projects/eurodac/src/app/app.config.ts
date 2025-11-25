@@ -37,10 +37,12 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideAnimationsAsync(),
     providePrimeNG({ theme: { preset: Aura } }),
+
     provideAppInitializer(() => {
       const configService = inject(ConfigurationFileService);
       return configService.initialize();
     }),
+
     ...(environment.useMockAuth
       ? [
           {
@@ -54,6 +56,12 @@ export const appConfig: ApplicationConfig = {
             useClass: AuthService,
           },
         ]),
+
+    provideAppInitializer(() => {
+      const authService = inject(AuthService);
+      return authService.init();
+    }),
+
     {
       provide: UserRepositoryService,
       useClass: UserRepositoryMockService,

@@ -62,6 +62,11 @@ export const appConfig: ApplicationConfig = {
             useClass: AuthService,
           },
         ]),
+    provideAppInitializer(() => {
+      const authService = inject(AuthService);
+      return authService.init();
+    }),
+
     {
       provide: ConfigurationService,
       useExisting: ConfigurationFileService,
