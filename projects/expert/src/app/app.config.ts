@@ -16,7 +16,7 @@ import { UserRepositoryRemoteService, UserRepositoryService } from '@shared/serv
 import { UserRepositoryMockService } from '@shared/services/mock/user-repository-mock.service';
 import { CaseRepositoryService } from '@shared/services/case-repository.service';
 import { CaseRepositoryMockService } from '@shared/services/mock/case-repository-mock.service';
-import { AuxiliarRepositoryService } from '@shared/services/auxiliar-repository.service';
+import { AuxiliarRepositoryRemoteService, AuxiliarRepositoryService } from '@shared/services/auxiliar-repository.service';
 import { AuxiliarRepositoryMockService } from '@shared/services/mock/auxiliar-repository-mock.service';
 import { ConfigurationService } from '@shared/services/configuration.service';
 import { ConfigurationFileService } from './shared/services/configuration-file.service';
@@ -65,7 +65,7 @@ export const appConfig: ApplicationConfig = {
     },
     {
       provide: UserRepositoryService,
-      useClass: UserRepositoryRemoteService,
+      useClass: environment.useMockAuth ? UserRepositoryMockService : UserRepositoryRemoteService,
     },
     {
       provide: CaseRepositoryService,
@@ -73,7 +73,7 @@ export const appConfig: ApplicationConfig = {
     },
     {
       provide: AuxiliarRepositoryService,
-      useClass: AuxiliarRepositoryMockService,
+      useClass: environment.useMockAuth ? AuxiliarRepositoryMockService : AuxiliarRepositoryRemoteService,
     }
   ],
 };

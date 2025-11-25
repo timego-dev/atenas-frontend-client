@@ -7,8 +7,12 @@ import { FieldType, PostAuxiliar } from '@shared/models/auxiliar/command/post-au
 export class AuxiliarRepositoryMockService implements AuxiliarRepositoryService {
   private auxiliars: GetAuxiliar[] = [];
 
+  constructor() {
+    this.auxiliars = [...MOCK_AUXILIARS];
+  }
+
   getAll(): Observable<GetAuxiliar[]> {
-    return of(MOCK_AUXILIARS);
+    return of(this.auxiliars);
   }
 
   getById(id: string): Observable<GetAuxiliar> {

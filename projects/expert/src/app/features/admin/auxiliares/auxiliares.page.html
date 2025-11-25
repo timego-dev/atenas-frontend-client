@@ -1,0 +1,102 @@
+<p-table
+  #dt
+  [value]="auxiliares()"
+  [rows]="10"
+  [columns]="cols"
+  [paginator]="true"
+  [globalFilterFields]="['alias', 'title', 'type', 'creationDate']"
+  [rowHover]="false"
+  dataKey="id"
+  currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} auxiliares"
+  [showCurrentPageReport]="true"
+  [rowsPerPageOptions]="[10, 20, 30]"
+>
+  <ng-template #caption>
+    <nav style="display: flex; align-items: center">
+      <div style="margin-right: auto">
+        <h2 style="margin: 0">Auxiliares</h2>
+      </div>
+
+      <div style="display: flex; flex-direction: row; gap: 1rem">
+        <p-button label="Añadir" icon="pi pi-plus" severity="primary" (onClick)="openNew()" />
+
+        <p-iconfield>
+          <p-inputicon styleClass="pi pi-search" />
+          <input
+            pInputText
+            type="text"
+            (input)="onGlobalFilter($event)"
+            placeholder="Buscar..."
+          />
+        </p-iconfield>
+      </div>
+    </nav>
+  </ng-template>
+
+  <ng-template #header>
+    <tr>
+      <th>Alias</th>
+      <th>Título</th>
+      <th>Fecha de creación</th>
+      <th>Tipo</th>
+      <th>Requerido</th>
+      <th>Acciones</th>
+    </tr>
+  </ng-template>
+
+  <ng-template #body let-auxiliar>
+    <tr>
+      <td>{{ auxiliar.alias }}</td>
+      <td>{{ auxiliar.title }}</td>
+      <td>{{ auxiliar.creationDate | date:'dd/MM/yyyy HH:mm'}}</td>
+      <td>
+        <p-tag [value]="auxiliar.type" [severity]="getTypeColor(auxiliar.type)"></p-tag>
+      </td>
+      <td style="text-align: center">
+        <p-tag
+          [value]="auxiliar.required ? 'Sí' : 'No'"
+          [severity]="auxiliar.required ? 'success' : 'secondary'"
+        ></p-tag>
+      </td>
+      <td>
+        <p-button
+          class="pr-3"
+          label="Editar"
+          severity="secondary"
+          (onClick)="editAuxiliar(auxiliar)"
+        />
+        <p-button
+          label="Eliminar"
+          icon="pi pi-trash"
+          severity="danger"
+          outlined
+          (onClick)="deleteAuxiliar(auxiliar)"
+        />
+      </td>
+    </tr>
+  </ng-template>
+</p-table>
+
+<p-dialog [(visible)]="editDialog" [style]="{ width: '450px' }" header="Auxiliares" [modal]="true">
+  <ng-template #content>
+    <edit-auxiliar [auxiliar]="$any(auxiliar)" [submitted]="submitted" />
+  </ng-template>
+
+  <ng-template #footer>
+    @if (auxiliar.id) {
+    <p-button
+      severity="danger"
+      label="Eliminar"
+      icon="pi pi-trash"
+      outlined
+      (onClick)="deleteAuxiliar($any(auxiliar))"
+    />
+    }
+
+    <p-button severity="secondary" label="Cancelar" icon="pi pi-times" (click)="hideDialog()" />
+    <p-button label="Guardar" icon="pi pi-check" (click)="guardar()" />
+  </ng-template>
+</p-dialog>
+
+<p-confirmdialog [style]="{ width: '450px' }" />
+<p-toast></p-toast>
