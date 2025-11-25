@@ -12,11 +12,17 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { UserRepositoryRemoteService, UserRepositoryService } from '@shared/services/user-repository.service';
+import {
+  UserRepositoryRemoteService,
+  UserRepositoryService,
+} from '@shared/services/user-repository.service';
 import { UserRepositoryMockService } from '@shared/services/mock/user-repository-mock.service';
 import { CaseRepositoryService } from '@shared/services/case-repository.service';
 import { CaseRepositoryMockService } from '@shared/services/mock/case-repository-mock.service';
-import { AuxiliarRepositoryRemoteService, AuxiliarRepositoryService } from '@shared/services/auxiliar-repository.service';
+import {
+  AuxiliarRepositoryRemoteService,
+  AuxiliarRepositoryService,
+} from '@shared/services/auxiliar-repository.service';
 import { AuxiliarRepositoryMockService } from '@shared/services/mock/auxiliar-repository-mock.service';
 import { ConfigurationService } from '@shared/services/configuration.service';
 import { ConfigurationFileService } from './shared/services/configuration-file.service';
@@ -59,6 +65,11 @@ export const appConfig: ApplicationConfig = {
             useClass: AuthService,
           },
         ]),
+    provideAppInitializer(() => {
+      const authService = inject(AuthService);
+      return authService.init();
+    }),
+
     {
       provide: ConfigurationService,
       useExisting: ConfigurationFileService,
@@ -73,7 +84,9 @@ export const appConfig: ApplicationConfig = {
     },
     {
       provide: AuxiliarRepositoryService,
-      useClass: environment.useMockAuth ? AuxiliarRepositoryMockService : AuxiliarRepositoryRemoteService,
-    }
+      useClass: environment.useMockAuth
+        ? AuxiliarRepositoryMockService
+        : AuxiliarRepositoryRemoteService,
+    },
   ],
 };

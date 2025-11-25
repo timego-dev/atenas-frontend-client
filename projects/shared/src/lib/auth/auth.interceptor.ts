@@ -13,13 +13,14 @@ import { throwError, EMPTY } from 'rxjs';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
 
+  const isI18n = req.url.includes('/i18n/') || req.url.endsWith('.json');
   const isAsset = req.url.startsWith('/assets/');
   const isIssuer = req.url.startsWith('http://localhost:8080');
   const isOidcMeta =
     req.url.includes('/.well-known/openid-configuration') ||
     req.url.includes('/protocol/openid-connect');
 
-  if (isAsset || isIssuer || isOidcMeta || req.headers.has('X-Skip-Auth')) {
+  if (isAsset || isI18n || isIssuer || isOidcMeta || req.headers.has('X-Skip-Auth')) {
     return next(req);
   }
 

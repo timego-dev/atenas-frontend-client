@@ -21,7 +21,7 @@ export class DocumentScannerService extends BaseDocumentScanner {
   private hubProxy?: SignalR.Hub.Proxy;
   private eventCallbackMap: Map<string, (...args: any[]) => void> = new Map();
 
-  public host?: string = this.configurationService.getConfig().scannerApiUrl;
+  public host?: string = this.configurationService.getConfig().backend?.scannerApiUrl;
   private readonly hubName: string = 'document-reader';
 
   constructor(private zone: NgZone) {
