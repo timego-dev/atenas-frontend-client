@@ -2,15 +2,16 @@ import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testin
 import { UsuariosPage } from './usuarios.page';
 import { UserRepositoryMockService, UserRepositoryService } from '@shared';
 
-import { importProvidersFrom } from '@angular/core';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
+import { FormsModule } from '@angular/forms';
 
-describe('UsuariosPage', () => {
+describe('Usuarios page', () => {
   let usuariosPage: UsuariosPage;
   let fixture: ComponentFixture<UsuariosPage>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [FormsModule],
       declarations: [],
       providers: [
         { provide: UserRepositoryService, useClass: UserRepositoryMockService },
@@ -36,8 +37,8 @@ describe('UsuariosPage', () => {
     it('should edit user', fakeAsync(() => {
       const usuario = usuariosPage.usuarios()[0];
       usuariosPage.editUser(usuario);
-      tick();
       fixture.detectChanges();
+      tick();
       expect(usuariosPage.editDialog).toBeTrue();
       expect(usuariosPage.usuario).toEqual(usuario);
 
@@ -54,11 +55,27 @@ describe('UsuariosPage', () => {
       expect(textInputEMail).toBeTruthy();
       expect(textInputEMail.value).toBe(usuario.email);
 
+      textInputNombre.value = 'Nombre modificado';
+      textInputNombre.dispatchEvent(new Event('input'));
+
+      textInputEMail.value = 'email.modificado@email.com';
+      textInputEMail.dispatchEvent(new Event('input'));
+
+      // TODO: Completar campos restantes
+
+      fixture.detectChanges();
+      tick();
+      expect(usuariosPage.usuario!.username).toBe('Nombre modificado');
+      expect(usuariosPage.usuario!.email).toBe('email.modificado@email.com');
+
       buttonGuardar.click();
 
-      tick();
       fixture.detectChanges();
+      tick();
       expect(usuariosPage.editDialog).toBeFalse();
+
+      expect(usuariosPage.usuarios()[0].username).toBe('Nombre modificado');
+      expect(usuariosPage.usuarios()[0].email).toBe('email.modificado@email.com');
     }));
   });
 });
