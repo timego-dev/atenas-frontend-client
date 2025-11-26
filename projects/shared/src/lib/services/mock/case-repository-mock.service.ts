@@ -27,80 +27,75 @@ import {
   DocumentAttachmentType,
 } from '@shared/models/case/case.enums';
 
-import { HttpErrorResponse } from '@angular/common/http';
 import { ActivityDto } from '@shared/models/case/query/activity.dto';
 import Prando from 'prando';
 import { FieldType } from '@shared/models/auxiliar/query/get-auxiliar-response.model';
+import { AttachmentDto } from '@shared/models/case/command/shared.dto';
+import { BaseMockApiService } from './base-mock-api.service';
 
 const seed = 12345; // fixed seed → same values every run
 const rng = new Prando(seed);
 
-export class CaseRepositoryMockService implements CaseRepositoryService {
+export class CaseRepositoryMockService extends BaseMockApiService implements CaseRepositoryService {
   private cases: CaseSummaryDto[] = generateMockCases();
 
   getAll(): Observable<CaseSummaryDto[]> {
-    return of(this.cases);
+    return this.handleUnauthorized(() => this.ok(this.cases));
   }
 
   getById(id: string): Observable<CaseDto> {
-    const summary = this.cases.find((c) => c.id === id);
+    return this.handleUnauthorized(() => {
+      const summary = this.cases.find((c) => c.id === id);
 
-    if (!summary) {
-      return throwError(
-        () =>
-          new HttpErrorResponse({
-            status: 404,
-            statusText: 'Not Found',
-            error: { message: `Case with id ${id} not found` },
-          })
-      );
-    }
-
-    return of(buildCaseDtoFromSummary(summary));
+      if (!summary) {
+        return this.notFound();
+      }
+      return of(buildCaseDtoFromSummary(summary));
+    });
   }
 
   create(message: AthenasMessageDto, files: File[]): Observable<CaseDto> {
-    //TODO: Implement validations on the files and the message sent
-    return of(buildCaseDtoFromSummary(generateMockCaseSummary()));
+    return this.handleUnauthorized(() => {
+      const errors = CaseValidator.validate(message, files);
+      if (errors.length) return this.badRequest(errors);
+
+      const newCase = buildCaseDtoFromSummary(generateMockCaseSummary());
+      return this.created(newCase);
+    });
   }
 
   update(id: string, message: AthenasMessageDto, files: File[]): Observable<CaseDto> {
-    //TODO: Implement validations on the files and the message sent
-    const index = this.cases.findIndex((c) => c.id === id);
+    return this.handleUnauthorized(() => {
+      const index = this.cases.findIndex((c) => c.id === id);
 
-    if (index === -1) {
-      // Simulate ASP.NET Core 404 Not Found
-      return throwError(
-        () =>
-          new HttpErrorResponse({
-            status: 404,
-            statusText: 'Not Found',
-            error: { message: `Case with id ${id} not found` },
-          })
-      );
-    }
+      if (index === -1) {
+        return this.notFound();
+      }
+      const existing = this.cases[index];
 
-    const existing = this.cases[index];
+      const errors = CaseValidator.validate(message, files);
+      if (errors.length) return this.badRequest(errors);
 
-    // TODO: handle updating fields based on message + files
-    // For now, just update lastUpdated date to simulate a change.
-    const updatedSummary: CaseSummaryDto = {
-      ...existing,
-      lastUpdated: new Date(),
-    };
+      const updatedSummary: CaseSummaryDto = {
+        ...existing,
+        lastUpdated: new Date(),
+      };
 
-    // Replace in internal array
-    this.cases[index] = updatedSummary;
+      // Replace in internal array
+      this.cases[index] = updatedSummary;
 
-    // Convert to CaseDto
-    const dto = buildCaseDtoFromSummary(updatedSummary);
+      // Convert to CaseDto
+      const dto = buildCaseDtoFromSummary(updatedSummary);
 
-    return of(dto);
+      return this.ok(dto);
+    });
   }
 
   delete(id: string): Observable<void> {
-    this.cases = this.cases.filter((c) => c.id !== id);
-    return of();
+    return this.handleUnauthorized(() => {
+      this.cases = this.cases.filter((c) => c.id !== id);
+      return this.ok();
+    });
   }
 }
 
@@ -930,4 +925,108 @@ function randomAuxiliarValues() {
       value: `${(36 + rng.next() * 6).toFixed(2).replace('.', ',')}`,
     },
   ];
+}
+
+export class CaseValidator {
+  static validate(message: AthenasMessageDto, files: File[]): string[] {
+    const errors: string[] = [];
+
+    // 1️⃣ Message must exist
+    if (!message) {
+      errors.push('Message cannot be empty or invalid');
+      return errors;
+    }
+
+    // 2️⃣ Ensure files array exists
+    if (!files) {
+      errors.push('Files array cannot be null');
+      return errors;
+    }
+
+    const attachmentList = message.attachmentList ?? [];
+
+    // 3️⃣ Each attachment object must exist
+    attachmentList.forEach((a, idx) => {
+      if (!a) errors.push(`Attachment at index ${idx} is not defined`);
+    });
+
+    // 4️⃣ Collect all referenced file names
+    const referencedFileNames = CaseValidator.getAllAttachmentFileNames(attachmentList);
+
+    // 5️⃣ Check for duplicates
+    const duplicates = referencedFileNames.filter((v, i, arr) => arr.indexOf(v) !== i);
+    if (duplicates.length) {
+      errors.push(`Duplicate attachment names found: ${[...new Set(duplicates)].join(', ')}`);
+    }
+
+    // 6️⃣ Check for missing files (referenced in message but not provided)
+    const missingFiles = referencedFileNames.filter((name) => !files.some((f) => f.name === name));
+    if (missingFiles.length) {
+      errors.push(`Missing files for attachments: ${missingFiles.join(', ')}`);
+    }
+
+    // 7️⃣ Check for extra files (provided but not referenced)
+    const extraFiles = files
+      .filter((f) => !referencedFileNames.includes(f.name))
+      .map((f) => f.name);
+    if (extraFiles.length) {
+      errors.push(`Unexpected files received: ${extraFiles.join(', ')}`);
+    }
+
+    return errors;
+  }
+
+  private static getAllAttachmentFileNames(attachments: AttachmentDto[]): string[] {
+    const names: string[] = [];
+
+    for (const attachment of attachments) {
+      if (!attachment) continue;
+
+      switch (attachment.type) {
+        case AttachmentType.DIGITAL:
+          if (attachment.digitalData?.digitalFile)
+            names.push(attachment.digitalData.digitalFile.name);
+          break;
+
+        case AttachmentType.DOCUMENT_DV:
+          const dv = attachment.scannerDvData;
+          if (dv?.documentData) {
+            if (dv.documentData.chip?.fotoFile) names.push(dv.documentData.chip.fotoFile.name);
+            if (dv.documentData.visual?.fotoFile) names.push(dv.documentData.visual.fotoFile.name);
+            for (const img of dv.documentData.images ?? []) {
+              if (img.file) names.push(img.file.name);
+            }
+          }
+
+          if (dv?.documentVerifications?.verifications) {
+            for (const v of dv.documentVerifications.verifications) {
+              if (v.resultFile) names.push(v.resultFile.name);
+              if (v.expectedFile) names.push(v.expectedFile.name);
+            }
+          }
+          break;
+
+        case AttachmentType.DOCUMENT_IDV:
+          const idv = attachment.cloudIdvRequest;
+          if (idv?.pages) {
+            for (const page of idv.pages) {
+              for (const ref of page.images.references ?? []) {
+                if (ref.file) names.push(ref.file.name);
+              }
+            }
+          }
+
+          if (idv?.chipData) {
+            if (idv.chipData.com) names.push(idv.chipData.com.name);
+            if (idv.chipData.sod) names.push(idv.chipData.sod.name);
+            for (const dgFile of Object.values(idv.chipData.dg ?? {})) {
+              if (dgFile) names.push(dgFile.name);
+            }
+          }
+          break;
+      }
+    }
+
+    return names.filter((n) => n); // remove null/undefined
+  }
 }

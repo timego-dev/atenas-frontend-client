@@ -7,8 +7,8 @@ export abstract class BaseMockApiService {
     this.simulateUnauthorized = value;
   }
 
-  protected ok<T>(body: T): Observable<T> {
-    return of(body);
+  protected ok<T>(body?: T): Observable<T> {
+    return of(body as T);
   }
 
   protected created<T>(body: T): Observable<T> {
