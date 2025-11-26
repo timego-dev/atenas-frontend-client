@@ -6,11 +6,13 @@ import { ConsultasPage } from './features/consultas/consultas.page';
 import { AuxiliaresPage } from './features/admin/auxiliares/auxiliares.page';
 import { Notfound } from './shared/components/not-found.page';
 import { AlertasPage } from './features/admin/alertas/alertas.page';
+import { authGuard } from '@shared/auth/auth.guard';
 
 export const routes: Routes = [
   {
     path: '',
     component: AppLayout,
+    canActivate: [authGuard],
     data: { projectName: 'Expert' },
     children: [
       { path: '', component: DashboardPage },

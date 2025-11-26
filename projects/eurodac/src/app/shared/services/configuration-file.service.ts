@@ -1,10 +1,15 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { HttpBackend, HttpClient, HttpHeaders } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { ConfigurationService, SharedConfig } from '@shared/services/configuration.service';
 import { firstValueFrom, map, tap } from 'rxjs';
 import { parse } from 'yamljs';
 
 export interface IConfig extends SharedConfig {
+  services: {
+    auth: string;
+    user: string;
+    documentScanner: string;
+  };
   backend: SharedConfig['backend'] & {
     scannerApiUrl: string;
     atenasApiUrl: string;
@@ -15,9 +20,15 @@ export interface IConfig extends SharedConfig {
   providedIn: 'root',
 })
 export class ConfigurationFileService implements ConfigurationService<IConfig> {
-  private readonly httpClient = inject(HttpClient);
-
+  private httpClient: HttpClient;
   private config!: IConfig;
+
+  // Ho hem de fer així per evitar que inicialitzi els interceptors, ja que
+  // sino s'inicialitzaria el authInteceptor i el AuthService, i mai funcionaria
+  // el AuthMockService
+  constructor(httpBackend: HttpBackend) {
+    this.httpClient = new HttpClient(httpBackend);
+  }
 
   initialize(): Promise<any> {
     return firstValueFrom(

@@ -6,12 +6,12 @@
 
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { AuthService } from './auth.service';
 import { catchError } from 'rxjs/operators';
 import { throwError, EMPTY } from 'rxjs';
+import { BaseAuthService } from './base-auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
+  const authService = inject(BaseAuthService);
 
   const isI18n = req.url.includes('/i18n/') || req.url.endsWith('.json');
   const isAsset = req.url.startsWith('/assets/');
@@ -26,10 +26,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const token = authService.token;
 
-  // Si no hay token, mandamos al login y cancelamos la petición
   if (!token) {
-    authService.startLoginFlow();
-    return EMPTY;
+    return next(req);
   }
 
   const authReq = req.clone({

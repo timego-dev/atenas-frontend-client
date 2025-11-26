@@ -1,3 +1,7 @@
+services:
+  auth: 'AuthService'
+  user: 'UserRepositoryMockService'
+  documentScanner: 'DocumentScannerMockService'
 backend:
   usersBaseUrl: https://localhost:3000/users
   scannerApiUrl: 'http://localhost:3001'

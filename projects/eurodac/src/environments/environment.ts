@@ -1,4 +1,4 @@
 export const environment = {
-  useDocumentScannerMock: true,
-  useMockAuth: true,
+  useDocumentScannerMock: false,
+  useMockAuth: false,
 };
