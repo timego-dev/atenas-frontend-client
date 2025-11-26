@@ -10,10 +10,6 @@ export interface IConfig extends SharedConfig {
     user: string;
     documentScanner: string;
   };
-  backend: SharedConfig['backend'] & {
-    scannerApiUrl: string;
-    atenasApiUrl: string;
-  };
 }
 
 @Injectable({

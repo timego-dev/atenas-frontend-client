@@ -1,8 +1,6 @@
 export interface SharedConfig {
-  backend: {
-    usersBaseUrl: string;
-    mediaBaseUrl: string;
-  };
+  backend: string;
+  clientService: string;
 }
 
 export abstract class ConfigurationService<T extends SharedConfig> {

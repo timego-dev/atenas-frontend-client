@@ -133,7 +133,7 @@ export class DemoDocumentScannerPage {
     const data = this.captured();
     if (!data) return;
 
-    const url = `${this.configurationService.getConfig().backend.atenasApiUrl}/case`;
+    const url = `${this.configurationService.getConfig().backend}/case`;
     this.uploader
       .submit(url, data, 'AT10K_Attach', {
         includeVerifications: true,

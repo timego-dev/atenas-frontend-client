@@ -18,7 +18,7 @@ import {
 } from '../../types/at10k/ScannerDVData';
 
 import { CommonModule } from '@angular/common';
-import { ConnectionModalComponent } from '../connection-modal/connection-modal.component';
+import { ConnectionModalComponent } from '../connection-modal/connection-card.component';
 import { take } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -39,6 +39,7 @@ export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocu
   // Signals
   textInstruccions = signal<string>('');
   isCaptureEnabled = signal<boolean>(false);
+  isConnectionBlocking = signal<boolean>(false);
 
   // Properties
   private isFirstFaceRead: boolean = true;
@@ -104,6 +105,10 @@ export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocu
 
   handleLeaveClick() {
     this.onLeave.emit();
+  }
+
+  handleBlockingUiChange(blocking: boolean) {
+    this.isConnectionBlocking.set(blocking);
   }
 
   async handleContinue() {

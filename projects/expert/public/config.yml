@@ -1,7 +1,7 @@
 services:
-  auth: 'AuthService'
+  auth: 'AuthMockService'
   user: 'UserRepositoryMockService'
   auxiliar: 'AuxiliarRepositoryMockService'
   case: 'CaseRepositoryMockService'
 backend:
-  usersBaseUrl: https://localhost:3000/users
+  backend: 'https://localhost:7526'

@@ -1,11 +1,11 @@
-<p-toolbar style="margin-bottom: 1.5rem">
+<p-toolbar styleClass="mb-6">
   <div class="p-toolbar-group-start">
-    <span style="font-weight: 600; font-size: 1.25rem">{{ title }}</span>
+    <span class="font-semibold text-xl">{{ title }}</span>
   </div>
   <div class="p-toolbar-group-end">
     <button pButton type="button" (click)="openScannerModal()" severity="secondary" outlined="true">
-      <i class="pi pi-scanner" style="margin-right: 0.5rem"></i>
-      <span class="p-d-none p-d-md-inline">Abrir escáner</span>
+      <i class="pi pi-scanner mr-2"></i>
+      <span class="hidden md:inline">Abrir escáner</span>
     </button>
   </div>
 </p-toolbar>
