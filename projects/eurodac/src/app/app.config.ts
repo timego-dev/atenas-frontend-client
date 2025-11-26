@@ -59,6 +59,13 @@ export const appConfig: ApplicationConfig = {
     providePrimeNG({ theme: { preset: Aura } }),
     { provide: ConfigurationService, useExisting: ConfigurationFileService },
 
+    AuthService,
+    AuthMockService,
+    UserRepositoryRemoteService,
+    UserRepositoryMockService,
+    DocumentScannerService,
+    DocumentScannerMockService,
+
     provideAppInitializer(() => {
       const configService = inject(ConfigurationFileService);
       return configService.initialize();

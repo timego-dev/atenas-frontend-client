@@ -73,7 +73,11 @@ export const appConfig: ApplicationConfig = {
     { provide: ConfigurationService, useExisting: ConfigurationFileService },
     AuthService,
     AuthMockService,
-
+    UserRepositoryRemoteService,
+    UserRepositoryMockService,
+    CaseRepositoryMockService,
+    AuxiliarRepositoryRemoteService,
+    AuxiliarRepositoryMockService,
     provideAppInitializer(() => {
       const configService = inject(ConfigurationFileService);
       return configService.initialize();
