@@ -1,0 +1,1 @@
+docker build -f expert.Dockerfile -t bioidenti/expert:0.1 .
