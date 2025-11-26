@@ -17,7 +17,7 @@ import { DialogModule } from 'primeng/dialog';
 
 import { ConsultaEditComponent } from './consulta-edit.component';
 import { CaseDto, CaseSummaryDto } from '@shared/models/case/query/case.dto';
-import { CaseResolution, CaseStatus } from '@shared/models/shared.enums';
+import { CaseResolution, CaseStatus } from '@shared/models/case/case.enums';
 
 interface Column {
   field: string;

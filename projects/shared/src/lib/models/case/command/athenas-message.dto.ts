@@ -1,6 +1,6 @@
-import { ActivityType, CaseResolution } from "@shared/models/shared.enums";
-import { AttachmentDto } from "./shared.dto";
-import { CloudIDVResponseDto, FacialResponseDto } from "./cloud-idv.dto";
+import { AttachmentDto } from './shared.dto';
+import { CloudIDVResponseDto, FacialResponseDto } from './cloud-idv.dto';
+import { ActivityType, CaseResolution } from '../case.enums';
 
 export interface AthenasMessageDto {
   type: ActivityType;

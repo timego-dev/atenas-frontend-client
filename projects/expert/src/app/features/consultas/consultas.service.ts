@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { CaseRepositoryService } from '@shared';
+import { CaseResolution, CaseStatus } from '@shared/models/case/case.enums';
 import { CaseDto, CaseSummaryDto } from '@shared/models/case/query/case.dto';
-import { CaseResolution, CaseStatus } from '@shared/models/shared.enums';
 import dayjs from 'dayjs';
 import { BehaviorSubject, combineLatest, Observable, ReplaySubject, of } from 'rxjs';
 import { map } from 'rxjs/operators';

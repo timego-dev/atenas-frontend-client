@@ -1,6 +1,6 @@
-import { AttachmentType, DigitalAttachmentType, DocumentAttachmentType } from "@shared/models/shared.enums";
-import { CloudIDVRequestDto } from "./cloud-idv.dto";
-import { ScannerDVData } from "./scanner-dv.dto";
+import { CloudIDVRequestDto } from './cloud-idv.dto';
+import { ScannerDVData } from './scanner-dv.dto';
+import { AttachmentType, DigitalAttachmentType, DocumentAttachmentType } from '../case.enums';
 
 export interface AttachmentDto {
   name: string;

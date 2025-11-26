@@ -1,4 +1,4 @@
-import { DigitalAttachmentType } from "@shared/models/shared.enums";
+import { DigitalAttachmentType } from '../case.enums';
 
 export interface DigitalAttachmentDto {
   fileType: string;

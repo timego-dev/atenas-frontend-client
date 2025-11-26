@@ -1,3 +1,17 @@
+export enum DocumentAttachmentType {
+  TD1 = 'TD1',
+  TD2 = 'TD2',
+  TD3 = 'TD3',
+}
+export enum DigitalAttachmentType {
+  GENERIC = 'GENERIC',
+  VIDEO = 'VIDEO',
+  AUDIO = 'AUDIO',
+  PHOTO = 'PHOTO',
+  FACIAL = 'FACIAL',
+  OTHER = 'OTHER',
+}
+
 export enum ActivityType {
   CONSULTATION = 'CONSULTATION',
   RESOLUTION = 'RESOLUTION',
@@ -25,27 +39,4 @@ export enum AttachmentType {
   DOCUMENT_IDV = 'DOCUMENT_IDV',
   DOCUMENT_DV = 'DOCUMENT_DV',
   DIGITAL = 'DIGITAL',
-}
-
-export enum DigitalAttachmentType {
-  GENERIC = 'GENERIC',
-  VIDEO = 'VIDEO',
-  AUDIO = 'AUDIO', 
-  PHOTO = 'PHOTO',
-  FACIAL = 'FACIAL',
-  OTHER = 'OTHER',
-}
-
-export enum DocumentAttachmentType {
-  TD1 = 'TD1',
-  TD2 = 'TD2',
-  TD3 = 'TD3',
-}
-
-export enum NotificationType {
-  ARCHIVE = 'ARCHIVE',
-  SLA_TIMEOUT = 'SLA_TIMEOUT',
-  ASSIGMENT_TIMEOUT = 'ASSIGMENT_TIMEOUT',
-  SOLVED = 'SOLVED',
-  CLARIFICATION_PENDING = 'CLARIFICATION_PENDING',
 }

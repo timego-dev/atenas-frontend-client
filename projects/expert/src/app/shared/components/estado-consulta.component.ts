@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
+import { CaseResolution, CaseStatus } from '@shared/models/case/case.enums';
 import { CaseSummaryDto } from '@shared/models/case/query/case.dto';
-import { CaseResolution, CaseStatus } from '@shared/models/shared.enums';
 import { TagModule } from 'primeng/tag';
 
 @Component({

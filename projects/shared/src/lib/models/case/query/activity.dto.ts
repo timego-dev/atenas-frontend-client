@@ -1,6 +1,6 @@
-import { ActivityType, CaseResolution } from "@shared/models/shared.enums";
-import { ConsultationActivityDto } from "./attachment.dto";
-import { DocumentVerificationAutomaticActivityDto } from "./document-verification-automatic-activity.dto";
+import { ActivityType, CaseResolution } from '../case.enums';
+import { ConsultationActivityDto } from './attachment.dto';
+import { DocumentVerificationAutomaticActivityDto } from './document-verification-automatic-activity.dto';
 
 export interface ActivityDto {
   type: ActivityType;

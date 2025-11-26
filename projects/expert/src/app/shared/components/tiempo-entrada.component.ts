@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core';
 import { TagModule } from 'primeng/tag';
 import dayjs from 'dayjs';
 import { CaseSummaryDto } from '@shared/models/case/query/case.dto';
-import { CaseStatus } from '@shared/models/shared.enums';
+import { CaseStatus } from '@shared/models/case/case.enums';
 
 @Component({
   selector: 'lib-tiempo-entrada',

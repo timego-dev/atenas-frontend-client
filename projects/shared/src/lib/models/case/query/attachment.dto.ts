@@ -1,7 +1,7 @@
-import { AttachmentType, DocumentAttachmentType } from "@shared/models/shared.enums";
 import { DocumentIdvAttachmentDto } from "./document-idv.dto";
 import { DocumentDvAttachmentDto } from "./document-dv.dto";
 import { DigitalAttachmentDto } from "./document-shared.dto";
+import { AttachmentType, DocumentAttachmentType } from '../case.enums';
 
 export interface ConsultationActivityDto {
   attachments: AttachmentResponseDto[];

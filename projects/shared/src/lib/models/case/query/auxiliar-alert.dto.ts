@@ -1,8 +1,11 @@
+import { FieldType } from '@shared/models/auxiliar/query/get-auxiliar-response.model';
+
 export interface AuxiliarValueDto {
   id: string;
   title: string;
+  alias: string;
+  type: FieldType;
   value?: string | null;
-  required: boolean;
 }
 
 export interface AlertSummaryDto {

@@ -48,7 +48,7 @@ import { CaseDto, CaseSummaryDto } from '@shared/models/case/query/case.dto';
           <div class="flex flex-row gap-6">
             <div style="margin-right: auto"><strong>Emisor</strong></div>
             <div>
-              {{ consulta().creatorId }}
+              {{ consulta().creator.username }}
             </div>
           </div>
         </p-panel>
@@ -62,7 +62,7 @@ import { CaseDto, CaseSummaryDto } from '@shared/models/case/query/case.dto';
           <div class="flex flex-row gap-6">
             <div style="margin-right: auto"><strong>Experto</strong></div>
             <div>
-              {{ consulta().expertId }}
+              {{ consulta().expert?.username }}
             </div>
           </div>
           <div class="flex flex-row gap-6">
