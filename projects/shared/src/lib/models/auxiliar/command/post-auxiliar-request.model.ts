@@ -1,21 +1,10 @@
-
-
-// field-type.enum.ts
-export enum FieldType {
-  CurrencyEuro = 'CurrencyEuro',
-  Integer = 'Integer',
-  Numeric = 'Numeric',
-  Text = 'Text',
-  List = 'List',
-}
-
+import { FieldType } from '../query/get-auxiliar-response.model';
 
 export interface PostAuxiliar {
   alias: string;
   title: string;
   type: FieldType;
   required: boolean;
-  creationDate: Date;
 
   // Optional constraints depending on type
   minValue?: number;

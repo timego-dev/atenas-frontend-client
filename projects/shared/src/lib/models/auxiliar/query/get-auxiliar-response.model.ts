@@ -1,5 +1,3 @@
-import { FieldType } from "../command/post-auxiliar-request.model";
-
 export interface GetAuxiliar {
   id: string; // Guid as string
   alias: string;
@@ -26,8 +24,16 @@ export interface AuxiliarFilterOptions {
   creationDateTo?: Date;
 }
 
-
 export interface GetAuxiliarOption {
   code: string;
   description: string;
+}
+
+// field-type.enum.ts
+export enum FieldType {
+  CurrencyEuro = 'CurrencyEuro',
+  Integer = 'Integer',
+  Numeric = 'Numeric',
+  Text = 'Text',
+  List = 'List',
 }

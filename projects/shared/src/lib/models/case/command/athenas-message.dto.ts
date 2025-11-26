@@ -8,7 +8,6 @@ export interface AthenasMessageDto {
   text?: string | null;
   attachmentList?: AttachmentDto[] | null;
   data?: AthenasMessageDataDto | null;
-  creationDate: number;
 }
 
 /**
