@@ -1,6 +1,6 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { UsuariosPage } from './usuarios.page';
-import { UserRepositoryMockService, UserRepositoryService } from '@shared';
+import { Role, UserRepositoryMockService, UserRepositoryService } from '@shared';
 
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
@@ -42,6 +42,7 @@ describe('Usuarios page', () => {
       expect(usuariosPage.editDialog).toBeTrue();
       expect(usuariosPage.usuario).toEqual(usuario);
 
+      /* En cas de voler-ho fer a nivell de DOM
       const buttonGuardar = fixture.nativeElement.querySelector('p-button[label="Guardar"]');
       expect(buttonGuardar).toBeTruthy();
       const buttonCancelar = fixture.nativeElement.querySelector('p-button[label="Cancelar"]');
@@ -60,6 +61,12 @@ describe('Usuarios page', () => {
 
       textInputEMail.value = 'email.modificado@email.com';
       textInputEMail.dispatchEvent(new Event('input'));
+      */
+
+      expect(usuariosPage.editDialogComponent()).toBeDefined();
+
+      usuariosPage.editDialogComponent()!.usuario().username = 'Nombre modificado';
+      usuariosPage.editDialogComponent()!.usuario().email = 'email.modificado@email.com';
 
       // TODO: Completar campos restantes
 
@@ -68,7 +75,8 @@ describe('Usuarios page', () => {
       expect(usuariosPage.usuario!.username).toBe('Nombre modificado');
       expect(usuariosPage.usuario!.email).toBe('email.modificado@email.com');
 
-      buttonGuardar.click();
+      // buttonGuardar.click();
+      usuariosPage.guardar();
 
       fixture.detectChanges();
       tick();
@@ -76,6 +84,29 @@ describe('Usuarios page', () => {
 
       expect(usuariosPage.usuarios()[0].username).toBe('Nombre modificado');
       expect(usuariosPage.usuarios()[0].email).toBe('email.modificado@email.com');
+    }));
+
+    it('should add a new user', fakeAsync(() => {
+      usuariosPage.openNew();
+      fixture.detectChanges();
+      tick();
+      expect(usuariosPage.editDialog).toBeTrue();
+      expect(usuariosPage.usuario).toBeDefined();
+      expect(usuariosPage.usuario!.id).toBeUndefined();
+
+      expect(usuariosPage.editDialogComponent()).toBeDefined();
+      usuariosPage.editDialogComponent()!.usuario().username = 'NuevoUsuario';
+      usuariosPage.editDialogComponent()!.usuario().email = 'mail@mail.com';
+      usuariosPage.editDialogComponent()!.usuario().role = Role.EURODAC;
+      usuariosPage.editDialogComponent()!.usuario().locked = false;
+      fixture.detectChanges();
+      tick();
+
+      usuariosPage.guardar();
+      fixture.detectChanges();
+      tick();
+      expect(usuariosPage.editDialog).toBeFalse();
+      expect(usuariosPage.usuarios().length).toBe(10);
     }));
   });
 });

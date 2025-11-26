@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { Table, TableModule } from 'primeng/table';
 import { CommonModule } from '@angular/common';
@@ -58,6 +58,8 @@ interface Column {
   providers: [MessageService, UsuarioService, ConfirmationService],
 })
 export class UsuariosPage implements OnInit {
+  editDialogComponent = viewChild<UsuarioEditComponent>('editDialogComponent');
+
   editDialog: boolean = false;
 
   usuarios = signal<IUser[]>([]);

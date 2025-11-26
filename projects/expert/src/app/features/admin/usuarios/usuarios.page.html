@@ -65,7 +65,7 @@
 
 <p-dialog [(visible)]="editDialog" [style]="{ width: '450px' }" header="Usuario" [modal]="true">
   <ng-template #content>
-    <edit-usuario [usuario]="usuario" [submitted]="submitted" />
+    <edit-usuario #editDialogComponent [usuario]="usuario" [submitted]="submitted" />
   </ng-template>
 
   <ng-template #footer>
