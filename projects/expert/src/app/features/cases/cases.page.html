@@ -1,5 +1,5 @@
 <p-table
-  [value]="consultas"
+  [value]="caseList"
   [rows]="10"
   [columns]="cols"
   [paginator]="true"
@@ -15,12 +15,17 @@
       </div>
 
       <div style="display: flex; flex-direction: row; gap: 1rem">
-        <p-button label="Añadir" icon="pi pi-plus" severity="primary" />
+        <p-button
+          label="Añadir"
+          icon="pi pi-plus"
+          severity="primary"
+          (onClick)="clickCaseCreate()"
+        />
 
         <p-multiselect
           placeholder="Estado"
-          [options]="estados"
-          [(ngModel)]="estado"
+          [options]="caseStatusAvailables"
+          [(ngModel)]="caseFilter.status"
           filter="false"
           showClear="true"
           (onChange)="filterChange($event)"
@@ -28,8 +33,8 @@
 
         <p-multiselect
           placeholder="Respuesta"
-          [options]="respuestas"
-          [(ngModel)]="respuesta"
+          [options]="caseResolutionAvailables"
+          [(ngModel)]="caseFilter.response"
           filter="false"
           showClear="true"
           (onChange)="filterChange($event)"
@@ -39,7 +44,7 @@
           showClear="true"
           placeholder="Periodo"
           [options]="periodos"
-          [(ngModel)]="periodo"
+          [(ngModel)]="caseFilter.period"
           (onChange)="filterChange($event)"
         ></p-select>
       </div>
@@ -59,7 +64,7 @@
   <ng-template #body let-consulta>
     <tr>
       <td style="min-width: 12rem">
-        <button (click)="editConsulta(consulta)" class="p-button p-button-text">
+        <button (click)="clickCaseDetail(consulta)" class="p-button p-button-text">
           {{ consulta.trackingNumber }}
         </button>
       </td>
@@ -74,11 +79,22 @@
 
 <p-dialog [(visible)]="editDialog" header="Consulta" [modal]="true">
   <ng-template #content>
-    <edit-consulta [consulta]="consulta" />
+    <case-detail [case]="case" />
   </ng-template>
 
   <ng-template #footer>
     <p-button severity="secondary" label="Cancelar" icon="pi pi-times" (click)="hideDialog()" />
-    <p-button label="Guardar" icon="pi pi-check" (click)="guardar()" />
+    <p-button label="Guardar" icon="pi pi-check" (click)="saveDetail()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog [(visible)]="createCaseDialog" header="Nueva consulta" [modal]="true">
+  <ng-template #content>
+    <case-create [athenasMessage]="athenasMessage" />
+  </ng-template>
+
+  <ng-template #footer>
+    <p-button severity="secondary" label="Cancelar" icon="pi pi-times" (click)="hideDialog()" />
+    <p-button label="Guardar" icon="pi pi-check" (click)="saveCreate()" />
   </ng-template>
 </p-dialog>

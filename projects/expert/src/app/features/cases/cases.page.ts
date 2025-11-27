@@ -5,7 +5,7 @@ import { MenuModule } from 'primeng/menu';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
-import { ConsultasService, FiltroPeriodo } from './consultas.service';
+import { CaseFilters, CaseService, DateRangeFilter } from './case.service';
 
 import { TiempoEntrada } from '../../shared/components/tiempo-entrada.component';
 import { TiempoRespuesta } from '../../shared/components/tiempo-respuesta.component';
@@ -15,9 +15,10 @@ import { FormsModule } from '@angular/forms';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogModule } from 'primeng/dialog';
 
-import { ConsultaEditComponent } from './consulta-edit.component';
 import { CaseDto, CaseSummaryDto } from '@shared/models/case/query/case.dto';
 import { CaseResolution, CaseStatus } from '@shared/models/case/case.enums';
+import { AthenasMessage, CaseCreateComponent } from '@shared/components/case-create.component';
+import { CaseDetailComponent } from '@shared/components/case-detail.component';
 
 interface Column {
   field: string;
@@ -40,28 +41,34 @@ interface Column {
     FormsModule,
     MultiSelectModule,
     DialogModule,
-    ConsultaEditComponent,
+    CaseDetailComponent,
+    CaseCreateComponent,
   ],
-  templateUrl: './consultas.page.html',
+  templateUrl: './cases.page.html',
   providers: [],
 })
 export class ConsultasPage {
   protected editDialog: boolean = false;
-  protected consulta!: CaseDto;
+  protected createCaseDialog: boolean = false;
 
-  private readonly consultasService = inject(ConsultasService);
+  protected case!: CaseDto;
+  protected athenasMessage!: AthenasMessage;
 
-  protected consultas: CaseSummaryDto[] = [];
+  private readonly caseService = inject(CaseService);
+
+  protected caseList: CaseSummaryDto[] = [];
+  protected caseFilter: CaseFilters = <CaseFilters>{};
+
   private readonly ref = inject(ChangeDetectorRef);
 
   constructor() {
-    this.consultasService.consultasFiltradas$.subscribe((data) => {
-      this.consultas = data;
+    this.caseService.caseList.subscribe((list) => {
+      this.caseList = list;
     });
     setInterval(() => this.ref.detectChanges(), 1000);
   }
 
-  estados = [
+  caseStatusAvailables = [
     { label: 'Pendientes', value: CaseStatus.PENDING },
     { label: 'En curso', value: CaseStatus.OPEN },
     { label: 'Resueltas', value: CaseStatus.SOLVED },
@@ -69,9 +76,7 @@ export class ConsultasPage {
     { label: 'Archivadas', value: CaseStatus.ARCHIVED },
   ];
 
-  estado = <CaseStatus[]>[];
-
-  respuestas = [
+  caseResolutionAvailables = [
     { label: 'Pendientes', value: CaseResolution.PENDING },
     { label: 'Sin evidencias de falsificación', value: CaseResolution.WITHOUT_EVIDENCES },
     { label: 'Con evidencias de falsificación', value: CaseResolution.WITH_EVIDENCES },
@@ -79,16 +84,12 @@ export class ConsultasPage {
     { label: 'Documento no válido', value: CaseResolution.INVALID_DOCUMENT },
   ];
 
-  respuesta = <CaseResolution[]>[];
-
   periodos = [
-    { label: 'Hoy', value: FiltroPeriodo.HOY },
-    { label: 'Esta semana', value: FiltroPeriodo.ESTA_SEMANA },
-    { label: 'Este mes', value: FiltroPeriodo.ESTE_MES },
-    { label: 'Este año', value: FiltroPeriodo.ESTE_AÑO },
+    { label: 'Hoy', value: DateRangeFilter.TODAY },
+    { label: 'Esta semana', value: DateRangeFilter.THIS_WEEK },
+    { label: 'Este mes', value: DateRangeFilter.THIS_MONTH },
+    { label: 'Este año', value: DateRangeFilter.THIS_YEAR },
   ];
-
-  periodo = <FiltroPeriodo | undefined>undefined;
 
   cols: Column[] = [
     { field: 'trackingNumber', header: 'Referencia' },
@@ -100,23 +101,38 @@ export class ConsultasPage {
   ];
 
   filterChange(event: SelectChangeEvent) {
-    this.consultasService.applyFilter({
-      estado: this.estado,
-      respuesta: this.respuesta,
-      periodo: this.periodo,
-    });
+    this.caseService.applyFilter(this.caseFilter);
   }
 
   hideDialog() {
     this.editDialog = false;
   }
 
-  editConsulta(consulta: CaseSummaryDto) {
-    this.consultasService.getById(consulta.id).subscribe((data) => {
-      this.consulta = data;
+  clickCaseDetail(consulta: CaseSummaryDto) {
+    this.caseService.getById(consulta.id).subscribe((data) => {
+      this.case = data;
       this.editDialog = true;
     });
   }
 
-  guardar() {}
+  clickCaseCreate() {
+    this.athenasMessage = <AthenasMessage>{};
+
+    this.createCaseDialog = true;
+  }
+
+  saveDetail() {}
+
+  saveCreate() {
+    this.caseService
+      .createCase(this.athenasMessage.athenasMessageDto, this.athenasMessage.files)
+      .subscribe({
+        next: (data) => {
+          this.createCaseDialog = false;
+        },
+        error: (err) => {
+          console.error('Error creating case', err);
+        },
+      });
+  }
 }
