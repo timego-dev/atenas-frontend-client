@@ -1,12 +1,13 @@
 import { Subject } from 'rxjs';
 
-import { CaptureOptions, ScannerDVData } from './ScannerDVData';
 import { DocumentError } from './DocumentError';
 import { ConnectionStatus } from './ConnectionStatus';
+import { CaptureOptions } from './CaptureOptions';
+import { ScannerCapturedData } from './DocumentCaptureData';
 
 export interface IDocumentListener {
   initDocument(state: boolean): void;
-  readDocument(document: ScannerDVData): void;
+  readDocument(document: ScannerCapturedData): void;
   partDocument(face: number): void;
   exceptionDocument(documentError: DocumentError): void;
 }

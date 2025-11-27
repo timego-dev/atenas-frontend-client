@@ -1,3 +1,10 @@
 export enum VerificationGroup {
-    MRZ, Chip, Integrity, Validity, OCR, Security, FingerprintQuality, FingerprintSegmentation
+  MRZ,
+  Chip,
+  Integrity,
+  Validity,
+  OCR,
+  Security,
+  FingerprintQuality,
+  FingerprintSegmentation,
 }

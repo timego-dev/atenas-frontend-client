@@ -14,7 +14,7 @@ export abstract class MediaRepositoryService {
   abstract getById(id: string): Observable<MediaResult>;
 
   createObjectUrl(media: MediaResult): string {
-        return URL.createObjectURL(media.content);
+    return URL.createObjectURL(media.content);
   }
 
   revokeObjectUrl(url: string): void {
@@ -32,7 +32,6 @@ export abstract class MediaRepositoryService {
 }
 
 export class MediaRepositoryRemoteService extends MediaRepositoryService {
-  
   private readonly configurationService = inject(ConfigurationService);
   private readonly http = inject(HttpClient);
 
@@ -40,34 +39,36 @@ export class MediaRepositoryRemoteService extends MediaRepositoryService {
 
   constructor() {
     super();
-    this.baseUrl = this.configurationService.getConfig().backend.mediaBaseUrl;
+    this.baseUrl = this.configurationService.getConfig().backend?.url + '/media';
   }
-    
+
   getById(id: string): Observable<MediaResult> {
-    return this.http.get(`${this.baseUrl}/${id}`, {
-      observe: 'response',
-      responseType: 'blob'
-    }).pipe(
-      map(response => {
-        const content = response.body as Blob;
-        const contentType = response.headers.get('Content-Type');
-
-        const contentDisposition = response.headers.get('Content-Disposition');
-        let fileName: string | null = null;
-
-        if (contentDisposition) {
-          const match = /filename="?([^"]+)"?/i.exec(contentDisposition);
-          if (match) {
-            fileName = decodeURIComponent(match[1]);
-          }
-        }
-
-        return {
-          content,
-          fileName,
-          contentType
-        };
+    return this.http
+      .get(`${this.baseUrl}/${id}`, {
+        observe: 'response',
+        responseType: 'blob',
       })
-    );
+      .pipe(
+        map((response) => {
+          const content = response.body as Blob;
+          const contentType = response.headers.get('Content-Type');
+
+          const contentDisposition = response.headers.get('Content-Disposition');
+          let fileName: string | null = null;
+
+          if (contentDisposition) {
+            const match = /filename="?([^"]+)"?/i.exec(contentDisposition);
+            if (match) {
+              fileName = decodeURIComponent(match[1]);
+            }
+          }
+
+          return {
+            content,
+            fileName,
+            contentType,
+          };
+        })
+      );
   }
 }

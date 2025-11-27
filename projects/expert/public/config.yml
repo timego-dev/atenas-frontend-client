@@ -4,4 +4,6 @@ services:
   auxiliar: 'AuxiliarRepositoryMockService'
   case: 'CaseRepositoryMockService'
 backend:
-  backend: 'https://localhost:7526'
+  url: 'https://localhost:7526'
+clientService:
+  url: 'http://localhost:3001'

@@ -1,8 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
 import { NgIf, NgFor, JsonPipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { ScannerDVData, DocumentVerificationData } from '../../types/at10k/ScannerDVData';
-import { AtenasDvService } from '../../services/atenas/atenas-dv.service';
 import { MappedMultipartAtenas, ScannerDvMapper } from '../../mappers/atenas/scanner-dv.mapper';
 import { ImgSrcPipe } from '../../../../shared//pipes/img-src.pipe';
 import { ProbabilityPipe } from '../../../../shared/pipes/probability.pipe';
@@ -15,8 +13,10 @@ import { ChipModule } from 'primeng/chip';
 import { ImageModule } from 'primeng/image';
 import { DynamicDialogModule, DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { DocumentScannerModalWrapperComponent } from '../../components/document-scanner-modal-wrapper/document-scanner-modal-wrapper.component';
-import { ConfigurationService } from '@shared/services/configuration.service';
-import { IConfig } from '../../../../shared/services/configuration-file.service';
+import { DocumentVerificationData } from '@shared/models/case/command/scanner-dv.dto';
+import { ActivityType } from '@shared/models/case/case.enums';
+import { ScannerCapturedData } from '../../types/at10k/DocumentCaptureData';
+import { CaseRepositoryService } from '@shared/services/case-repository.service';
 
 @Component({
   selector: 'demo-document-scanner',
@@ -49,7 +49,7 @@ export class DemoDocumentScannerPage {
   lastEvent = signal<'idle' | 'captured' | 'error' | 'leave'>('idle');
   errorMessage = signal<string | null>(null);
 
-  captured = signal<ScannerDVData | null>(null);
+  captured = signal<ScannerCapturedData | null>(null);
 
   convertedPayload = signal<any | null>(null);
   multipartFileNames = signal<string[]>([]);
@@ -67,8 +67,7 @@ export class DemoDocumentScannerPage {
 
   constructor(
     private dialogService: DialogService,
-    private uploader: AtenasDvService,
-    private configurationService: ConfigurationService<IConfig>
+    private caseRepositoryService: CaseRepositoryService
   ) {}
 
   openScannerModal(): void {
@@ -91,7 +90,7 @@ export class DemoDocumentScannerPage {
     });
   }
 
-  onCaptured = (data: ScannerDVData) => {
+  onCaptured = (data: ScannerCapturedData) => {
     this.captured.set(data);
     this.errorMessage.set(null);
     this.lastEvent.set('captured');
@@ -117,39 +116,31 @@ export class DemoDocumentScannerPage {
 
     const attachPrefix = 'AT10K_Attach';
     const mapped: MappedMultipartAtenas = ScannerDvMapper.mapToMultipartAtenas(data, attachPrefix, {
-      includeVerifications: true,
-      groupCodeMode: 'numeric',
-      inputType: 'CONSULTATION',
+      inputType: ActivityType.CONSULTATION,
       text: 'Please verify the attached documents.',
-      creationDate: nowMs(),
       attachmentName: 'AT10K_Scan_01',
     });
 
     this.convertedPayload.set(mapped.atenasInput);
-    this.multipartFileNames.set(mapped.files.map((f) => f.filename));
+    this.multipartFileNames.set(mapped.files.map((f) => f.name));
   }
 
   submitToEndpoint() {
     const data = this.captured();
     if (!data) return;
 
-    const url = `${this.configurationService.getConfig().backend}/case`;
-    this.uploader
-      .submit(url, data, 'AT10K_Attach', {
-        includeVerifications: true,
-        groupCodeMode: 'numeric',
-        inputType: 'CONSULTATION',
-        text: 'Please verify the attached documents.',
-        creationDate: nowMs(),
-        attachmentName: 'AT10K_Scan_01',
-      })
-      .subscribe({
-        next: (res) => console.log('[App] POST OK:', res),
-        error: (err) => {
-          console.error('[App] POST ERROR:', err);
-          this.errorMessage.set('Error enviando el caso');
-          this.lastEvent.set('error');
-        },
-      });
+    const mapped = ScannerDvMapper.mapToMultipartAtenas(data, 'AT10K_Attach', {
+      inputType: ActivityType.CONSULTATION,
+      text: 'Please verify the attached documents.',
+      attachmentName: 'AT10K_Scan_01',
+    });
+    this.caseRepositoryService.create(mapped.atenasInput, mapped.files).subscribe({
+      next: (res) => console.log('[App] POST OK:', res),
+      error: (err) => {
+        console.error('[App] POST ERROR:', err);
+        this.errorMessage.set('Error enviando el caso');
+        this.lastEvent.set('error');
+      },
+    });
   }
 }

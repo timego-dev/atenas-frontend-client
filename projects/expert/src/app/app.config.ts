@@ -21,7 +21,10 @@ import {
   UserRepositoryService,
 } from '@shared/services/user-repository.service';
 import { UserRepositoryMockService } from '@shared/services/mock/user-repository-mock.service';
-import { CaseRepositoryService } from '@shared/services/case-repository.service';
+import {
+  CaseRepositoryRemoteService,
+  CaseRepositoryService,
+} from '@shared/services/case-repository.service';
 import { CaseRepositoryMockService } from '@shared/services/mock/case-repository-mock.service';
 import {
   AuxiliarRepositoryRemoteService,
@@ -53,6 +56,7 @@ const SERVICE_REGISTRY: Record<string, Type<any>> = {
 
   // Case
   CaseRepositoryMockService: CaseRepositoryMockService,
+  CaseRepositoryRemoteService: CaseRepositoryRemoteService,
 
   // Auxiliar
   AuxiliarRepositoryRemoteService: AuxiliarRepositoryRemoteService,
@@ -76,6 +80,7 @@ export const appConfig: ApplicationConfig = {
     UserRepositoryRemoteService,
     UserRepositoryMockService,
     CaseRepositoryMockService,
+    CaseRepositoryRemoteService,
     AuxiliarRepositoryRemoteService,
     AuxiliarRepositoryMockService,
     provideAppInitializer(() => {

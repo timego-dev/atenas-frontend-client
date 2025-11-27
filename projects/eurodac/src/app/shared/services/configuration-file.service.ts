@@ -9,6 +9,7 @@ export interface IConfig extends SharedConfig {
     auth: string;
     user: string;
     documentScanner: string;
+    case: string;
   };
 }
 

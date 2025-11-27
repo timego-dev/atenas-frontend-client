@@ -1,6 +1,10 @@
 export interface SharedConfig {
-  backend: string;
-  clientService: string;
+  backend: {
+    url: string;
+  };
+  clientService: {
+    url: string;
+  };
 }
 
 export abstract class ConfigurationService<T extends SharedConfig> {

@@ -1,6 +1,5 @@
 import {
   ApplicationConfig,
-  APP_INITIALIZER,
   importProvidersFrom,
   Injector,
   provideBrowserGlobalErrorListeners,
@@ -23,6 +22,8 @@ import {
   UserRepositoryService,
 } from '@shared/services/user-repository.service';
 import { UserRepositoryMockService } from '@shared/services/mock/user-repository-mock.service';
+import { CaseRepositoryMockService } from '@shared/services/mock/case-repository-mock.service';
+
 import { ConfigurationService } from '@shared/services/configuration.service';
 import { ConfigurationFileService } from './shared/services/configuration-file.service';
 import { BaseDocumentScanner } from './features/document-scanner/types/at10k/BaseDocumentService';
@@ -32,6 +33,10 @@ import { authInterceptor } from '@shared/auth/auth.interceptor';
 import { AuthService } from '@shared/auth/auth.service';
 import { AuthMockService } from '@shared/auth/auth-mock.service';
 import { BaseAuthService } from '@shared/auth/base-auth.service';
+import {
+  CaseRepositoryRemoteService,
+  CaseRepositoryService,
+} from '@shared/services/case-repository.service';
 
 const SERVICE_REGISTRY: Record<string, Type<any>> = {
   // Users
@@ -42,6 +47,9 @@ const SERVICE_REGISTRY: Record<string, Type<any>> = {
   UserRepositoryRemoteService: UserRepositoryRemoteService,
   UserRepositoryMockService: UserRepositoryMockService,
 
+  // Case
+  CaseRepositoryMockService: CaseRepositoryMockService,
+  CaseRepositoryRemoteService: CaseRepositoryRemoteService,
   // Scanner
   DocumentScannerService: DocumentScannerService,
   DocumentScannerMockService: DocumentScannerMockService,
@@ -65,6 +73,8 @@ export const appConfig: ApplicationConfig = {
     UserRepositoryMockService,
     DocumentScannerService,
     DocumentScannerMockService,
+    CaseRepositoryMockService,
+    CaseRepositoryRemoteService,
 
     provideAppInitializer(() => {
       const configService = inject(ConfigurationFileService);
@@ -114,6 +124,22 @@ export const appConfig: ApplicationConfig = {
             ? SERVICE_REGISTRY[serviceKey]
             : DocumentScannerService; // default
         console.log('Clase seleccionada:', ServiceClass.name);
+        return injector.get(ServiceClass);
+      },
+      deps: [ConfigurationFileService, Injector],
+    },
+    // CASE REPOSITORY
+    {
+      provide: CaseRepositoryService,
+      useFactory: (configService: ConfigurationFileService, injector: Injector) => {
+        const config = configService.getConfig();
+        const serviceKey = config?.services?.case;
+
+        const ServiceClass =
+          serviceKey && SERVICE_REGISTRY[serviceKey]
+            ? SERVICE_REGISTRY[serviceKey]
+            : CaseRepositoryMockService;
+
         return injector.get(ServiceClass);
       },
       deps: [ConfigurationFileService, Injector],

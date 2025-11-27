@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { DocumentScannerCaptureComponent } from '../document-scanner-capture/document-scanner-capture.component';
-import { ScannerDVData } from '../../types/at10k/ScannerDVData';
+import { ScannerCapturedData } from '../../types/at10k/DocumentCaptureData';
 
 @Component({
   selector: 'app-document-scanner-modal-wrapper',
@@ -12,7 +12,7 @@ import { ScannerDVData } from '../../types/at10k/ScannerDVData';
 export class DocumentScannerModalWrapperComponent {
   constructor(public ref: DynamicDialogRef) {}
 
-  onCaptured(data: ScannerDVData) {
+  onCaptured(data: ScannerCapturedData) {
     this.ref.close({ status: 'captured', data });
   }
 

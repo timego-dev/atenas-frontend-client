@@ -4,9 +4,10 @@ import { Subject } from 'rxjs';
 import { BaseDocumentScanner } from '../../types/at10k/BaseDocumentService';
 import { ConnectionStatus } from '../../types/at10k/ConnectionStatus';
 import { DocumentError } from '../../types/at10k/DocumentError';
-import { CaptureOptions, DocumentReaderErrorCodes } from '../../types/at10k/ScannerDVData';
 import { MessageError } from '../../types/at10k/MessageError';
 import { ConfigurationService } from '@shared/services/configuration.service';
+import { DocumentReaderErrorCodes } from '../../types/at10k/DocumentReaderErrorCodes';
+import { CaptureOptions } from '../../types/at10k/CaptureOptions';
 
 declare var $: any;
 

@@ -11,17 +11,14 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { BaseDocumentScanner, IDocumentListener } from '../../types/at10k/BaseDocumentService';
 import { DocumentError } from '../../types/at10k/DocumentError';
 import { MessageError } from '../../types/at10k/MessageError';
-import {
-  DocumentReaderErrorCodes,
-  ScannerDVData,
-  CaptureOptions,
-} from '../../types/at10k/ScannerDVData';
-
 import { CommonModule } from '@angular/common';
 import { ConnectionModalComponent } from '../connection-modal/connection-card.component';
 import { take } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
+import { DocumentReaderErrorCodes } from '../../types/at10k/DocumentReaderErrorCodes';
+import { CaptureOptions } from '../../types/at10k/CaptureOptions';
+import { ScannerCapturedData } from '../../types/at10k/DocumentCaptureData';
 
 @Component({
   selector: 'app-document-scanner-capture',
@@ -33,7 +30,7 @@ import { ButtonModule } from 'primeng/button';
 export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocumentListener {
   // Outputs
   onLeave = output<void>();
-  onCaptured = output<ScannerDVData>();
+  onCaptured = output<ScannerCapturedData>();
   handleErrors = output<string>();
 
   // Signals
@@ -86,7 +83,7 @@ export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocu
     this.isCaptureEnabled.set(true);
   }
 
-  readDocument(document: ScannerDVData) {
+  readDocument(document: ScannerCapturedData) {
     void this.documentService.documentStop().then(() => this.onCaptured.emit(document));
   }
 

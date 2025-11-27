@@ -1,13 +1,9 @@
 import { Injectable } from '@angular/core';
 import * as mockData from '../../mocks/document-scanner/document-mock.json';
 import { BaseDocumentScanner } from '../../types/at10k/BaseDocumentService';
-import {
-  CaptureOptions,
-  DocumentData,
-  DocumentVerifications,
-  ScannerDVData,
-} from '../../types/at10k/ScannerDVData';
-import { Verification } from '../../types/at10k/Verification';
+import { Verification } from '@shared/models/case/command/scanner-dv.dto';
+import { CaptureOptions } from '../../types/at10k/CaptureOptions';
+import { DocumentCapturedData, ScannerCapturedData } from '../../types/at10k/DocumentCaptureData';
 
 @Injectable({
   providedIn: 'root',
@@ -69,8 +65,8 @@ export class DocumentScannerMockService extends BaseDocumentScanner {
     this.timeoutIds.push(timeoutId);
   }
 
-  private createDocumentCaptureMock(): ScannerDVData {
-    const rawData = JSON.parse(JSON.stringify(mockData));
+  private createDocumentCaptureMock(): ScannerCapturedData {
+    const rawData = JSON.parse(JSON.stringify(mockData)) as ScannerCapturedData;
 
     let processedVerifications: Verification[] = [];
 
@@ -80,14 +76,14 @@ export class DocumentScannerMockService extends BaseDocumentScanner {
     ) {
       processedVerifications = rawData.documentVerifications.verifications.map(
         (rawVerification: any) => {
-          return new Verification({
+          return {
             group: rawVerification.group,
             code: rawVerification.code,
             value: rawVerification.value,
             sourceMessage: rawVerification.sourceMessage,
             expected: rawVerification.expected,
             result: rawVerification.result,
-          });
+          } as Verification;
         }
       );
 
@@ -98,12 +94,10 @@ export class DocumentScannerMockService extends BaseDocumentScanner {
       }
     }
 
-    const documentVerificationsInstance = new DocumentVerifications(processedVerifications);
-
-    const documentCapture = new ScannerDVData(
-      rawData.documentData as DocumentData,
-      documentVerificationsInstance
-    );
+    const documentCapture = {
+      documentData: rawData.documentData as DocumentCapturedData,
+      documentVerifications: processedVerifications,
+    } as ScannerCapturedData;
 
     return documentCapture;
   }

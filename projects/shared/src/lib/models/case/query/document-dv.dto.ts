@@ -1,4 +1,4 @@
-import { DocumentAttachmentDto } from "./attachment.dto";
+import { DocumentAttachmentDto } from './attachment.dto';
 
 export interface DocumentDvAttachmentDto extends DocumentAttachmentDto {
   scannerDvData: ScannerDvDataDto;
@@ -43,8 +43,8 @@ export interface DocumentVerificationDataDto {
 }
 
 export interface VerificationDto {
-  group: string;     // VerificationGroup (enum)
-  code: string;      // VerificationCode (enum)
+  group: string;
+  code: string;
   value: number;
   sourceMessage?: string;
   expected?: string | null;

@@ -17,7 +17,7 @@ export class UserRepositoryRemoteService implements UserRepositoryService {
   private readonly baseUrl: string;
 
   constructor() {
-    this.baseUrl = this.configurationService.getConfig().backend + '/users';
+    this.baseUrl = this.configurationService.getConfig().backend?.url + '/users';
   }
 
   getAll(): Observable<IUser[]> {

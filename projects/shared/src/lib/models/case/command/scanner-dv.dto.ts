@@ -1,4 +1,4 @@
-import { DocumentDataDto, FormFileDto, ImageReferenceDto } from "./shared.dto";
+import { DocumentDataDto, FormFileDto, ImageReferenceDto } from './shared.dto';
 
 export interface ScannerDVData extends DocumentDataDto {
   documentData?: DocumentData;

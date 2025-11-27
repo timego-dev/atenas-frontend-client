@@ -1,328 +1,186 @@
-import { AtenasAttachmentDigital, AtenasInput } from '../../types/atenas/AtenasInput';
-import { DvDataPayload } from '../../types/atenas/DvDataPayload';
-import {
-  ScannerDVData,
-  DocumentData,
-  Images,
-  MRZWithPhoto,
-  MRZ,
-} from '../../types/at10k/ScannerDVData';
-import { VerificationCode } from '../../types/at10k/VerificationCode';
-import { VerificationGroup } from '../../types/at10k/VerificationGroup';
+import { AthenasMessageDto } from '@shared/models/case/command/athenas-message.dto';
+import { AttachmentDto, ImageReferenceDto } from '@shared/models/case/command/shared.dto';
 
-export interface FileAttachment {
-  field: string;
-  filename: string;
-  blob: Blob;
-}
+import { ActivityType, AttachmentType } from '@shared/models/case/case.enums';
+import { MRZ, MRZWithPhoto, ScannerDVData } from '@shared/models/case/command/scanner-dv.dto';
+import { DocumentCapturedData, ScannerCapturedData } from '../../types/at10k/DocumentCaptureData';
+import { VerificationGroup } from '../../types/at10k/VerificationGroup';
+import { VerificationCode } from '../../types/at10k/VerificationCode';
 
 export interface MappedMultipartAtenas {
-  atenasInput: AtenasInput;
-  files: FileAttachment[];
+  atenasInput: AthenasMessageDto;
+  files: File[];
 }
 
-type ImageRefs = {
-  chipPhotoName?: string;
-  visualPhotoName?: string;
-  images?: { ir?: string; uv?: string; viz?: string };
-};
-
-type VerificationFileRefs = Array<{
-  expectedFileName?: string;
-  resultFileName?: string;
-}>;
-
 export class ScannerDvMapper {
-  private static readonly allowedImageTypes = ['ir', 'uv', 'viz'] as const;
-
   static mapToMultipartAtenas(
-    input: ScannerDVData,
+    input: ScannerCapturedData,
     attachFilePrefix: string,
     options?: {
-      includeVerifications?: boolean;
-      groupCodeMode?: 'numeric' | 'name';
-      inputType?: string; // CONSULTATION
-      text?: string; // Please verify the attached documents.
-      creationDate?: number | Date;
+      inputType?: ActivityType;
+      text?: string;
       attachmentName?: string;
-      digitalAttachments?: AtenasAttachmentDigital[];
+      digitalAttachments?: AttachmentDto[];
     }
   ): MappedMultipartAtenas {
-    // Imágenes del documento (CHIP/VISUAL/IR/UV/VIZ) + referencias internas
-    const { files: docImages, refs: imageRefs } = this.extractDocumentImagesWithRefs(
-      input,
-      attachFilePrefix
-    );
+    // Este array acumulará los archivos a medida que procesamos el objeto
+    const filesAccumulator: File[] = [];
 
-    // Imágenes de verificaciones (expected/result) + referencias internas
-    const { files: verificationImages, refs: verificationRefs } =
-      this.extractVerificationImagesWithRefs(
-        input,
-        attachFilePrefix,
-        options?.groupCodeMode ?? 'numeric'
-      );
+    // Lógica principal de transformación
+    const payload = this.transformToPayload(input, filesAccumulator, attachFilePrefix);
 
-    const files = [...docImages, ...verificationImages];
-
-    // Payload con referencias de archivo
-    const payload = this.toEndpointPayload(input, {
-      includeVerifications: options?.includeVerifications,
-      imageRefs,
-      verificationRefs,
-      attachFilePrefix,
-    });
-
-    const atenasInput: AtenasInput = {
-      type: options?.inputType ?? 'CONSULTATION',
+    const atenasInput: AthenasMessageDto = {
+      type: options?.inputType ?? ActivityType.CONSULTATION,
       text: options?.text,
-      creationDate: this.normalizeCreationDate(options?.creationDate),
       attachmentList: [
         {
           name: options?.attachmentName ?? attachFilePrefix ?? 'ScanDoc',
-          type: 'DOCUMENT_DV',
+          type: AttachmentType.DOCUMENT_DV,
           scannerDvData: payload,
         },
         ...(options?.digitalAttachments ?? []),
       ],
     };
 
-    return { atenasInput, files };
+    return { atenasInput, files: filesAccumulator };
   }
 
-  private static normalizeCreationDate(d?: number | Date): number | undefined {
-    if (!d && d !== 0) return undefined;
-    return typeof d === 'number' ? d : d.getTime();
-  }
+  private static transformToPayload(
+    input: ScannerCapturedData,
+    files: File[],
+    prefix: string
+  ): ScannerDVData {
+    const doc = input.documentData;
+    if (!doc) return { type: (input as any)?.type };
 
-  static toEndpointPayload(
-    input: ScannerDVData,
-    options?: {
-      includeVerifications?: boolean;
-      imageRefs?: ImageRefs;
-      verificationRefs?: VerificationFileRefs;
-      attachFilePrefix?: string;
-    }
-  ): DvDataPayload {
-    const doc: DocumentData | undefined = input?.documentData;
-
-    const documentData: NonNullable<DvDataPayload['documentData']> = {
-      identification: doc?.identification && {
-        nombre: doc.identification.nombre,
-        tipoDocumento: doc.identification.tipoDocumento,
-        codigoPais: doc.identification.codigoPais,
-        pais: doc.identification.pais,
-        probability: doc.identification.probability,
-      },
-      chip: this.cloneMrzWithPhotoFile(doc?.chip, options?.imageRefs?.chipPhotoName) as any,
-      visual: this.cloneMrzWithPhotoFile(doc?.visual, options?.imageRefs?.visualPhotoName) as any,
-      mrz: this.cloneMrz(doc?.mrz),
-      images: this.mapImagesWithFiles(
-        (doc?.images ?? (doc?.visual as any)?.images) as any,
-        options?.imageRefs?.images
-      ),
-      verificationData: doc?.verificationData ? [...doc.verificationData] : undefined,
+    // 1. Transformar Document Data
+    const documentData: ScannerDVData['documentData'] = {
+      identification: doc.identification ? { ...doc.identification } : undefined,
+      mrz: doc.mrz ? { ...doc.mrz } : undefined,
+      verificationData: doc.verificationData ? [...doc.verificationData] : undefined,
+      chip: this.processMrzWithPhoto(doc.chip, 'CHIP', prefix, files),
+      visual: this.processMrzWithPhoto(doc.visual, 'VISUAL', prefix, files),
+      images: this.processDocImages(doc.images || (doc.visual as any)?.images, prefix, files),
     };
 
-    const payload: DvDataPayload = {
-      type: (input as any)?.type, // p.ej. "TD1"
+    const payload: ScannerDVData = {
+      type: (input as any)?.type,
       documentData,
     };
 
-    if (options?.includeVerifications && input?.documentVerifications?.verifications?.length) {
-      const verifs = input.documentVerifications.verifications;
+    // 2. Transformar Verificaciones
+    // Detectamos si 'documentVerifications' es el array directo o el objeto wrapper
+    const rawVerifications = input.documentVerifications;
+
+    // Normalizamos: Si es array, lo usamos. Si es objeto, buscamos .verifications inside.
+    const verificationsList = Array.isArray(rawVerifications)
+      ? rawVerifications
+      : rawVerifications?.verifications;
+
+    console.log('verificationsList', verificationsList);
+
+    if (verificationsList && verificationsList.length > 0) {
       payload.documentVerifications = {
-        verifications: verifs.map((v, idx) => {
-          const fileRefs = options?.verificationRefs?.[idx];
+        verifications: verificationsList.map((v: any) => {
+          // Tipado 'any' temporal para facilitar acceso
+          const { expected, result, ...rest } = v;
+
           return {
-            group: v.group,
-            code: v.code,
-            value: v.value as any,
-            sourceMessage: v.sourceMessage,
-            expected: null,
-            result: null,
-            ...(fileRefs?.expectedFileName
-              ? { expectedFile: { name: fileRefs.expectedFileName } }
-              : {}),
-            ...(fileRefs?.resultFileName ? { resultFile: { name: fileRefs.resultFileName } } : {}),
+            ...rest,
+            ...this.processVerificationImage(v, 'expected', expected, prefix, files),
+            ...this.processVerificationImage(v, 'result', result, prefix, files),
           };
         }),
       };
     }
 
+    console.log('payload.documentVerifications', payload.documentVerifications);
+
     return payload;
   }
 
-  private static cloneMrz<T extends MRZ | MRZWithPhoto | undefined>(mrz: T): MRZ | undefined {
-    if (!mrz) return undefined;
-    const {
-      idPersonal,
-      tipoDocumento,
-      paisExpedidor,
-      numeroDocumento,
-      fechaCaducidad,
-      fechaExpedicion,
-      nombre,
-      apellidos,
-      fechaNacimiento,
-      nacionalidad,
-      sexo,
-      mrzCode,
-      lugarNacimiento,
-    } = mrz;
-    return {
-      idPersonal,
-      tipoDocumento,
-      paisExpedidor,
-      numeroDocumento,
-      fechaCaducidad,
-      fechaExpedicion,
-      nombre,
-      apellidos,
-      fechaNacimiento,
-      nacionalidad,
-      sexo,
-      mrzCode,
-      lugarNacimiento,
-    };
-  }
+  private static processMrzWithPhoto(
+    source: any, // Tipo origen que tiene .foto (string)
+    label: string,
+    prefix: string,
+    files: File[]
+  ): MRZWithPhoto | undefined {
+    if (!source) return undefined;
 
-  private static cloneMrzWithPhotoFile(
-    mrz: MRZ | MRZWithPhoto | undefined,
-    fotoBaseName?: string
-  ): MRZ | (MRZ & { fotoFile: { name: string } }) | undefined {
-    const base = this.cloneMrz(mrz);
-    if (!base) return undefined;
-    if (fotoBaseName) {
-      return {
-        ...base,
-        fotoFile: { name: fotoBaseName },
-      } as any;
+    // Desestructuramos para separar la foto (string) del resto de datos
+    const { foto, ...mrzData } = source;
+
+    const parsed = this.tryParseImage(foto);
+    if (parsed) {
+      const filename = this.createFileAndAdd(files, parsed, prefix, label);
+      // Retornamos el objeto con la referencia al fichero en lugar del string
+      return { ...mrzData, fotoFile: { name: filename } };
     }
-    return base;
+
+    return { ...mrzData };
   }
 
-  private static mapImagesWithFiles(
-    images?: Images,
-    refs?: { ir?: string; uv?: string; viz?: string }
+  /**
+   * Convierte el objeto de imágenes {ir, uv, viz} al array de referencias [{type, file}]
+   */
+  private static processDocImages(
+    imagesObj: any,
+    prefix: string,
+    files: File[]
   ): Array<{ type: string; file?: { name: string } }> | undefined {
-    if (!images && !refs) return undefined;
-    const out: Array<{ type: string; file?: { name: string } }> = [];
-    for (const t of this.allowedImageTypes) {
-      const hasVal = (images as any)?.[t];
-      const name = refs?.[t];
-      if (hasVal || name) {
-        out.push({
-          type: t,
-          ...(name ? { file: { name } } : {}),
-        });
+    if (!imagesObj) return undefined;
+
+    const result: Array<{ type: string; file?: { name: string } }> = [];
+    const types = ['ir', 'uv', 'viz']; // claves minúsculas en origen
+
+    for (const t of types) {
+      const base64 = imagesObj[t];
+      const parsed = this.tryParseImage(base64);
+
+      if (parsed) {
+        const filename = this.createFileAndAdd(files, parsed, prefix, t.toUpperCase());
+        result.push({ type: t, file: { name: filename } });
       }
     }
-    return out.length ? out : undefined;
+    return result.length ? result : undefined;
   }
 
-  private static extractDocumentImagesWithRefs(
-    input: ScannerDVData,
-    attachFilePrefix: string
-  ): { files: FileAttachment[]; refs: ImageRefs } {
-    const files: FileAttachment[] = [];
-    const refs: ImageRefs = {};
-    const doc: DocumentData | undefined = input?.documentData;
+  private static processVerificationImage(
+    v: any,
+    type: 'expected' | 'result',
+    base64: string | undefined,
+    prefix: string,
+    files: File[]
+  ): object {
+    const parsed = this.tryParseImage(base64);
+    if (!parsed) return {}; // Si no hay imagen, no devolvemos nada (ni expectedFile ni resultFile)
 
-    // CHIP.foto
-    const chipPhoto = (doc?.chip as any)?.foto as string | undefined;
-    const chipParsed = this.tryParseImage(chipPhoto);
-    if (chipParsed && chipParsed.blob.size > 0) {
-      const base = this.buildDocImageBasename(attachFilePrefix, 'CHIP'); // SIN extensión
-      const filename = `${base}.${chipParsed.extension}`; // CON extensión
-      files.push({ field: base, filename, blob: chipParsed.blob });
-      refs.chipPhotoName = base; // referencia sin extensión
-    }
+    const groupCode = String(v.group);
 
-    // VISUAL.foto
-    const visualPhoto = (doc?.visual as any)?.foto as string | undefined;
-    const visualParsed = this.tryParseImage(visualPhoto);
-    if (visualParsed && visualParsed.blob.size > 0) {
-      const base = this.buildDocImageBasename(attachFilePrefix, 'VISUAL');
-      const filename = `${base}.${visualParsed.extension}`;
-      files.push({ field: base, filename, blob: visualParsed.blob });
-      refs.visualPhotoName = base;
-    }
+    // Construcción del nombre específico para verificaciones
+    const safeSource = this.sanitizeFilename(v.sourceMessage || 'unknown');
+    const safePrefix = this.sanitizeFilename(prefix);
+    const filename = `${safePrefix}_${groupCode}_${v.code}_${safeSource}_${type}.${parsed.extension}`;
 
-    // IR/UV/VIZ: pueden venir en doc.visual.images o en doc.images
-    const visualImages = (doc?.visual as any)?.images as Images | undefined;
-    const rootImages = doc?.images as Images | undefined;
-    const images = visualImages ?? rootImages;
+    // Crear File nativo
+    files.push(new File([parsed.blob], filename, { type: parsed.mime }));
 
-    const imagesRefs: NonNullable<ImageRefs['images']> = {};
-    if (images) {
-      const tryAdd = (key: 'ir' | 'uv' | 'viz', label: 'IR' | 'UV' | 'VIZ') => {
-        const val = (images as any)[key] as string | undefined;
-        const parsed = this.tryParseImage(val);
-        if (parsed && parsed.blob.size > 0) {
-          const base = this.buildDocImageBasename(attachFilePrefix, label);
-          const filename = `${base}.${parsed.extension}`;
-          files.push({ field: base, filename, blob: parsed.blob });
-          imagesRefs[key] = base; // referencia sin extensión
-        }
-      };
-      tryAdd('ir', 'IR');
-      tryAdd('uv', 'UV');
-      tryAdd('viz', 'VIZ');
-    }
-    if (Object.keys(imagesRefs).length > 0) {
-      refs.images = imagesRefs;
-    }
-
-    return { files, refs };
+    // Retornar la parte del objeto DTO
+    return type === 'expected'
+      ? { expectedFile: { name: filename } }
+      : { resultFile: { name: filename } };
   }
 
-  static extractVerificationImagesWithRefs(
-    input: ScannerDVData,
-    attachFilePrefix: string,
-    groupCodeMode: 'numeric' | 'name' = 'numeric'
-  ): { files: FileAttachment[]; refs: VerificationFileRefs } {
-    const files: FileAttachment[] = [];
-    const refs: VerificationFileRefs = [];
-    const verifs = input?.documentVerifications?.verifications ?? [];
-
-    for (const v of verifs) {
-      const ref: { expectedFileName?: string; resultFileName?: string } = {};
-
-      const expBlob = this.tryParseImage(v.expected);
-      if (expBlob && expBlob.blob.size > 0) {
-        const filename = this.buildVerificationFilename(
-          attachFilePrefix,
-          v.group,
-          v.code,
-          v.sourceMessage,
-          'expected',
-          expBlob.extension,
-          groupCodeMode
-        );
-        const base = this.filenameWithoutExtension(filename); // SIN extensión
-        files.push({ field: base, filename, blob: expBlob.blob });
-        ref.expectedFileName = base;
-      }
-
-      const resBlob = this.tryParseImage(v.result);
-      if (resBlob && resBlob.blob.size > 0) {
-        const filename = this.buildVerificationFilename(
-          attachFilePrefix,
-          v.group,
-          v.code,
-          v.sourceMessage,
-          'result',
-          resBlob.extension,
-          groupCodeMode
-        );
-        const base = this.filenameWithoutExtension(filename); // SIN extensión
-        files.push({ field: base, filename, blob: resBlob.blob });
-        ref.resultFileName = base;
-      }
-
-      refs.push(ref);
-    }
-    return { files, refs };
+  private static createFileAndAdd(
+    files: File[],
+    parsed: { blob: Blob; mime: string; extension: string },
+    prefix: string,
+    suffix: string
+  ): string {
+    const safePrefix = this.sanitizeFilename(prefix);
+    const filename = `${safePrefix}_${suffix}.${parsed.extension}`;
+    files.push(new File([parsed.blob], filename, { type: parsed.mime }));
+    return filename;
   }
 
   private static tryParseImage(
@@ -403,28 +261,6 @@ export class ScannerDvMapper {
     }
   }
 
-  private static buildVerificationFilename(
-    attachFilePrefix: string,
-    group: VerificationGroup,
-    code: VerificationCode,
-    sourceMessage: string | undefined,
-    suffix: 'expected' | 'result',
-    extension: string,
-    groupCodeMode: 'numeric' | 'name'
-  ): string {
-    const groupCode =
-      groupCodeMode === 'name' ? this.getVerificationGroupName(group) : String(group);
-    const safeSource = this.sanitizeFilename(sourceMessage || 'unknown');
-    const safePrefix = this.sanitizeFilename(attachFilePrefix || 'attach');
-    // nombre con extensión para el adjunto físico
-    return `${safePrefix}_${groupCode}_${code}_${safeSource}_${suffix}.${extension}`;
-  }
-
-  private static getVerificationGroupName(group: VerificationGroup): string {
-    const name = (VerificationGroup as any)[group];
-    return name ?? `Group${group}`;
-  }
-
   private static sanitizeFilename(name: string): string {
     return (
       name
@@ -433,19 +269,5 @@ export class ScannerDvMapper {
         .replace(/^_+|_+$/g, '')
         .slice(0, 80) || 'file'
     );
-  }
-
-  private static buildDocImageBasename(
-    attachFilePrefix: string,
-    label: 'CHIP' | 'VISUAL' | 'IR' | 'UV' | 'VIZ'
-  ): string {
-    const safePrefix = this.sanitizeFilename(attachFilePrefix || 'attach');
-    // sin extensión (para referencias internas)
-    return `${safePrefix}_${label}`;
-  }
-
-  private static filenameWithoutExtension(filename: string): string {
-    const lastDot = filename.lastIndexOf('.');
-    return lastDot === -1 ? filename : filename.slice(0, lastDot);
   }
 }

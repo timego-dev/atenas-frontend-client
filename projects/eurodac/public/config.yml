@@ -1,7 +1,9 @@
 services:
-  auth: 'AuthMockService'
+  auth: 'AuthService'
   user: 'UserRepositoryMockService'
-  documentScanner: 'DocumentScannerService'
+  documentScanner: 'DocumentScannerMockService'
+  case: 'CaseRepositoryRemoteService'
 backend:
-  clientService: 'http://localhost:3001'
-  backend: 'https://localhost:7526'
+  url: 'https://localhost:7526'
+clientService:
+  url: 'http://localhost:3001'

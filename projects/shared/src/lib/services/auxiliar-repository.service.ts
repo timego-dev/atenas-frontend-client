@@ -2,7 +2,10 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { ConfigurationService } from './configuration.service';
-import { GetAuxiliar, AuxiliarFilterOptions } from '@shared/models/auxiliar/query/get-auxiliar-response.model';
+import {
+  GetAuxiliar,
+  AuxiliarFilterOptions,
+} from '@shared/models/auxiliar/query/get-auxiliar-response.model';
 import { PostAuxiliar } from '@shared/models/auxiliar/command/post-auxiliar-request.model';
 
 export abstract class AuxiliarRepositoryService {
@@ -21,7 +24,7 @@ export class AuxiliarRepositoryRemoteService implements AuxiliarRepositoryServic
   private readonly baseUrl: string;
 
   constructor() {
-    this.baseUrl = this.config.getConfig().backend.auxiliarBaseUrl;
+    this.baseUrl = this.config.getConfig().backend?.url + '/auxiliar';
   }
 
   getAll(filter?: AuxiliarFilterOptions): Observable<GetAuxiliar[]> {
