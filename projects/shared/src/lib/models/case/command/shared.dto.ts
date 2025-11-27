@@ -28,7 +28,5 @@ export interface DocumentDataDto {
 }
 
 export interface FormFileDto {
-  file?: File;      // Angular replaces IFormFile with browser File
   name: string;
 }
-
