@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { DocumentScannerCaptureComponent } from '../document-scanner-capture/document-scanner-capture.component';
-import { ScannerCapturedData } from '../../types/at10k/DocumentCaptureData';
+import { ScannerCapturedData } from '../../types/DocumentCaptureData';
 
 @Component({
   selector: 'app-document-scanner-modal-wrapper',

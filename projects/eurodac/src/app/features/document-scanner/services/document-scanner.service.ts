@@ -1,13 +1,13 @@
 import { inject, Injectable, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
 
-import { BaseDocumentScanner } from '../../types/at10k/BaseDocumentService';
-import { ConnectionStatus } from '../../types/at10k/ConnectionStatus';
-import { DocumentError } from '../../types/at10k/DocumentError';
-import { MessageError } from '../../types/at10k/MessageError';
+import { BaseDocumentScanner } from '../types/BaseDocumentService';
+import { ConnectionStatus } from '../types/ConnectionStatus';
+import { DocumentError } from '../types/DocumentError';
+import { MessageError } from '../types/MessageError';
 import { ConfigurationService } from '@shared/services/configuration.service';
-import { DocumentReaderErrorCodes } from '../../types/at10k/DocumentReaderErrorCodes';
-import { CaptureOptions } from '../../types/at10k/CaptureOptions';
+import { DocumentReaderErrorCodes } from '../types/DocumentReaderErrorCodes';
+import { CaptureOptions } from '../types/CaptureOptions';
 
 declare var $: any;
 

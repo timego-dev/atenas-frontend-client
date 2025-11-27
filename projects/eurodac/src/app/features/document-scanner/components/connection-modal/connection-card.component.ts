@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
-import { ConnectionStatus } from '../../types/at10k/ConnectionStatus';
+import { ConnectionStatus } from '../../types/ConnectionStatus';
 import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';

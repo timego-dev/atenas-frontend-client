@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import * as mockData from '../../mocks/document-scanner/document-mock.json';
-import { BaseDocumentScanner } from '../../types/at10k/BaseDocumentService';
+import * as mockData from '../mocks/document-mock.json';
+import { BaseDocumentScanner } from '../types/BaseDocumentService';
 import { Verification } from '@shared/models/case/command/scanner-dv.dto';
-import { CaptureOptions } from '../../types/at10k/CaptureOptions';
-import { DocumentCapturedData, ScannerCapturedData } from '../../types/at10k/DocumentCaptureData';
+import { CaptureOptions } from '../types/CaptureOptions';
+import { DocumentCapturedData, ScannerCapturedData } from '../types/DocumentCaptureData';
 
 @Injectable({
   providedIn: 'root',

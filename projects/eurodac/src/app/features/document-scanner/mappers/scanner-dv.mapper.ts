@@ -1,11 +1,8 @@
 import { AthenasMessageDto } from '@shared/models/case/command/athenas-message.dto';
-import { AttachmentDto, ImageReferenceDto } from '@shared/models/case/command/shared.dto';
-
+import { AttachmentDto } from '@shared/models/case/command/shared.dto';
 import { ActivityType, AttachmentType } from '@shared/models/case/case.enums';
-import { MRZ, MRZWithPhoto, ScannerDVData } from '@shared/models/case/command/scanner-dv.dto';
-import { DocumentCapturedData, ScannerCapturedData } from '../../types/at10k/DocumentCaptureData';
-import { VerificationGroup } from '../../types/at10k/VerificationGroup';
-import { VerificationCode } from '../../types/at10k/VerificationCode';
+import { MRZWithPhoto, ScannerDVData } from '@shared/models/case/command/scanner-dv.dto';
+import { ScannerCapturedData } from '../types/DocumentCaptureData';
 
 export interface MappedMultipartAtenas {
   atenasInput: AthenasMessageDto;
@@ -26,7 +23,6 @@ export class ScannerDvMapper {
     // Este array acumulará los archivos a medida que procesamos el objeto
     const filesAccumulator: File[] = [];
 
-    // Lógica principal de transformación
     const payload = this.transformToPayload(input, filesAccumulator, attachFilePrefix);
 
     const atenasInput: AthenasMessageDto = {
@@ -53,7 +49,6 @@ export class ScannerDvMapper {
     const doc = input.documentData;
     if (!doc) return { type: (input as any)?.type };
 
-    // 1. Transformar Document Data
     const documentData: ScannerDVData['documentData'] = {
       identification: doc.identification ? { ...doc.identification } : undefined,
       mrz: doc.mrz ? { ...doc.mrz } : undefined,
@@ -68,11 +63,8 @@ export class ScannerDvMapper {
       documentData,
     };
 
-    // 2. Transformar Verificaciones
-    // Detectamos si 'documentVerifications' es el array directo o el objeto wrapper
     const rawVerifications = input.documentVerifications;
 
-    // Normalizamos: Si es array, lo usamos. Si es objeto, buscamos .verifications inside.
     const verificationsList = Array.isArray(rawVerifications)
       ? rawVerifications
       : rawVerifications?.verifications;
@@ -82,7 +74,6 @@ export class ScannerDvMapper {
     if (verificationsList && verificationsList.length > 0) {
       payload.documentVerifications = {
         verifications: verificationsList.map((v: any) => {
-          // Tipado 'any' temporal para facilitar acceso
           const { expected, result, ...rest } = v;
 
           return {
@@ -100,20 +91,18 @@ export class ScannerDvMapper {
   }
 
   private static processMrzWithPhoto(
-    source: any, // Tipo origen que tiene .foto (string)
+    source: any,
     label: string,
     prefix: string,
     files: File[]
   ): MRZWithPhoto | undefined {
     if (!source) return undefined;
 
-    // Desestructuramos para separar la foto (string) del resto de datos
     const { foto, ...mrzData } = source;
 
     const parsed = this.tryParseImage(foto);
     if (parsed) {
       const filename = this.createFileAndAdd(files, parsed, prefix, label);
-      // Retornamos el objeto con la referencia al fichero en lugar del string
       return { ...mrzData, fotoFile: { name: filename } };
     }
 
@@ -131,7 +120,7 @@ export class ScannerDvMapper {
     if (!imagesObj) return undefined;
 
     const result: Array<{ type: string; file?: { name: string } }> = [];
-    const types = ['ir', 'uv', 'viz']; // claves minúsculas en origen
+    const types = ['ir', 'uv', 'viz'];
 
     for (const t of types) {
       const base64 = imagesObj[t];
@@ -153,19 +142,16 @@ export class ScannerDvMapper {
     files: File[]
   ): object {
     const parsed = this.tryParseImage(base64);
-    if (!parsed) return {}; // Si no hay imagen, no devolvemos nada (ni expectedFile ni resultFile)
+    if (!parsed) return {};
 
     const groupCode = String(v.group);
 
-    // Construcción del nombre específico para verificaciones
     const safeSource = this.sanitizeFilename(v.sourceMessage || 'unknown');
     const safePrefix = this.sanitizeFilename(prefix);
     const filename = `${safePrefix}_${groupCode}_${v.code}_${safeSource}_${type}.${parsed.extension}`;
 
-    // Crear File nativo
     files.push(new File([parsed.blob], filename, { type: parsed.mime }));
 
-    // Retornar la parte del objeto DTO
     return type === 'expected'
       ? { expectedFile: { name: filename } }
       : { resultFile: { name: filename } };

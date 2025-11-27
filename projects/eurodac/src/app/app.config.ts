@@ -26,9 +26,9 @@ import { CaseRepositoryMockService } from '@shared/services/mock/case-repository
 
 import { ConfigurationService } from '@shared/services/configuration.service';
 import { ConfigurationFileService } from './shared/services/configuration-file.service';
-import { BaseDocumentScanner } from './features/document-scanner/types/at10k/BaseDocumentService';
-import { DocumentScannerMockService } from './features/document-scanner/services/at10k/document-scanner-mock.service';
-import { DocumentScannerService } from './features/document-scanner/services/at10k/document-scanner.service';
+import { BaseDocumentScanner } from './features/document-scanner/types/BaseDocumentService';
+import { DocumentScannerMockService } from './features/document-scanner/services/document-scanner-mock.service';
+import { DocumentScannerService } from './features/document-scanner/services/document-scanner.service';
 import { authInterceptor } from '@shared/auth/auth.interceptor';
 import { AuthService } from '@shared/auth/auth.service';
 import { AuthMockService } from '@shared/auth/auth-mock.service';

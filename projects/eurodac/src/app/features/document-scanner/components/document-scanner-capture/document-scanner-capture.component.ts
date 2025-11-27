@@ -8,17 +8,17 @@ import {
   inject,
 } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { BaseDocumentScanner, IDocumentListener } from '../../types/at10k/BaseDocumentService';
-import { DocumentError } from '../../types/at10k/DocumentError';
-import { MessageError } from '../../types/at10k/MessageError';
+import { BaseDocumentScanner, IDocumentListener } from '../../types/BaseDocumentService';
+import { DocumentError } from '../../types/DocumentError';
+import { MessageError } from '../../types/MessageError';
 import { CommonModule } from '@angular/common';
 import { ConnectionModalComponent } from '../connection-modal/connection-card.component';
 import { take } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
-import { DocumentReaderErrorCodes } from '../../types/at10k/DocumentReaderErrorCodes';
-import { CaptureOptions } from '../../types/at10k/CaptureOptions';
-import { ScannerCapturedData } from '../../types/at10k/DocumentCaptureData';
+import { DocumentReaderErrorCodes } from '../../types/DocumentReaderErrorCodes';
+import { CaptureOptions } from '../../types/CaptureOptions';
+import { ScannerCapturedData } from '../../types/DocumentCaptureData';
 
 @Component({
   selector: 'app-document-scanner-capture',

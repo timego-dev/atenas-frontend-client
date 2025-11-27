@@ -1,7 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { NgIf, NgFor, JsonPipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
-import { MappedMultipartAtenas, ScannerDvMapper } from '../../mappers/atenas/scanner-dv.mapper';
+import { MappedMultipartAtenas, ScannerDvMapper } from '../../mappers/scanner-dv.mapper';
 import { ImgSrcPipe } from '../../../../shared//pipes/img-src.pipe';
 import { ProbabilityPipe } from '../../../../shared/pipes/probability.pipe';
 import { nowMs } from '../../../../shared/utils/time';
@@ -15,7 +15,7 @@ import { DynamicDialogModule, DialogService, DynamicDialogRef } from 'primeng/dy
 import { DocumentScannerModalWrapperComponent } from '../../components/document-scanner-modal-wrapper/document-scanner-modal-wrapper.component';
 import { DocumentVerificationData } from '@shared/models/case/command/scanner-dv.dto';
 import { ActivityType } from '@shared/models/case/case.enums';
-import { ScannerCapturedData } from '../../types/at10k/DocumentCaptureData';
+import { ScannerCapturedData } from '../../types/DocumentCaptureData';
 import { CaseRepositoryService } from '@shared/services/case-repository.service';
 
 @Component({
