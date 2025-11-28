@@ -42,6 +42,7 @@ import { BaseAuthService } from '@shared/auth/base-auth.service'; // Asegúrate 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/es';
+import { MessageService } from 'primeng/api';
 dayjs.extend(relativeTime);
 dayjs.locale('es');
 
@@ -77,6 +78,7 @@ export const appConfig: ApplicationConfig = {
     { provide: ConfigurationService, useExisting: ConfigurationFileService },
     AuthService,
     AuthMockService,
+    MessageService,
     UserRepositoryRemoteService,
     UserRepositoryMockService,
     CaseRepositoryMockService,

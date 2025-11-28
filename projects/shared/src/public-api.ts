@@ -2,7 +2,6 @@
  * Public API Surface of shared
  */
 
-export * from './lib/shared';
 export * from './lib/auth/auth.service';
 export * from './lib/auth/auth-mock.service';
 export * from './lib/auth/auth.guard';

@@ -20,13 +20,16 @@ import { CaseResolution, CaseStatus } from '@shared/models/case/case.enums';
 import { AthenasMessage, CaseCreateComponent } from '@shared/components/case-create.component';
 import { CaseDetailComponent } from '@shared/components/case-detail.component';
 
+import { UiSafeCallerService } from '@shared/services/ui-safe-caller.service';
+import { ToastModule } from 'primeng/toast';
+
 interface Column {
   field: string;
   header: string;
 }
 
 @Component({
-  selector: 'page-consultas',
+  selector: 'cases-page',
   standalone: true,
   imports: [
     PanelModule,
@@ -43,11 +46,12 @@ interface Column {
     DialogModule,
     CaseDetailComponent,
     CaseCreateComponent,
+    ToastModule,
   ],
   templateUrl: './cases.page.html',
   providers: [],
 })
-export class ConsultasPage {
+export class CasesPage {
   protected editDialog: boolean = false;
   protected createCaseDialog: boolean = false;
 
@@ -60,6 +64,8 @@ export class ConsultasPage {
   protected caseFilter: CaseFilters = <CaseFilters>{};
 
   private readonly ref = inject(ChangeDetectorRef);
+
+  private readonly uiSafeCallerService = inject(UiSafeCallerService);
 
   constructor() {
     this.caseService.caseList.subscribe((list) => {
@@ -124,14 +130,16 @@ export class ConsultasPage {
   saveDetail() {}
 
   saveCreate() {
-    this.caseService
-      .createCase(this.athenasMessage.athenasMessageDto, this.athenasMessage.files)
+    this.uiSafeCallerService
+      .callWithErrorHandling('Creación de nuevo caso', () =>
+        this.caseService.createCase(
+          this.athenasMessage.athenasMessageDto,
+          this.athenasMessage.files
+        )
+      )
       .subscribe({
         next: (data) => {
           this.createCaseDialog = false;
-        },
-        error: (err) => {
-          console.error('Error creating case', err);
         },
       });
   }

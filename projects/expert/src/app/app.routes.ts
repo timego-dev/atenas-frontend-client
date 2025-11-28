@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { DashboardPage } from './features/dashboard/dashboard.page';
 import { AppLayout } from '@shared/layout/app.layout';
 import { UsuariosPage } from './features/admin/usuarios/usuarios.page';
-import { ConsultasPage } from './features/cases/cases.page';
+import { CasesPage } from './features/cases/cases.page';
 import { AuxiliaresPage } from './features/admin/auxiliares/auxiliares.page';
 import { Notfound } from './shared/components/not-found.page';
 import { AlertasPage } from './features/admin/alertas/alertas.page';
@@ -16,7 +16,7 @@ export const routes: Routes = [
     data: { projectName: 'Expert' },
     children: [
       { path: '', component: DashboardPage },
-      { path: 'consultas', component: ConsultasPage },
+      { path: 'consultas', component: CasesPage },
       {
         path: 'admin',
         children: [

@@ -30,7 +30,7 @@ import { CaseDto } from '@shared/models/case/query/case.dto';
     EstadoConsultaComponent,
   ],
   templateUrl: './case-detail.component.html',
-  providers: [MessageService, ConfirmationService],
+  providers: [ConfirmationService],
 })
 export class CaseDetailComponent {
   case = input.required<CaseDto>();

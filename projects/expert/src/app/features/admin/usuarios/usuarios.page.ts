@@ -55,7 +55,7 @@ interface Column {
     UsuarioEditComponent,
   ],
   templateUrl: './usuarios.page.html',
-  providers: [MessageService, UsuarioService, ConfirmationService],
+  providers: [UsuarioService, ConfirmationService],
 })
 export class UsuariosPage implements OnInit {
   editDialogComponent = viewChild<UsuarioEditComponent>('editDialogComponent');
