@@ -11,21 +11,27 @@ import { ErrorDialogModel, ErrorDialogService } from '@shared/services/error-dia
   imports: [DialogModule, ButtonModule, PanelModule],
   template: `
     <p-dialog [header]="model?.title" [modal]="true" [(visible)]="visible" [closeOnEscape]="false">
-      @if (Array.isArray(model?.text)) { @for (item of model?.text; track $index) {
-      <p>{{ item }}</p>
-      } } @if (isString(model?.text)) {
-      <p>{{ model?.text }}</p>
-      } @if (model?.detail) {
-      <p-panel class="m-2" header="Más detalles" [toggleable]="true" collapsed="true">
-        @if (Array.isArray(model?.detail)) { @for (item of model?.detail; track $index) {
-        <p>{{ item }}</p>
-        } } @else {
-        <p>{{ model?.detail }}</p>
-        }
-      </p-panel>
-      }
+      <div class="gap-8 flex mt-2 mb-8">
+        <i class="pi pi-exclamation-triangle !text-6xl text-red-500"></i>
 
-      <div class="flex justify-content-end gap-2 mt-4">
+        <div style="flex: 1">
+          @if (Array.isArray(model?.text)) { @for (item of model?.text; track $index) {
+          <h5>{{ item }}</h5>
+          } } @if (isString(model?.text)) {
+          <h5>{{ model?.text }}</h5>
+          } @if (model?.detail) {
+          <p-panel header="Más detalles" [toggleable]="true" collapsed="true">
+            @if (Array.isArray(model?.detail)) { @for (item of model?.detail; track $index) {
+            <p>{{ item }}</p>
+            } } @else {
+            <p>{{ model?.detail }}</p>
+            }
+          </p-panel>
+          }
+        </div>
+      </div>
+
+      <div class="flex gap-4 justify-end">
         @if (model?.tryAgain) {
         <p-button label="Reintentar" severity="secondary" (click)="reintentar()" />
         }

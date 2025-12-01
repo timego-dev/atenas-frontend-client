@@ -12,16 +12,16 @@
   [rowsPerPageOptions]="[10, 20, 30]"
 >
   <ng-template #caption>
-    <nav style="display: flex; align-items: center">
-      <div style="margin-right: auto">
-        <h2 style="margin: 0">Usuarios</h2>
+    <nav class="flex">
+      <div class="mr-auto">
+        <h2 class="!m-0">Usuarios</h2>
       </div>
 
-      <div style="display: flex; flex-direction: row; gap: 1rem">
+      <div class="flex flex-row gap-3">
         <p-button label="Añadir" icon="pi pi-plus" severity="primary" (onClick)="openNew()" />
 
         <p-iconfield>
-          <p-inputicon styleClass="pi pi-search" />
+          <p-inputicon class="pi pi-search" />
           <input
             pInputText
             type="text"
@@ -35,22 +35,22 @@
 
   <ng-template #header>
     <tr>
-      <th style="min-width: 16rem">Nombre</th>
-      <th style="min-width: 16rem">eMail</th>
+      <th>Nombre</th>
+      <th class="min-w-md">eMail</th>
       <th>Rol</th>
-      <th style="min-width: 8rem">Estado</th>
+      <th>Estado</th>
     </tr>
   </ng-template>
 
   <ng-template #body let-usuario>
     <tr>
-      <td style="min-width: 12rem">
+      <td>
         <button (click)="editUser(usuario)" class="p-button p-button-text">
           {{ usuario.username }}
         </button>
       </td>
-      <td style="min-width: 16rem">{{ usuario.email }}</td>
-      <td style="width: 64px">
+      <td>{{ usuario.email }}</td>
+      <td>
         <p-tag [value]="nombreRol(usuario.role)" [severity]="getRolColor(usuario.role)" />
       </td>
       <td>
@@ -84,4 +84,4 @@
   </ng-template>
 </p-dialog>
 
-<p-confirmdialog [style]="{ width: '450px' }" />
+<p-confirmdialog />
