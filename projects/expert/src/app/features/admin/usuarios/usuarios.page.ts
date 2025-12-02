@@ -19,9 +19,14 @@ import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { UsuarioService } from './usuarios.service';
-import { IUser, Role } from '@shared/services/user-repository.service';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { UsuarioEditComponent } from './usuario-edit.component';
+import { UserResponseDto } from '@shared/models/user/query/user-response.model';
+import { RoleType } from '@shared/models/user/user.shared';
+import {
+  createEmptyUserRequest,
+  UserRequestDto,
+} from '@shared/models/user/command/user-request.model';
 
 interface Column {
   field: string;
@@ -62,9 +67,10 @@ export class UsuariosPage implements OnInit {
 
   editDialog: boolean = false;
 
-  usuarios = signal<IUser[]>([]);
+  usuarios = signal<UserResponseDto[]>([]);
 
-  usuario!: IUser;
+  selectedUser: UserResponseDto | null = null; // the table row selected
+  editingUser: UserRequestDto = createEmptyUserRequest(); // the form model
 
   submitted: boolean = false;
 
@@ -80,32 +86,23 @@ export class UsuariosPage implements OnInit {
   protected readonly confirmationService = inject(ConfirmationService);
 
   ngOnInit() {
-    this.loadDemoData();
+    this.loadUsuarios();
   }
 
-  loadDemoData() {
-    this.usuarioService.getUsers().subscribe((data) => {
-      this.usuarios.set(data);
-    });
+  loadUsuarios() {
+    this.usuarioService.getAll().subscribe((data) => this.usuarios.set(data));
   }
 
-  nombreRol(role: Role) {
-    switch (role) {
-      case Role.ADMINISTRATOR:
-        return 'Administrador';
-      case Role.CLIENT:
-        return 'Cliente';
-      case Role.EURODAC:
-        return 'Eurodac';
-      case Role.MBI:
-        return 'MBI';
-      case Role.OPERATOR:
-        return 'Operador';
-      case Role.SUPERVISOR:
-        return 'Supervisor';
-      default:
-        return '';
-    }
+  nombreRol(role: RoleType): string {
+    const roles: Record<RoleType, string> = {
+      [RoleType.ADMINISTRATOR]: 'Administrador',
+      [RoleType.ATENAS_CLIENT]: 'Cliente',
+      [RoleType.EURODAC_CLIENT]: 'Eurodac',
+      [RoleType.MBI_CLIENT]: 'MBI',
+      [RoleType.OPERATOR]: 'Operador',
+      [RoleType.SUPERVISOR]: 'Supervisor',
+    };
+    return roles[role] ?? '';
   }
 
   onGlobalFilter(table: Table, event: Event) {
@@ -113,14 +110,25 @@ export class UsuariosPage implements OnInit {
   }
 
   openNew() {
-    this.usuario = {};
+    this.selectedUser = null; // new user → no id!
+    this.editingUser = createEmptyUserRequest();
     this.submitted = false;
     this.editDialog = true;
   }
 
-  editUser(user: IUser) {
-    this.usuario = { ...user };
+  editUser(user: UserResponseDto) {
+    this.selectedUser = user;
+
+    this.editingUser = {
+      username: user.username,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      enabled: user.enabled, // or whatever logic matches your API
+    };
+
     this.editDialog = true;
+    this.submitted = false;
   }
 
   hideDialog() {
@@ -128,7 +136,7 @@ export class UsuariosPage implements OnInit {
     this.submitted = false;
   }
 
-  deleteUser(user: IUser) {
+  deleteUser(user: UserResponseDto) {
     this.hideDialog();
     this.confirmationService.confirm({
       message: '¿Estás seguro de eliminar ' + user.username + '?',
@@ -136,26 +144,27 @@ export class UsuariosPage implements OnInit {
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.usuarioService.delete(user.id!).subscribe(() => {
-          this.usuario = {};
+          this.selectedUser = null;
+          this.editingUser = createEmptyUserRequest();
           this.messageService.add({
             severity: 'success',
             summary: 'Correcto',
             detail: 'Usuario eliminado',
             life: 3000,
           });
-          this.loadDemoData();
+          this.loadUsuarios();
         });
       },
     });
   }
 
-  getRolColor(role: Role) {
+  getRolColor(role: RoleType) {
     switch (role) {
-      case Role.EURODAC:
+      case RoleType.EURODAC_CLIENT:
         return 'success';
-      case Role.SUPERVISOR:
+      case RoleType.SUPERVISOR:
         return 'warn';
-      case Role.ADMINISTRATOR:
+      case RoleType.ADMINISTRATOR:
         return 'danger';
       default:
         return 'info';
@@ -169,8 +178,8 @@ export class UsuariosPage implements OnInit {
   guardar() {
     this.submitted = true;
 
-    if (this.usuario.id) {
-      this.usuarioService.update(this.usuario.id, this.usuario).subscribe((data) => {
+    if (this.selectedUser) {
+      this.usuarioService.update(this.selectedUser.id, this.editingUser).subscribe((data) => {
         this.messageService.add({
           severity: data ? 'success' : 'error',
           summary: data ? 'Correcto' : 'Error',
@@ -178,22 +187,23 @@ export class UsuariosPage implements OnInit {
           life: 3000,
         });
         if (data) {
-          this.loadDemoData();
+          this.loadUsuarios();
         }
       });
     } else {
-      this.usuarioService.create(this.usuario).subscribe((_) => {
+      this.usuarioService.create(this.editingUser).subscribe((_) => {
         this.messageService.add({
           severity: 'success',
           summary: 'Successful',
           detail: 'Usuario creado',
           life: 3000,
         });
-        this.loadDemoData();
+        this.loadUsuarios();
       });
     }
 
     this.editDialog = false;
-    this.usuario = {};
+    this.editingUser = createEmptyUserRequest();
+    this.selectedUser = null;
   }
 }
