@@ -37,6 +37,7 @@ import {
   CaseRepositoryRemoteService,
   CaseRepositoryService,
 } from '@shared/services/case-repository.service';
+import { MessageService } from 'primeng/api';
 
 const SERVICE_REGISTRY: Record<string, Type<any>> = {
   // Users

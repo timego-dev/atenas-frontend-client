@@ -1,11 +1,17 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { IUser, Role, UserRepositoryMockService, UserRepositoryService } from '@shared';
 
+import { AuthService } from '@shared/services/auth.service';
+import { AuthMockService } from '@shared/services/mock/auth-mock.service';
+
 describe('Usuarios service', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      providers: [{ provide: UserRepositoryService, useClass: UserRepositoryMockService }],
+      providers: [
+        { provide: UserRepositoryService, useClass: UserRepositoryMockService },
+        { provide: AuthService, useClass: AuthMockService },
+      ],
     }).compileComponents();
   });
 
@@ -20,6 +26,9 @@ describe('Usuarios service', () => {
 
       tick();
       expect(users.length).toBe(9);
+
+      //TODO
+      // Comprobar que com a mínim hi ha un usuari amb rol administrador
     }));
 
     it('should create new user', fakeAsync(() => {
@@ -118,6 +127,10 @@ describe('Usuarios service', () => {
       expect(usersAfterDelete.length).toBe(8);
       const user = usersAfterDelete.find((u) => u.id === '1');
       expect(user).toBeUndefined();
+
+      //TODO
+      // Comprovar que si l'usuari eliminat era l'únic administrador, ara n'hi ha un altre
+      // Comprovar que no es pugui eliminar el propi usuari actiu
     }));
 
     it('should do nothing when deleting non existing user', fakeAsync(() => {
@@ -132,6 +145,25 @@ describe('Usuarios service', () => {
       tick();
 
       expect(usersAfterDelete.length).toBe(9);
+    }));
+
+    it("No ha de poder eliminar l'usuari actiu", fakeAsync(() => {
+      const auth = TestBed.inject(AuthService);
+      const service = TestBed.inject(UserRepositoryService);
+
+      // Preconditions
+
+      // Simular estar logat amb l'usuari d'id '1'
+      (auth as AuthMockService).applyBehavior({ userName: '1' });
+
+      // Tests
+      service.delete('1').subscribe({
+        next: () => {
+          fail("S'ha d'haver produït un error al eliminar l'usuari actiu");
+        },
+        error: () => {},
+      });
+      tick();
     }));
   });
 });

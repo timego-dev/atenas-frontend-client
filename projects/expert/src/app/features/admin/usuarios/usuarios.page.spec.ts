@@ -1,9 +1,16 @@
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { UsuariosPage } from './usuarios.page';
-import { Role, UserRepositoryMockService, UserRepositoryService } from '@shared';
+import {
+  AuthMockService,
+  AuthService,
+  Role,
+  UserRepositoryMockService,
+  UserRepositoryService,
+} from '@shared';
 
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 import { FormsModule } from '@angular/forms';
+import { MessageService } from 'primeng/api';
 
 describe('Usuarios page', () => {
   let usuariosPage: UsuariosPage;
@@ -15,7 +22,9 @@ describe('Usuarios page', () => {
       declarations: [],
       providers: [
         { provide: UserRepositoryService, useClass: UserRepositoryMockService },
+        { provide: AuthService, useClass: AuthMockService },
         provideNoopAnimations(),
+        MessageService,
       ],
     }).compileComponents();
 
