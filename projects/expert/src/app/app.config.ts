@@ -14,8 +14,6 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-
-// Imports de Servicios y Mocks
 import {
   UserRepositoryRemoteService,
   UserRepositoryService,
@@ -32,17 +30,18 @@ import {
 } from '@shared/services/auxiliar-repository.service';
 import { AuxiliarRepositoryMockService } from '@shared/services/mock/auxiliar-repository-mock.service';
 import { ConfigurationService } from '@shared/services/configuration.service';
-import { ConfigurationFileService } from './shared/services/configuration-file.service';
 import { OAuthModule, OAuthStorage } from 'angular-oauth2-oidc';
-import { authInterceptor } from '@shared/auth/auth.interceptor';
-import { AuthService } from '@shared/auth/auth.service';
-import { AuthMockService } from '@shared/auth/auth-mock.service';
-import { BaseAuthService } from '@shared/auth/base-auth.service'; // Asegúrate de tener este archivo creado
+import { authInterceptor } from '@shared/auth/interceptors/auth.interceptor';
+import { AuthService } from '@shared/auth/services/auth.service';
+import { AuthMockService } from '@shared/auth/services/auth-mock.service';
+import { BaseAuthService } from '@shared/auth/types/BaseAuthService';
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/es';
 import { MessageService } from 'primeng/api';
+import { ConfigurationFileService } from '@shared/services/configuration-file.service';
+import { IConfig } from './shared/types/config';
 dayjs.extend(relativeTime);
 dayjs.locale('es');
 
@@ -93,7 +92,7 @@ export const appConfig: ApplicationConfig = {
     // AUTH SERVICE
     {
       provide: BaseAuthService,
-      useFactory: (configService: ConfigurationFileService, injector: Injector) => {
+      useFactory: (configService: ConfigurationFileService<IConfig>, injector: Injector) => {
         const config = configService.getConfig();
         const serviceKey = config?.services?.auth;
 
@@ -109,7 +108,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: UserRepositoryService,
       useClass: UserRepositoryMockService,
-      useFactory: (configService: ConfigurationFileService, injector: Injector) => {
+      useFactory: (configService: ConfigurationFileService<IConfig>, injector: Injector) => {
         const config = configService.getConfig();
         const serviceKey = config?.services?.user;
 
@@ -126,7 +125,7 @@ export const appConfig: ApplicationConfig = {
     // CASE REPOSITORY
     {
       provide: CaseRepositoryService,
-      useFactory: (configService: ConfigurationFileService, injector: Injector) => {
+      useFactory: (configService: ConfigurationFileService<IConfig>, injector: Injector) => {
         const config = configService.getConfig();
         const serviceKey = config?.services?.case;
 
@@ -143,7 +142,7 @@ export const appConfig: ApplicationConfig = {
     {
       provide: AuxiliarRepositoryService,
       useClass: AuxiliarRepositoryMockService,
-      useFactory: (configService: ConfigurationFileService, injector: Injector) => {
+      useFactory: (configService: ConfigurationFileService<IConfig>, injector: Injector) => {
         const config = configService.getConfig();
         const serviceKey = config?.services?.auxiliar;
 

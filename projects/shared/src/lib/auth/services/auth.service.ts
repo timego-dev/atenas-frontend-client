@@ -1,13 +1,16 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { OAuthService, OAuthEvent } from 'angular-oauth2-oidc';
 import { filter } from 'rxjs/operators';
-import { authConfig } from './auth.config';
-import { BaseAuthService } from './base-auth.service';
+import { BaseAuthService } from '../types/BaseAuthService';
+import { ConfigurationFileService } from '@shared/services/configuration-file.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService implements BaseAuthService {
-  constructor(private oauthService: OAuthService) {
-    this.oauthService.configure(authConfig);
+  private oauthService = inject(OAuthService);
+  private configService = inject(ConfigurationFileService);
+
+  constructor() {
+    this.oauthService.configure(this.configService.getConfig().auth);
 
     this.oauthService.events
       .pipe(

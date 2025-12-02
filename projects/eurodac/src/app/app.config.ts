@@ -25,18 +25,19 @@ import { UserRepositoryMockService } from '@shared/services/mock/user-repository
 import { CaseRepositoryMockService } from '@shared/services/mock/case-repository-mock.service';
 
 import { ConfigurationService } from '@shared/services/configuration.service';
-import { ConfigurationFileService } from './shared/services/configuration-file.service';
 import { BaseDocumentScanner } from './features/document-scanner/types/BaseDocumentService';
 import { DocumentScannerMockService } from './features/document-scanner/services/document-scanner-mock.service';
 import { DocumentScannerService } from './features/document-scanner/services/document-scanner.service';
-import { authInterceptor } from '@shared/auth/auth.interceptor';
-import { AuthService } from '@shared/auth/auth.service';
-import { AuthMockService } from '@shared/auth/auth-mock.service';
-import { BaseAuthService } from '@shared/auth/base-auth.service';
+import { authInterceptor } from '@shared/auth/interceptors/auth.interceptor';
+import { AuthService } from '@shared/auth/services/auth.service';
+import { AuthMockService } from '@shared/auth/services/auth-mock.service';
+import { BaseAuthService } from '@shared/auth/types/BaseAuthService';
 import {
   CaseRepositoryRemoteService,
   CaseRepositoryService,
 } from '@shared/services/case-repository.service';
+import { ConfigurationFileService } from '@shared/services/configuration-file.service';
+import { IConfig } from './shared/types/config';
 
 const SERVICE_REGISTRY: Record<string, Type<any>> = {
   // Users
@@ -84,7 +85,7 @@ export const appConfig: ApplicationConfig = {
     // AUTH SCANNER
     {
       provide: BaseAuthService,
-      useFactory: (configService: ConfigurationFileService, injector: Injector) => {
+      useFactory: (configService: ConfigurationFileService<IConfig>, injector: Injector) => {
         const config = configService.getConfig();
         const serviceKey = config?.services?.auth;
         console.log('config:', config);
@@ -99,7 +100,7 @@ export const appConfig: ApplicationConfig = {
     // USER REPOSITORY
     {
       provide: UserRepositoryService,
-      useFactory: (configService: ConfigurationFileService, injector: Injector) => {
+      useFactory: (configService: ConfigurationFileService<IConfig>, injector: Injector) => {
         const config = configService.getConfig();
         const serviceKey = config?.services?.user;
 
@@ -116,7 +117,7 @@ export const appConfig: ApplicationConfig = {
     // DOCUMENT SCANNER
     {
       provide: BaseDocumentScanner,
-      useFactory: (configService: ConfigurationFileService, injector: Injector) => {
+      useFactory: (configService: ConfigurationFileService<IConfig>, injector: Injector) => {
         const config = configService.getConfig();
         const serviceKey = config?.services?.documentScanner;
         const ServiceClass =
@@ -131,7 +132,7 @@ export const appConfig: ApplicationConfig = {
     // CASE REPOSITORY
     {
       provide: CaseRepositoryService,
-      useFactory: (configService: ConfigurationFileService, injector: Injector) => {
+      useFactory: (configService: ConfigurationFileService<IConfig>, injector: Injector) => {
         const config = configService.getConfig();
         const serviceKey = config?.services?.case;
 

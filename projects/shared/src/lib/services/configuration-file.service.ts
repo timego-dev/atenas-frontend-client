@@ -4,21 +4,14 @@ import { ConfigurationService, SharedConfig } from '@shared/services/configurati
 import { firstValueFrom, map, tap } from 'rxjs';
 import { parse } from 'yamljs';
 
-export interface IConfig extends SharedConfig {
-  services: {
-    auth: string;
-    user: string;
-    documentScanner: string;
-    case: string;
-  };
-}
-
 @Injectable({
   providedIn: 'root',
 })
-export class ConfigurationFileService implements ConfigurationService<IConfig> {
+export class ConfigurationFileService<TConfig extends SharedConfig>
+  implements ConfigurationService<TConfig>
+{
   private httpClient: HttpClient;
-  private config!: IConfig;
+  private config!: TConfig;
 
   // Ho hem de fer així per evitar que inicialitzi els interceptors, ja que
   // sino s'inicialitzaria el authInteceptor i el AuthService, i mai funcionaria
@@ -39,7 +32,7 @@ export class ConfigurationFileService implements ConfigurationService<IConfig> {
         })
         .pipe(map((yamlString) => parse(yamlString)))
         .pipe(
-          tap((response: IConfig) => {
+          tap((response: TConfig) => {
             console.log('Configuration loaded:', response);
             this.config = response;
           })
@@ -47,7 +40,7 @@ export class ConfigurationFileService implements ConfigurationService<IConfig> {
     );
   }
 
-  getConfig(): IConfig {
+  getConfig(): TConfig {
     return this.config;
   }
 }

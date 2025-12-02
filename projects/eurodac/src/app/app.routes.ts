@@ -2,7 +2,7 @@ import { Routes } from '@angular/router';
 import { AppLayout } from '@shared/layout/app.layout';
 import { Notfound } from './shared/components/not-found.page';
 import { DemoDocumentScannerPage } from './features/document-scanner/pages/demo-document-scanner/demo-document-scanner.page';
-import { authGuard } from '@shared/auth/auth.guard';
+import { authGuard } from '@shared/auth/guards/auth.guard';
 
 export const routes: Routes = [
   {
