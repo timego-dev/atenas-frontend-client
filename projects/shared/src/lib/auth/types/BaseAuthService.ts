@@ -1,3 +1,5 @@
+import { Role } from './Role';
+
 export abstract class BaseAuthService {
   /**
    * Devuelve el token actual o null si no hay sesión.
@@ -20,4 +22,6 @@ export abstract class BaseAuthService {
    * Cierra la sesión y limpia el almacenamiento.
    */
   abstract logout(): void;
+
+  abstract isRole(role: Role): boolean;
 }

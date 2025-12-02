@@ -3,6 +3,7 @@ import { OAuthService, OAuthEvent } from 'angular-oauth2-oidc';
 import { filter } from 'rxjs/operators';
 import { BaseAuthService } from '../types/BaseAuthService';
 import { ConfigurationFileService } from '@shared/services/configuration-file.service';
+import { Role } from '../types/Role';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService implements BaseAuthService {
@@ -44,5 +45,15 @@ export class AuthService implements BaseAuthService {
 
   logout(): void {
     this.oauthService.logOut();
+  }
+
+  isRole(role: Role): boolean {
+    const claims: any = this.oauthService.getIdentityClaims();
+
+    if (!claims) return false;
+
+    const realmRoles: string[] = claims['realm_roles'] ?? [];
+
+    return realmRoles.includes(role);
   }
 }

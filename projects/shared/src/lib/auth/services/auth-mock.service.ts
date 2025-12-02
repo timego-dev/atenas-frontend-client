@@ -24,4 +24,7 @@ export class AuthMockService implements BaseAuthService {
   logout(): void {
     console.log('[MockAuthService] logout(): noop (mock)');
   }
+  isRole(role: string): boolean {
+    return true;
+  }
 }
