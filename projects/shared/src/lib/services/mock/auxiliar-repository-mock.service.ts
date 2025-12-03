@@ -9,10 +9,10 @@ export class AuxiliarRepositoryMockService
   extends BaseMockApiService
   implements AuxiliarRepositoryService
 {
-  private auxiliars: GetAuxiliar[] = [];
+  private auxiliars: GetAuxiliar[] = [...MOCK_AUXILIARS];
 
   getAll(): Observable<GetAuxiliar[]> {
-    return this.handleUnauthorized(() => this.ok(MOCK_AUXILIARS));
+    return this.handleUnauthorized(() => this.ok(this.auxiliars));
   }
 
   getById(id: string): Observable<GetAuxiliar> {
