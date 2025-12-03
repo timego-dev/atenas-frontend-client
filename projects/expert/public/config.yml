@@ -7,3 +7,10 @@ backend:
   url: 'https://localhost:7526'
 clientService:
   url: 'http://localhost:3001'
+auth:
+  issuer: 'http://localhost:8080/realms/atenas-realm'
+  clientId: 'bioidenti-cli'
+  redirectUri: 'http://localhost:4200/'
+  scope: 'openid profile email'
+  responseType: 'code'
+  requireHttps: false

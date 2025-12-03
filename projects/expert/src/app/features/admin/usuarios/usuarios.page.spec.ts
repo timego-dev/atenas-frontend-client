@@ -3,7 +3,6 @@ import { UsuariosPage } from './usuarios.page';
 import {
   AuthMockService,
   AuthService,
-  Role,
   UserRepositoryMockService,
   UserRepositoryService,
 } from '@shared';
@@ -40,7 +39,7 @@ describe('Usuarios page', () => {
       expect(usuariosPage.usuarios().length).toBe(9);
 
       expect(usuariosPage.editDialog).toBeFalse();
-      expect(usuariosPage.usuario).toBeUndefined();
+      expect(usuariosPage.editingUser).toBeUndefined();
     });
 
     it('should edit user', fakeAsync(() => {
@@ -49,7 +48,7 @@ describe('Usuarios page', () => {
       fixture.detectChanges();
       tick();
       expect(usuariosPage.editDialog).toBeTrue();
-      expect(usuariosPage.usuario).toEqual(usuario);
+      expect(usuariosPage.selectedUser).toEqual(usuario);
 
       /* En cas de voler-ho fer a nivell de DOM
       const buttonGuardar = fixture.nativeElement.querySelector('p-button[label="Guardar"]');
@@ -81,8 +80,8 @@ describe('Usuarios page', () => {
 
       fixture.detectChanges();
       tick();
-      expect(usuariosPage.usuario!.username).toBe('Nombre modificado');
-      expect(usuariosPage.usuario!.email).toBe('email.modificado@email.com');
+      expect(usuariosPage.editingUser!.username).toBe('Nombre modificado');
+      expect(usuariosPage.editingUser!.email).toBe('email.modificado@email.com');
 
       // buttonGuardar.click();
       usuariosPage.guardar();
@@ -100,14 +99,13 @@ describe('Usuarios page', () => {
       fixture.detectChanges();
       tick();
       expect(usuariosPage.editDialog).toBeTrue();
-      expect(usuariosPage.usuario).toBeDefined();
-      expect(usuariosPage.usuario!.id).toBeUndefined();
+      expect(usuariosPage.editingUser).toBeDefined();
 
       expect(usuariosPage.editDialogComponent()).toBeDefined();
       usuariosPage.editDialogComponent()!.usuario().username = 'NuevoUsuario';
       usuariosPage.editDialogComponent()!.usuario().email = 'mail@mail.com';
-      usuariosPage.editDialogComponent()!.usuario().role = Role.EURODAC;
-      usuariosPage.editDialogComponent()!.usuario().locked = false;
+      //usuariosPage.editDialogComponent()!.usuario().role = Role.EURODAC;
+      usuariosPage.editDialogComponent()!.usuario().enabled = true;
       fixture.detectChanges();
       tick();
 

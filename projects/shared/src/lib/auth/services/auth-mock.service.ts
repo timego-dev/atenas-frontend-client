@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BaseAuthService } from './base-auth.service';
+import { BaseAuthService } from '../types/BaseAuthService';
 
 @Injectable({
   providedIn: 'root',
@@ -23,5 +23,8 @@ export class AuthMockService implements BaseAuthService {
 
   logout(): void {
     console.log('[MockAuthService] logout(): noop (mock)');
+  }
+  isRole(role: string): boolean {
+    return true;
   }
 }

@@ -6,7 +6,7 @@ import { CasesPage } from './features/cases/cases.page';
 import { AuxiliaresPage } from './features/admin/auxiliares/auxiliares.page';
 import { Notfound } from './shared/components/not-found.page';
 import { AlertasPage } from './features/admin/alertas/alertas.page';
-import { authGuard } from '@shared/auth/auth.guard';
+import { authGuard } from '@shared/auth/guards/auth.guard';
 
 export const routes: Routes = [
   {

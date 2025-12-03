@@ -1,15 +1,13 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { App } from './app/app';
-import { BaseAuthService } from '@shared/auth/base-auth.service';
+import { BaseAuthService } from '@shared/auth/types/BaseAuthService';
 
 bootstrapApplication(App, appConfig)
   .then(async (appRef) => {
     const auth = appRef.injector.get(BaseAuthService);
 
-    if ('init' in auth && typeof (auth as any).init === 'function') {
-      await (auth as any).init();
-    }
+    await auth.init();
 
     console.log('[main] App iniciada correctamente');
   })

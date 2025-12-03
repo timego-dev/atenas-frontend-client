@@ -1,4 +1,4 @@
-import { Role } from '@shared';
+import { RoleType } from '@shared/models/user/user.shared';
 
 export abstract class AuthService {
   /**
@@ -23,7 +23,7 @@ export abstract class AuthService {
    */
   abstract logout(): void;
 
-  abstract hasRole(role: Role): boolean;
+  abstract hasRole(role: RoleType): boolean;
 
   abstract get userName(): string | null;
 }

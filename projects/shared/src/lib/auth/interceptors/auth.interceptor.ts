@@ -8,7 +8,7 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError } from 'rxjs/operators';
 import { throwError, EMPTY } from 'rxjs';
-import { BaseAuthService } from './base-auth.service';
+import { BaseAuthService } from '../types/BaseAuthService';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(BaseAuthService);

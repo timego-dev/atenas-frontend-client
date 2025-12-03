@@ -37,6 +37,7 @@
     <tr>
       <th>Nombre</th>
       <th class="min-w-md">eMail</th>
+      <th>Grupo</th>
       <th>Rol</th>
       <th>Estado</th>
     </tr>
@@ -50,8 +51,12 @@
         </button>
       </td>
       <td>{{ usuario.email }}</td>
+      <td>{{ usuario.groups?.[0]?.name || '-' }}</td>
       <td>
-        <p-tag [value]="nombreRol(usuario.role)" [severity]="getRolColor(usuario.role)" />
+        <p-tag
+          [value]="usuario.roles?.[0]?.name ? nombreRol(usuario.roles[0].name) : '-'"
+          [severity]="usuario.roles?.[0]?.name ? getRolColor(usuario.roles[0].name) : 'info'"
+        ></p-tag>
       </td>
       <td>
         <p-tag
@@ -65,17 +70,17 @@
 
 <p-dialog [(visible)]="editDialog" [style]="{ width: '450px' }" header="Usuario" [modal]="true">
   <ng-template #content>
-    <edit-usuario #editDialogComponent [usuario]="usuario" [submitted]="submitted" />
+    <edit-usuario #editDialogComponent [usuario]="editingUser" [submitted]="submitted" />
   </ng-template>
 
   <ng-template #footer>
-    @if (usuario.id) {
+    @if (selectedUser) {
     <p-button
       severity="danger"
       label="Eliminar"
       icon="pi pi-trash"
       outlined
-      (onClick)="deleteUser(usuario)"
+      (onClick)="deleteUser(selectedUser)"
     />
     }
 

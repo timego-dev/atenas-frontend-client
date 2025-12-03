@@ -1,16 +1,16 @@
-import { Role } from '@shared';
+import { RoleType } from '@shared/models/user/user.shared';
 import { AuthService } from '../auth.service';
 
 export interface AuthMockBehavior {
   isLoggedIn: boolean;
-  roles: Role[];
+  roles: RoleType[];
   userName: string | null;
 }
 
 export class AuthMockService extends AuthService {
   private behavior: AuthMockBehavior = {
     isLoggedIn: true,
-    roles: [Role.OPERATOR],
+    roles: [RoleType.OPERATOR],
     userName: 'mockuser',
   };
 
@@ -38,7 +38,7 @@ export class AuthMockService extends AuthService {
   override logout(): void {
     return;
   }
-  override hasRole(role: Role): boolean {
+  override hasRole(role: RoleType): boolean {
     return this.isLoggedIn() && this.behavior.roles.includes(role);
   }
   override get userName(): string | null {

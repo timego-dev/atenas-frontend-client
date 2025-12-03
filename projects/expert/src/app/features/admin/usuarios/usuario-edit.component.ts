@@ -8,9 +8,10 @@ import { RadioButtonModule } from 'primeng/radiobutton';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { IconFieldModule } from 'primeng/iconfield';
 import { UsuarioService } from './usuarios.service';
-import { IUser, Role } from '@shared/services/user-repository.service';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { CommonModule } from '@angular/common';
+import { UserRequestDto } from '@shared/models/user/command/user-request.model';
+import { RoleType } from '@shared/models/user/user.shared';
 
 @Component({
   selector: 'edit-usuario',
@@ -49,7 +50,7 @@ import { CommonModule } from '@angular/common';
         <input type="email" id="email" pInputText [(ngModel)]="usuario().email" required fluid />
       </div>
 
-      <div>
+      <!-- <div>
         <label for="role" class="block font-bold mb-3">Rol</label>
         <p-select
           [(ngModel)]="usuario().role"
@@ -61,27 +62,35 @@ import { CommonModule } from '@angular/common';
           fluid
           appendTo="body"
         />
-      </div>
+      </div> -->
 
       <div>
         <label for="locked" class="block font-bold mb-3">Bloqueado</label>
 
-        <p-toggleswitch [(ngModel)]="usuario().locked" inputId="locked" />
+        <p-toggleswitch [(ngModel)]="enabledInverted" inputId="locked" />
       </div>
     </div>
   `,
   providers: [MessageService, UsuarioService, ConfirmationService],
 })
 export class UsuarioEditComponent {
-  usuario = input.required<IUser>();
+  usuario = input.required<UserRequestDto>();
   submitted = input.required<boolean>();
 
   roles = [
-    { label: 'Administrador', value: Role.ADMINISTRATOR },
-    { label: 'Cliente', value: Role.CLIENT },
-    { label: 'Eurodac', value: Role.EURODAC },
-    { label: 'MBI', value: Role.MBI },
-    { label: 'Operador', value: Role.OPERATOR },
-    { label: 'Supervisor', value: Role.SUPERVISOR },
+    { label: 'Administrador', value: RoleType.ADMINISTRATOR },
+    { label: 'Cliente', value: RoleType.ATENAS_CLIENT },
+    { label: 'Eurodac', value: RoleType.EURODAC_CLIENT },
+    { label: 'MBI', value: RoleType.MBI_CLIENT },
+    { label: 'Operador', value: RoleType.OPERATOR },
+    { label: 'Supervisor', value: RoleType.SUPERVISOR },
   ];
+
+  get enabledInverted(): boolean {
+    return !this.usuario().enabled;
+  }
+
+  set enabledInverted(value: boolean) {
+    this.usuario().enabled = !value;
+  }
 }
