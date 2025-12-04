@@ -4,7 +4,9 @@
       "reset": "Reconnect",
       "close": "Close",
       "leave": "Leave",
-      "capture": "Capture"
+      "capture": "Capture",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
     }
   },
   "signalr": {
@@ -19,6 +21,50 @@
     "wait-initialization": "Preparing the reader… please wait.",
     "reading-placeholder": "Reading… keep the document still.",
     "change-side": "Turn the document over and capture the other side.",
+    "review-title": "Capture Review",
+    "tabs": {
+      "images": "Images",
+      "mrz": "MRZ Data",
+      "verifications": "Verifications"
+    },
+    "verifications": {
+      "title": "Verifications",
+      "expected": "Expected:",
+      "result": "Result:",
+      "no-data": "No verifications available.",
+      "groups": {
+        "MRZ": "MRZ",
+        "Chip": "Chip",
+        "Integrity": "Integrity",
+        "Validity": "Validity",
+        "OCR": "OCR",
+        "Security": "Security",
+        "FingerprintQuality": "Fingerprint Quality",
+        "FingerprintSegmentation": "Fingerprint Segmentation"
+      },
+      "codes": {
+        "PassportExpiry": "Document Expiry",
+        "TextMatch": "Text Match",
+        "DataIntegrity": "Data Integrity",
+        "CheckDigitComp": "Composite Check Digit",
+        "CheckDigit": "Check Digit",
+        "ValidCountry": "Valid Country",
+        "InvalidValue": "Invalid Value",
+        "ChipActiveAuthentication": "Active Authentication (AA)",
+        "ChipPassiveAuthentication": "Passive Authentication (PA)",
+        "ChipAccess": "Chip Access",
+        "ChipAuthentication": "Chip Authentication",
+        "ChipPresent": "Chip Present",
+        "DG1DS": "DG1 Digital Signature",
+        "ImageMatch": "Image Match",
+        "UV": "UV Response",
+        "FingerprintQualityCheck": "Quality Check",
+        "FingerprintFakeDetection": "Fake Detection",
+        "FingerprintHandMixCheck": "Hand Verification",
+        "FingerprintAmbiguousSlap": "Ambiguous Slap",
+        "FingerprintCompletation": "Completeness"
+      }
+    },
     "error": {
       "error-connection": "Could not connect to the document service.",
       "error-document-msg": "Could not connect to the document reader",

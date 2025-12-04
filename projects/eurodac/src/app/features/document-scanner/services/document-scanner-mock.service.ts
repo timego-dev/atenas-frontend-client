@@ -68,37 +68,6 @@ export class DocumentScannerMockService extends BaseDocumentScanner {
   private createDocumentCaptureMock(): ScannerCapturedData {
     const rawData = JSON.parse(JSON.stringify(mockData)) as ScannerCapturedData;
 
-    let processedVerifications: Verification[] = [];
-
-    if (
-      rawData.documentVerifications &&
-      Array.isArray(rawData.documentVerifications.verifications)
-    ) {
-      processedVerifications = rawData.documentVerifications.verifications.map(
-        (rawVerification: any) => {
-          return {
-            group: rawVerification.group,
-            code: rawVerification.code,
-            value: rawVerification.value,
-            sourceMessage: rawVerification.sourceMessage,
-            expected: rawVerification.expected,
-            result: rawVerification.result,
-          } as Verification;
-        }
-      );
-
-      if (processedVerifications.length >= 3) {
-        processedVerifications[0].value = this.hasErrors ? 0 : 1;
-        processedVerifications[1].value = this.hasErrors ? 0 : 1;
-        processedVerifications[2].value = this.hasErrors ? 0 : 1;
-      }
-    }
-
-    const documentCapture = {
-      documentData: rawData.documentData as DocumentCapturedData,
-      documentVerifications: processedVerifications,
-    } as ScannerCapturedData;
-
-    return documentCapture;
+    return rawData;
   }
 }

@@ -11,8 +11,8 @@
 </p-toolbar>
 
 <div style="padding-bottom: 2rem">
-  <!-- ERROR -->
-  <p-card *ngIf="lastEvent() === 'error'">
+  @if (lastEvent() === 'error') {
+  <p-card>
     <ng-template pTemplate="header">
       <div
         style="
@@ -49,9 +49,8 @@
       </div>
     </ng-template>
   </p-card>
-
-  <!-- CANCELADO -->
-  <p-card *ngIf="lastEvent() === 'leave'">
+  } @if (lastEvent() === 'leave') {
+  <p-card>
     <ng-template pTemplate="header">
       <div
         style="
@@ -79,10 +78,17 @@
         Puedes volver a intentarlo cuando quieras.
       </div>
     </ng-template>
-  </p-card>
 
-  <!-- IDLE -->
-  <p-card *ngIf="lastEvent() === 'idle' && !captured()">
+    <ng-template pTemplate="footer">
+      <div style="padding: 0 1.25rem 1rem 1.25rem; text-align: right">
+        <button pButton type="button" severity="secondary" (click)="openScannerModal()">
+          Volver a abrir
+        </button>
+      </div>
+    </ng-template>
+  </p-card>
+  } @if (lastEvent() === 'idle' && !captured()) {
+  <p-card>
     <ng-template pTemplate="header">
       <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
         <div style="font-weight: 600">Bienvenido a {{ title }}</div>
@@ -107,421 +113,57 @@
       </div>
     </ng-template>
   </p-card>
-
-  <!-- RESULTADO -->
-  <ng-container *ngIf="captured()">
-    <!-- Resumen + MRZ en 2 columnas (flex inline) -->
-    <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem">
-      <!-- Resumen -->
-      <div style="flex: 1 1 280px; min-width: 0">
-        <p-card>
-          <ng-template pTemplate="header">
-            <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
-              <div style="font-weight: 600">Resumen</div>
+  } @if (captured()) {
+  <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem">
+    <div style="flex: 1 1 280px; min-width: 0">
+      <p-card class="h-full">
+        <ng-template pTemplate="header">
+          <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
+            <div style="font-weight: 600">Resumen</div>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="content">
+          <div style="padding: 1.25rem; color: var(--text-color)">
+            <div style="margin-bottom: 0.35rem">
+              <strong>Nombre:</strong>
+              <span> {{ captured()?.documentData?.identification?.nombre || '—' }} </span>
             </div>
-          </ng-template>
-          <ng-template pTemplate="content">
-            <div style="padding: 1.25rem; color: var(--text-color)">
-              <div style="margin-bottom: 0.35rem">
-                <strong>Nombre:</strong>
-                <span> {{ captured()?.documentData?.identification?.nombre || '—' }} </span>
-              </div>
-              <div style="margin-bottom: 0.35rem">
-                <strong>Tipo documento:</strong>
-                <span> {{ captured()?.documentData?.identification?.tipoDocumento || '—' }} </span>
-              </div>
-              <div style="margin-bottom: 0.35rem">
-                <strong>País:</strong>
-                <span>
-                  {{
-                    captured()?.documentData?.identification?.pais ||
-                      captured()?.documentData?.identification?.codigoPais ||
-                      '—'
-                  }}
-                </span>
-              </div>
-              <div>
-                <strong>Probabilidad:</strong>
-                <span>
-                  {{ captured()?.documentData?.identification?.probability | probability }}
-                </span>
-              </div>
+            <div style="margin-bottom: 0.35rem">
+              <strong>Tipo documento:</strong>
+              <span> {{ captured()?.documentData?.identification?.tipoDocumento || '—' }} </span>
             </div>
-          </ng-template>
-        </p-card>
-      </div>
-
-      <!-- MRZ -->
-      <div style="flex: 1 1 280px; min-width: 0">
-        <p-card>
-          <ng-template pTemplate="header">
-            <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
-              <div style="font-weight: 600">MRZ</div>
+            <div style="margin-bottom: 0.35rem">
+              <strong>País:</strong>
+              <span>
+                {{
+                  captured()?.documentData?.identification?.pais ||
+                    captured()?.documentData?.identification?.codigoPais ||
+                    '—'
+                }}
+              </span>
             </div>
-          </ng-template>
-          <ng-template pTemplate="content">
-            <div style="padding: 1.25rem; color: var(--text-color)">
-              <div style="margin-bottom: 0.35rem">
-                <strong>Nº Documento:</strong>
-                <span> {{ captured()?.documentData?.mrz?.numeroDocumento || '—' }} </span>
-              </div>
-              <div style="margin-bottom: 0.35rem">
-                <strong>Nombre:</strong>
-                <span> {{ captured()?.documentData?.mrz?.nombre || '—' }} </span>
-              </div>
-              <div style="margin-bottom: 0.35rem">
-                <strong>Apellidos:</strong>
-                <span> {{ captured()?.documentData?.mrz?.apellidos || '—' }} </span>
-              </div>
-              <div style="margin-bottom: 0.35rem">
-                <strong>Nacionalidad:</strong>
-                <span> {{ captured()?.documentData?.mrz?.nacionalidad || '—' }} </span>
-              </div>
-              <div style="margin-bottom: 0.35rem">
-                <strong>Fecha Nacimiento:</strong>
-                <span> {{ captured()?.documentData?.mrz?.fechaNacimiento || '—' }} </span>
-              </div>
-              <div style="margin-bottom: 0.35rem">
-                <strong>Fecha Expedición:</strong>
-                <span> {{ captured()?.documentData?.mrz?.fechaExpedicion || '—' }} </span>
-              </div>
-              <div style="margin-bottom: 0.35rem">
-                <strong>Fecha Caducidad:</strong>
-                <span> {{ captured()?.documentData?.mrz?.fechaCaducidad || '—' }} </span>
-              </div>
-              <div style="margin-top: 0.5rem">
-                <strong>MRZ:</strong>
-                <code
-                  style="
-                    display: block;
-                    margin-top: 0.25rem;
-                    padding: 0.5rem 0.75rem;
-                    background: var(--surface-ground);
-                    border-radius: 4px;
-                    border: 1px solid var(--surface-border);
-                    font-size: 0.8rem;
-                    overflow-x: auto;
-                  "
-                >
-                  {{ captured()?.documentData?.mrz?.mrzCode || '—' }}
-                </code>
-              </div>
+            <div>
+              <strong>Probabilidad:</strong>
+              <span>
+                {{ captured()?.documentData?.identification?.probability | probability }}
+              </span>
             </div>
-          </ng-template>
-        </p-card>
-      </div>
+          </div>
+        </ng-template>
+      </p-card>
     </div>
 
-    <!-- Verificaciones -->
-    <p-card>
-      <ng-template pTemplate="header">
-        <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
-          <div style="font-weight: 600">Verificaciones</div>
-        </div>
-      </ng-template>
-      <ng-template pTemplate="content">
-        <div style="padding: 1.25rem">
-          <div *ngIf="verifications().length === 0" style="color: var(--text-color-secondary)">
-            No hay verificaciones.
-          </div>
-
-          <div *ngFor="let v of verifications()" style="margin-bottom: 1rem">
-            <p-chip [label]="v.nombre || '—'"></p-chip>
-            <div style="margin-top: 0.5rem; color: var(--text-color)">
-              <div *ngIf="v.mrz"><strong>MRZ:</strong> {{ v.mrz }}</div>
-              <div *ngIf="v.viz"><strong>VIZ:</strong> {{ v.viz }}</div>
-              <div *ngIf="v.rawVIZ"><strong>Raw VIZ:</strong> {{ v.rawVIZ }}</div>
-            </div>
-            <p-divider></p-divider>
-          </div>
-        </div>
-      </ng-template>
-    </p-card>
-
-    <!-- Imágenes -->
-    <p-card *ngIf="hasAnyImage()">
-      <ng-template pTemplate="header">
-        <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
-          <div style="font-weight: 600">Imágenes</div>
-        </div>
-      </ng-template>
-
-      <ng-template pTemplate="content">
-        <div style="padding: 1.25rem">
-          <!-- Contenedor de imágenes en grid simple -->
-          <div
-            style="
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-              gap: 1rem;
-            "
-          >
-            <!-- VIZ -->
-            <div
-              *ngIf="captured()?.documentData?.images?.viz | imgSrc as vizSrc"
-              style="border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.75rem"
-            >
-              <div
-                style="height: 12rem; display: flex; align-items: center; justify-content: center"
-              >
-                <p-image
-                  [src]="vizSrc"
-                  alt="VIZ"
-                  [preview]="true"
-                  [imageStyle]="{
-                    width: '100%',
-                    maxWidth: '280px',
-                    maxHeight: '180px',
-                    objectFit: 'contain',
-                    borderRadius: '8px'
-                  }"
-                ></p-image>
-              </div>
-              <div
-                style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-color-secondary)"
-              >
-                VIZ (frontal)
-              </div>
-            </div>
-
-            <!-- UV -->
-            <div
-              *ngIf="captured()?.documentData?.images?.uv | imgSrc as uvSrc"
-              style="border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.75rem"
-            >
-              <div
-                style="height: 12rem; display: flex; align-items: center; justify-content: center"
-              >
-                <p-image
-                  [src]="uvSrc"
-                  alt="UV"
-                  [preview]="true"
-                  [imageStyle]="{
-                    width: '100%',
-                    maxWidth: '280px',
-                    maxHeight: '180px',
-                    objectFit: 'contain',
-                    borderRadius: '8px'
-                  }"
-                ></p-image>
-              </div>
-              <div
-                style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-color-secondary)"
-              >
-                UV (frontal)
-              </div>
-            </div>
-
-            <!-- IR -->
-            <div
-              *ngIf="captured()?.documentData?.images?.ir | imgSrc as irSrc"
-              style="border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.75rem"
-            >
-              <div
-                style="height: 12rem; display: flex; align-items: center; justify-content: center"
-              >
-                <p-image
-                  [src]="irSrc"
-                  alt="IR"
-                  [preview]="true"
-                  [imageStyle]="{
-                    width: '100%',
-                    maxWidth: '280px',
-                    maxHeight: '180px',
-                    objectFit: 'contain',
-                    borderRadius: '8px'
-                  }"
-                ></p-image>
-              </div>
-              <div
-                style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-color-secondary)"
-              >
-                IR (frontal)
-              </div>
-            </div>
-
-            <!-- VIZ reverso -->
-            <div
-              *ngIf="captured()?.documentData?.images?.backVIZ | imgSrc as backVizSrc"
-              style="border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.75rem"
-            >
-              <div
-                style="height: 12rem; display: flex; align-items: center; justify-content: center"
-              >
-                <p-image
-                  [src]="backVizSrc"
-                  alt="VIZ reverso"
-                  [preview]="true"
-                  [imageStyle]="{
-                    width: '100%',
-                    maxWidth: '280px',
-                    maxHeight: '180px',
-                    objectFit: 'contain',
-                    borderRadius: '8px'
-                  }"
-                ></p-image>
-              </div>
-              <div
-                style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-color-secondary)"
-              >
-                VIZ (reverso)
-              </div>
-            </div>
-
-            <!-- UV reverso -->
-            <div
-              *ngIf="captured()?.documentData?.images?.backUV | imgSrc as backUvSrc"
-              style="border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.75rem"
-            >
-              <div
-                style="height: 12rem; display: flex; align-items: center; justify-content: center"
-              >
-                <p-image
-                  [src]="backUvSrc"
-                  alt="UV reverso"
-                  [preview]="true"
-                  [imageStyle]="{
-                    width: '100%',
-                    maxWidth: '280px',
-                    maxHeight: '180px',
-                    objectFit: 'contain',
-                    borderRadius: '8px'
-                  }"
-                ></p-image>
-              </div>
-              <div
-                style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-color-secondary)"
-              >
-                UV (reverso)
-              </div>
-            </div>
-
-            <!-- IR reverso -->
-            <div
-              *ngIf="captured()?.documentData?.images?.backIR | imgSrc as backIrSrc"
-              style="border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.75rem"
-            >
-              <div
-                style="height: 12rem; display: flex; align-items: center; justify-content: center"
-              >
-                <p-image
-                  [src]="backIrSrc"
-                  alt="IR reverso"
-                  [preview]="true"
-                  [imageStyle]="{
-                    width: '100%',
-                    maxWidth: '280px',
-                    maxHeight: '180px',
-                    objectFit: 'contain',
-                    borderRadius: '8px'
-                  }"
-                ></p-image>
-              </div>
-              <div
-                style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-color-secondary)"
-              >
-                IR (reverso)
-              </div>
-            </div>
-          </div>
-        </div>
-      </ng-template>
-    </p-card>
-
-    <!-- JSON bruto + Conversión (2 columnas) -->
-    <div style="display: flex; flex-wrap: wrap; gap: 1rem">
-      <!-- JSON -->
-      <div style="flex: 1 1 280px; min-width: 0">
-        <p-card>
-          <ng-template pTemplate="header">
-            <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
-              <div style="font-weight: 600">Datos (JSON)</div>
-            </div>
-          </ng-template>
-          <ng-template pTemplate="content">
-            <div style="padding: 1.25rem">
-              <pre
-                style="
-                  margin: 0;
-                  padding: 0.75rem 1rem;
-                  background: #111827;
-                  color: #f9fafb;
-                  border-radius: 4px;
-                  font-size: 0.8rem;
-                  overflow: auto;
-                  font-family: Consolas, 'Courier New', monospace;
-                "
-                >{{ captured() | json }}
-              </pre>
-            </div>
-          </ng-template>
-        </p-card>
-      </div>
-
-      <!-- Conversión -->
-      <div style="flex: 1 1 280px; min-width: 0" *ngIf="convertedPayload()">
-        <p-card>
-          <ng-template pTemplate="header">
-            <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
-              <div style="font-weight: 600">Conversión para endpoint</div>
-            </div>
-          </ng-template>
-          <ng-template pTemplate="content">
-            <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem">
-              <div>
-                <h4 style="margin: 0 0 0.4rem 0; color: var(--text-color-secondary)">
-                  Payload (JSON, expected/result = null)
-                </h4>
-                <pre
-                  style="
-                    margin: 0;
-                    padding: 0.75rem 1rem;
-                    background: var(--surface-ground);
-                    border-radius: 4px;
-                    border: 1px solid var(--surface-border);
-                    font-size: 0.8rem;
-                    overflow: auto;
-                    font-family: Consolas, 'Courier New', monospace;
-                  "
-                  >{{ convertedPayload() | json }}
-                </pre>
-              </div>
-
-              <p-divider></p-divider>
-
-              <div>
-                <h4 style="margin: 0 0 0.4rem 0; color: var(--text-color-secondary)">
-                  Archivos (multipart)
-                </h4>
-                <div
-                  *ngIf="multipartFileNames().length === 0"
-                  style="color: var(--text-color-secondary)"
-                >
-                  No hay archivos a adjuntar (no se detectaron imágenes en expected/result).
-                </div>
-                <ul
-                  *ngIf="multipartFileNames().length > 0"
-                  style="list-style: none; padding: 0; margin: 0.25rem 0 0 0"
-                >
-                  <li
-                    *ngFor="let name of multipartFileNames()"
-                    style="display: flex; align-items: center; gap: 0.35rem"
-                  >
-                    <i class="pi pi-paperclip"></i>
-                    <span>{{ name }}</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div style="text-align: right">
-                <button pButton type="button" severity="primary" (click)="submitToEndpoint()">
-                  Enviar al endpoint
-                </button>
-              </div>
-            </div>
-          </ng-template>
-        </p-card>
-      </div>
+    <div style="flex: 1 1 280px; min-width: 0">
+      <app-document-mrz [data]="captured()?.documentData?.mrz"></app-document-mrz>
     </div>
-  </ng-container>
+  </div>
+
+  <app-document-scanner-verifications [verifications]="verifications()" class="mb-4 block">
+  </app-document-scanner-verifications>
+
+  <app-document-images [images]="captured()?.documentData?.images" class="mb-4 block">
+  </app-document-images>
+
+  <div style="display: flex; flex-wrap: wrap; gap: 1rem"></div>
+  }
 </div>

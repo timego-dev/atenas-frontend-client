@@ -1,0 +1,132 @@
+<p-card>
+  <ng-template pTemplate="header">
+    <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
+      <div style="font-weight: 600">{{ 'document.verifications.title' | translate }}</div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <div style="padding: 1.25rem">
+      @for (v of verifications; track $index) {
+      <div style="margin-bottom: 1rem">
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+          "
+        >
+          <div style="display: flex; align-items: center; gap: 0.5rem">
+            <span style="font-size: 0.875rem; font-weight: 700; color: var(--text-color-secondary)">
+              {{ 'document.verifications.groups.' + VerificationGroup[v.group] | translate }}
+            </span>
+            <i
+              class="pi pi-chevron-right"
+              style="font-size: 0.75rem; color: var(--surface-400)"
+            ></i>
+            <span style="font-weight: 600; color: var(--text-color)">
+              {{ 'document.verifications.codes.' + VerificationCode[v.code] | translate }}
+            </span>
+          </div>
+
+          <p-tag
+            [severity]="getSeverity(v.value)"
+            [value]="getStatusLabel(v.value)"
+            [rounded]="true"
+          ></p-tag>
+        </div>
+
+        <div
+          style="
+            padding-left: 0.75rem;
+            border-left: 2px solid var(--surface-border);
+            margin-left: 0.25rem;
+          "
+        >
+          @if (v.sourceMessage) {
+          <div
+            style="font-size: 0.875rem; color: var(--text-color-secondary); margin-bottom: 0.5rem"
+          >
+            {{ v.sourceMessage }}
+          </div>
+          } @if (v.expected || v.result) {
+          <div
+            style="
+              display: flex;
+              gap: 1rem;
+              margin-top: 0.75rem;
+              font-size: 0.875rem;
+              text-align: left;
+            "
+          >
+            @if (v.expected) {
+            <div style="flex: 1; min-width: 0">
+              <span
+                style="
+                  display: block;
+                  font-size: 0.75rem;
+                  color: var(--text-color-secondary);
+                  margin-bottom: 0.25rem;
+                "
+              >
+                {{ 'document.verifications.expected' | translate }}
+              </span>
+
+              @if (isBase64(v.expected)) {
+              <p-image
+                [src]="getImageSrc(v.expected!)"
+                alt="Expected Image"
+                [preview]="true"
+                [imageStyle]="{ 'max-height': '50px', 'max-width': '100%', 'border-radius': '4px' }"
+              ></p-image>
+              } @else {
+              <span style="font-weight: 500; overflow-wrap: anywhere; word-break: break-word">
+                {{ v.expected }}
+              </span>
+              }
+            </div>
+            } @if (v.result) {
+            <div style="flex: 1; min-width: 0">
+              <span
+                style="
+                  display: block;
+                  font-size: 0.75rem;
+                  color: var(--text-color-secondary);
+                  margin-bottom: 0.25rem;
+                "
+              >
+                {{ 'document.verifications.result' | translate }}
+              </span>
+
+              @if (isBase64(v.result)) {
+              <p-image
+                [src]="getImageSrc(v.result!)"
+                alt="Result Image"
+                [preview]="true"
+                [imageStyle]="{ 'max-height': '50px', 'max-width': '100%', 'border-radius': '4px' }"
+              ></p-image>
+              } @else {
+              <span
+                style="font-weight: 500; overflow-wrap: anywhere; word-break: break-word"
+                [style.color]="v.value !== 1 ? '#ef4444' : 'inherit'"
+              >
+                {{ v.result }}
+              </span>
+              }
+            </div>
+            }
+          </div>
+          }
+        </div>
+
+        <p-divider></p-divider>
+      </div>
+      } @empty {
+      <div style="color: var(--text-color-secondary); text-align: center; padding: 1rem">
+        {{ 'document.verifications.no-data' | translate }}
+      </div>
+      }
+    </div>
+  </ng-template>
+</p-card>
