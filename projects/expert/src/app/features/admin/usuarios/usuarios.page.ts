@@ -19,6 +19,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { UsuarioService } from './usuarios.service';
+import { UiSafeCallerService } from '@shared/services/ui-safe-caller.service';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { UsuarioEditComponent } from './usuario-edit.component';
 import { UserResponseDto } from '@shared/models/user/query/user-response.model';
@@ -84,13 +85,20 @@ export class UsuariosPage implements OnInit {
   protected readonly usuarioService = inject(UsuarioService);
   protected readonly messageService = inject(MessageService);
   protected readonly confirmationService = inject(ConfirmationService);
+  private readonly uiSafeCallerService = inject(UiSafeCallerService);
 
   ngOnInit() {
     this.loadUsuarios();
   }
 
   loadUsuarios() {
-    this.usuarioService.getAll().subscribe((data) => this.usuarios.set(data));
+    this.uiSafeCallerService
+      .callWithErrorHandling('Cargar usuarios', () =>
+        this.usuarioService.getAll()
+      )
+      .subscribe({
+        next: (data) => this.usuarios.set(data),
+      });
   }
 
   nombreRol(role: RoleType): string {
@@ -143,17 +151,24 @@ export class UsuariosPage implements OnInit {
       header: 'Confirmación',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.usuarioService.delete(user.id!).subscribe(() => {
-          this.selectedUser = null;
-          this.editingUser = createEmptyUserRequest();
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Correcto',
-            detail: 'Usuario eliminado',
-            life: 3000,
+        this.uiSafeCallerService
+          .callWithErrorHandling('Eliminar usuario', () =>
+            this.usuarioService.delete(user.id!)
+          )
+          .subscribe({
+            next: () => {
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Correcto',
+                detail: 'Usuario eliminado',
+                life: 3000,
+              });
+
+              this.selectedUser = null;
+              this.editingUser = createEmptyUserRequest();
+              this.loadUsuarios();
+            },
           });
-          this.loadUsuarios();
-        });
       },
     });
   }
@@ -175,35 +190,33 @@ export class UsuariosPage implements OnInit {
     return locked ? 'danger' : 'success';
   }
 
-  guardar() {
+ guardar() {
     this.submitted = true;
 
-    if (this.selectedUser) {
-      this.usuarioService.update(this.selectedUser.id, this.editingUser).subscribe((data) => {
-        this.messageService.add({
-          severity: data ? 'success' : 'error',
-          summary: data ? 'Correcto' : 'Error',
-          detail: data ? 'Usuario actualizado' : 'Usuario no encontrado',
-          life: 3000,
-        });
-        if (data) {
-          this.loadUsuarios();
-        }
-      });
-    } else {
-      this.usuarioService.create(this.editingUser).subscribe((_) => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Successful',
-          detail: 'Usuario creado',
-          life: 3000,
-        });
-        this.loadUsuarios();
-      });
-    }
+    const isEdit = !!this.selectedUser;
 
-    this.editDialog = false;
-    this.editingUser = createEmptyUserRequest();
-    this.selectedUser = null;
+    const actionName = isEdit ? 'Actualizar usuario' : 'Crear usuario';
+
+    const operation$ = isEdit
+      ? this.usuarioService.update(this.selectedUser!.id, this.editingUser)
+      : this.usuarioService.create(this.editingUser);
+
+    this.uiSafeCallerService
+      .callWithErrorHandling(actionName, () => operation$)
+      .subscribe({
+        next: (data) => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Correcto',
+            detail: isEdit ? 'Usuario actualizado' : 'Usuario creado',
+            life: 3000,
+          });
+
+          this.editDialog = false;
+          this.selectedUser = null;
+          this.editingUser = createEmptyUserRequest();
+          this.loadUsuarios();
+        },
+      });
   }
 }

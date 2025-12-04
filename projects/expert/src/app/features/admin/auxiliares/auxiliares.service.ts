@@ -17,7 +17,7 @@ export class AuxiliaresService {
   }
 
   getById(id: string): Observable<AuxiliarResponseDto> {
-    return this.getById(id);
+    return this.auxiliarRepositoryService.getById(id);
   }
 
   create(auxiliar: AuxiliarRequestDto): Observable<AuxiliarResponseDto> {

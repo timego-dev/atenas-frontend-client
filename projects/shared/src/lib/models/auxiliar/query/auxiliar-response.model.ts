@@ -1,3 +1,5 @@
+import { AuxiliarRequestDto } from "../command/auxiliar-request.model";
+
 export interface AuxiliarResponseDto {
   id: string; // Guid as string
   alias: string;
@@ -36,4 +38,18 @@ export enum FieldType {
   Numeric = 'Numeric',
   Text = 'Text',
   List = 'List',
+}
+
+export function createEmptyAuxiliarRequest(): AuxiliarRequestDto {
+  return {
+    alias: '',
+    title: '',
+    type: FieldType.Text,
+    required: false,
+    minValue: undefined,
+    maxValue: undefined,
+    decimals: undefined,
+    maxLength: undefined,
+    options: [],
+  }
 }

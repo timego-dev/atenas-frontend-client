@@ -12,12 +12,12 @@
   [rowsPerPageOptions]="[10, 20, 30]"
 >
   <ng-template #caption>
-    <nav style="display: flex; align-items: center">
-      <div style="margin-right: auto">
-        <h2 style="margin: 0">Auxiliares</h2>
+    <nav class="flex">
+      <div class="mr-auto">
+        <h2 class="!m-0">Campos auxiliares</h2>
       </div>
 
-      <div style="display: flex; flex-direction: row; gap: 1rem">
+      <div class="flex flex-row gap-4">
         <p-button label="Añadir" icon="pi pi-plus" severity="primary" (onClick)="openNew()" />
 
         <p-iconfield>
@@ -60,19 +60,19 @@
   </ng-template>
 </p-table>
 
-<p-dialog [(visible)]="editDialog" [style]="{ width: '500px' }" header="Auxiliares" [modal]="true">
+<p-dialog [(visible)]="editDialog" [style]="{ width: '500px' }" header="Campo auxiliar" [modal]="true">
   <ng-template #content>
-    <edit-auxiliares [auxiliar]="$any(auxiliar)" [submitted]="submitted" />
+    <edit-auxiliares [auxiliar]="$any(editingAuxiliar)" [submitted]="submitted" />
   </ng-template>
 
   <ng-template #footer>
-    @if (auxiliar.id) {
+    @if (selectedAuxiliar) {
     <p-button
       severity="danger"
       label="Eliminar"
       icon="pi pi-trash"
       outlined
-      (onClick)="deleteAuxiliar($any(auxiliar))"
+      (onClick)="deleteAuxiliar(selectedAuxiliar)"
     />
     }
 
@@ -81,5 +81,5 @@
   </ng-template>
 </p-dialog>
 
-<p-confirmdialog [style]="{ width: '450px' }" />
+<p-confirmdialog/>
 <p-toast></p-toast>
