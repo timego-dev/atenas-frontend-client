@@ -21,6 +21,7 @@ export class DocumentScannerModalWrapperComponent {
   }
 
   onError(msg: string) {
+    // Do not do any
     // this.ref.close({ status: 'error', error: msg });
   }
 }

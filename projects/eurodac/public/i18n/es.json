@@ -4,7 +4,9 @@
       "reset": "Reconectar",
       "close": "Cerrar",
       "leave": "Salir",
-      "capture": "Capturar"
+      "capture": "Capturar",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar"
     }
   },
   "signalr": {
@@ -19,6 +21,50 @@
     "wait-initialization": "Preparando el lector… espera por favor.",
     "reading-placeholder": "Leyendo… mantén el documento inmóvil.",
     "change-side": "Gira el documento y captura la otra cara.",
+    "review-title": "Revisión de captura",
+    "tabs": {
+      "images": "Imágenes",
+      "mrz": "Datos MRZ",
+      "verifications": "Verificaciones"
+    },
+    "verifications": {
+      "title": "Verificaciones",
+      "expected": "Esperado:",
+      "result": "Resultado:",
+      "no-data": "No hay verificaciones disponibles.",
+      "groups": {
+        "MRZ": "MRZ",
+        "Chip": "Chip",
+        "Integrity": "Integridad",
+        "Validity": "Validez",
+        "OCR": "OCR",
+        "Security": "Seguridad",
+        "FingerprintQuality": "Calidad Huella",
+        "FingerprintSegmentation": "Segmentación Huella"
+      },
+      "codes": {
+        "PassportExpiry": "Caducidad Documento",
+        "TextMatch": "Coincidencia Texto",
+        "DataIntegrity": "Integridad Datos",
+        "CheckDigitComp": "Dígito Control Compuesto",
+        "CheckDigit": "Dígito Control",
+        "ValidCountry": "País Válido",
+        "InvalidValue": "Valor Inválido",
+        "ChipActiveAuthentication": "Autenticación Activa (AA)",
+        "ChipPassiveAuthentication": "Autenticación Pasiva (PA)",
+        "ChipAccess": "Acceso al Chip",
+        "ChipAuthentication": "Autenticación Chip",
+        "ChipPresent": "Chip Presente",
+        "DG1DS": "Firma Digital DG1",
+        "ImageMatch": "Coincidencia Imagen",
+        "UV": "Respuesta UV",
+        "FingerprintQualityCheck": "Control Calidad",
+        "FingerprintFakeDetection": "Detección Falsificación",
+        "FingerprintHandMixCheck": "Verificación de Mano",
+        "FingerprintAmbiguousSlap": "Huella Ambigua",
+        "FingerprintCompletation": "Completitud"
+      }
+    },
     "error": {
       "error-connection": "No se pudo conectar con el servicio de documentos.",
       "error-document-msg": "No se ha podido conectar al lector de documentos",
