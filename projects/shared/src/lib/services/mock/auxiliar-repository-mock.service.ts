@@ -1,21 +1,25 @@
 import { of, Observable, throwError } from 'rxjs';
 
 import { AuxiliarRepositoryService } from '../auxiliar-repository.service';
-import { FieldType, GetAuxiliar } from '@shared/models/auxiliar/query/get-auxiliar-response.model';
-import { PostAuxiliar } from '@shared/models/auxiliar/command/post-auxiliar-request.model';
+
 import { BaseMockApiService } from './base-mock-api.service';
+import {
+  AuxiliarResponseDto,
+  FieldType,
+} from '@shared/models/auxiliar/query/auxiliar-response.model';
+import { AuxiliarRequestDto } from '@shared/models/auxiliar/command/auxiliar-request.model';
 
 export class AuxiliarRepositoryMockService
   extends BaseMockApiService
   implements AuxiliarRepositoryService
 {
-  private auxiliars: GetAuxiliar[] = [...MOCK_AUXILIARS];
+  private auxiliars: AuxiliarResponseDto[] = [...MOCK_AUXILIARS];
 
-  getAll(): Observable<GetAuxiliar[]> {
+  getAll(): Observable<AuxiliarResponseDto[]> {
     return this.handleUnauthorized(() => this.ok(this.auxiliars));
   }
 
-  getById(id: string): Observable<GetAuxiliar> {
+  getById(id: string): Observable<AuxiliarResponseDto> {
     return this.handleUnauthorized(() => {
       const aux = this.auxiliars.find((a) => a.id === id);
       if (!aux) return this.notFound();
@@ -23,14 +27,14 @@ export class AuxiliarRepositoryMockService
     });
   }
 
-  create(postAux: PostAuxiliar): Observable<GetAuxiliar> {
+  create(postAux: AuxiliarRequestDto): Observable<AuxiliarResponseDto> {
     return this.handleUnauthorized(() => {
       const errors = AuxiliarValidator.validate(postAux);
       if (errors.length > 0) {
         return this.badRequest(errors);
       }
 
-      const newAux: GetAuxiliar = {
+      const newAux: AuxiliarResponseDto = {
         id: crypto.randomUUID(),
         alias: postAux.alias,
         title: postAux.title,
@@ -49,7 +53,7 @@ export class AuxiliarRepositoryMockService
     });
   }
 
-  update(id: string, postAux: PostAuxiliar): Observable<GetAuxiliar> {
+  update(id: string, postAux: AuxiliarRequestDto): Observable<AuxiliarResponseDto> {
     return this.handleUnauthorized(() => {
       const errors = AuxiliarValidator.validate(postAux);
       if (errors.length > 0) {
@@ -61,7 +65,7 @@ export class AuxiliarRepositoryMockService
         return this.notFound();
       }
 
-      const updated: GetAuxiliar = {
+      const updated: AuxiliarResponseDto = {
         id,
         alias: postAux.alias,
         title: postAux.title,
@@ -90,7 +94,7 @@ export class AuxiliarRepositoryMockService
   }
 }
 
-export const MOCK_AUXILIARS: GetAuxiliar[] = [
+export const MOCK_AUXILIARS: AuxiliarResponseDto[] = [
   {
     id: '08de26bb-4837-4fbc-81cb-5f32c24b1acc',
     alias: 'budgetary management',
@@ -146,7 +150,7 @@ export const MOCK_AUXILIARS: GetAuxiliar[] = [
 ];
 
 export class AuxiliarValidator {
-  static validate(aux: PostAuxiliar): string[] {
+  static validate(aux: AuxiliarRequestDto): string[] {
     const errors: string[] = [];
 
     // Type must be valid
