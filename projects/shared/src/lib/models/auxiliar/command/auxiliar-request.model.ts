@@ -1,6 +1,6 @@
-import { FieldType } from '../query/get-auxiliar-response.model';
+import { FieldType } from '../query/auxiliar-response.model';
 
-export interface PostAuxiliar {
+export interface AuxiliarRequestDto {
   alias: string;
   title: string;
   type: FieldType;
@@ -12,10 +12,10 @@ export interface PostAuxiliar {
   decimals?: number;
   maxLength?: number;
 
-  options: PostAuxiliarOption[];
+  options: AuxiliarRequestOptionDto[];
 }
 
-export interface PostAuxiliarOption {
+export interface AuxiliarRequestOptionDto {
   code: string;
   description: string;
 }

@@ -3,16 +3,16 @@ import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { ConfigurationService } from './configuration.service';
 import {
-  GetAuxiliar,
+  AuxiliarResponseDto,
   AuxiliarFilterOptions,
-} from '@shared/models/auxiliar/query/get-auxiliar-response.model';
-import { PostAuxiliar } from '@shared/models/auxiliar/command/post-auxiliar-request.model';
+} from '@shared/models/auxiliar/query/auxiliar-response.model';
+import { AuxiliarRequestDto } from '@shared/models/auxiliar/command/auxiliar-request.model';
 
 export abstract class AuxiliarRepositoryService {
-  abstract getAll(filter?: AuxiliarFilterOptions): Observable<GetAuxiliar[]>;
-  abstract getById(id: string): Observable<GetAuxiliar>;
-  abstract create(auxiliar: PostAuxiliar): Observable<GetAuxiliar>;
-  abstract update(id: string, auxiliar: PostAuxiliar): Observable<GetAuxiliar>;
+  abstract getAll(filter?: AuxiliarFilterOptions): Observable<AuxiliarResponseDto[]>;
+  abstract getById(id: string): Observable<AuxiliarResponseDto>;
+  abstract create(auxiliar: AuxiliarRequestDto): Observable<AuxiliarResponseDto>;
+  abstract update(id: string, auxiliar: AuxiliarRequestDto): Observable<AuxiliarResponseDto>;
   abstract delete(id: string): Observable<void>;
 }
 
@@ -27,25 +27,25 @@ export class AuxiliarRepositoryRemoteService implements AuxiliarRepositoryServic
     this.baseUrl = this.config.getConfig().backend?.url + '/auxiliar';
   }
 
-  getAll(filter?: AuxiliarFilterOptions): Observable<GetAuxiliar[]> {
+  getAll(filter?: AuxiliarFilterOptions): Observable<AuxiliarResponseDto[]> {
     // If filter exists, convert Dates to ISO strings for query params
     const params: any = { ...filter };
     if (filter?.creationDateFrom) params.creationDateFrom = filter.creationDateFrom.toISOString();
     if (filter?.creationDateTo) params.creationDateTo = filter.creationDateTo.toISOString();
 
-    return this.http.get<GetAuxiliar[]>(`${this.baseUrl}`, { params });
+    return this.http.get<AuxiliarResponseDto[]>(`${this.baseUrl}`, { params });
   }
 
-  getById(id: string): Observable<GetAuxiliar> {
-    return this.http.get<GetAuxiliar>(`${this.baseUrl}/${id}`);
+  getById(id: string): Observable<AuxiliarResponseDto> {
+    return this.http.get<AuxiliarResponseDto>(`${this.baseUrl}/${id}`);
   }
 
-  create(auxiliar: PostAuxiliar): Observable<GetAuxiliar> {
-    return this.http.post<GetAuxiliar>(`${this.baseUrl}`, auxiliar);
+  create(auxiliar: AuxiliarRequestDto): Observable<AuxiliarResponseDto> {
+    return this.http.post<AuxiliarResponseDto>(`${this.baseUrl}`, auxiliar);
   }
 
-  update(id: string, auxiliar: PostAuxiliar): Observable<GetAuxiliar> {
-    return this.http.put<GetAuxiliar>(`${this.baseUrl}/${id}`, auxiliar);
+  update(id: string, auxiliar: AuxiliarRequestDto): Observable<AuxiliarResponseDto> {
+    return this.http.put<AuxiliarResponseDto>(`${this.baseUrl}/${id}`, auxiliar);
   }
 
   delete(id: string): Observable<void> {

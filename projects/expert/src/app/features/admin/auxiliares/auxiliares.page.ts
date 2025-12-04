@@ -1,5 +1,4 @@
 import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { FieldType, GetAuxiliar } from '@shared/models/auxiliar/query/get-auxiliar-response.model';
 import { AuxiliaresService } from './auxiliares.service';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
@@ -13,9 +12,13 @@ import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TagModule } from 'primeng/tag';
-import { PostAuxiliar } from '@shared/models/auxiliar/command/post-auxiliar-request.model';
 import { AuxiliaresEditComponent } from './auxiliares-edit.component';
 import { AuxiliarValidator } from '@shared/services/mock/auxiliar-repository-mock.service';
+import {
+  AuxiliarResponseDto,
+  FieldType,
+} from '@shared/models/auxiliar/query/auxiliar-response.model';
+import { AuxiliarRequestDto } from '@shared/models/auxiliar/command/auxiliar-request.model';
 
 interface Column {
   field: string;
@@ -43,8 +46,8 @@ interface Column {
   providers: [MessageService, AuxiliaresService, ConfirmationService],
 })
 export class AuxiliaresPage implements OnInit {
-  auxiliares = signal<GetAuxiliar[]>([]);
-  auxiliar: Partial<GetAuxiliar> = {};
+  auxiliares = signal<AuxiliarResponseDto[]>([]);
+  auxiliar: Partial<AuxiliarResponseDto> = {};
   editDialog = false;
   submitted = false;
   @ViewChild('dt') table!: Table;
@@ -94,12 +97,12 @@ export class AuxiliaresPage implements OnInit {
     this.editDialog = true;
   }
 
-  editAuxiliar(auxiliar: GetAuxiliar) {
+  editAuxiliar(auxiliar: AuxiliarResponseDto) {
     this.auxiliar = { ...auxiliar };
     this.editDialog = true;
   }
 
-  deleteAuxiliar(auxiliar: GetAuxiliar) {
+  deleteAuxiliar(auxiliar: AuxiliarResponseDto) {
     this.hideDialog();
     this.confirmationService.confirm({
       message: `¿Estás seguro de eliminar ${auxiliar.title}?`,
@@ -160,12 +163,12 @@ export class AuxiliaresPage implements OnInit {
   guardar(): void {
     this.submitted = true;
 
-    if (AuxiliarValidator.validate(this.auxiliar as PostAuxiliar).length > 0) {
+    if (AuxiliarValidator.validate(this.auxiliar as AuxiliarRequestDto).length > 0) {
       return;
     }
 
     if (this.auxiliar.id) {
-      this.auxiliarService.update(this.auxiliar.id, this.auxiliar as PostAuxiliar).subscribe({
+      this.auxiliarService.update(this.auxiliar.id, this.auxiliar as AuxiliarRequestDto).subscribe({
         next: (data) => {
           this.messageService.add({
             severity: data ? 'success' : 'error',
@@ -180,7 +183,7 @@ export class AuxiliaresPage implements OnInit {
         error: (error) => this.handlingErrorMessage(error?.error),
       });
     } else {
-      this.auxiliarService.create(this.auxiliar as PostAuxiliar).subscribe({
+      this.auxiliarService.create(this.auxiliar as AuxiliarRequestDto).subscribe({
         next: (_) => {
           this.messageService.add({
             severity: 'success',

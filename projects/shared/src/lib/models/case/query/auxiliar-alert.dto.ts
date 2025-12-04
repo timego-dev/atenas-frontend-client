@@ -1,4 +1,4 @@
-import { FieldType } from '@shared/models/auxiliar/query/get-auxiliar-response.model';
+import { FieldType } from '@shared/models/auxiliar/query/auxiliar-response.model';
 
 export interface AuxiliarValueDto {
   id: string;

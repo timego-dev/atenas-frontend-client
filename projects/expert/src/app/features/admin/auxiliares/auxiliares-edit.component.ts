@@ -9,7 +9,10 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { CommonModule } from '@angular/common';
-import { FieldType, GetAuxiliar } from '@shared/models/auxiliar/query/get-auxiliar-response.model';
+import {
+  AuxiliarResponseDto,
+  FieldType,
+} from '@shared/models/auxiliar/query/auxiliar-response.model';
 
 @Component({
   selector: 'edit-auxiliares',
@@ -173,7 +176,7 @@ import { FieldType, GetAuxiliar } from '@shared/models/auxiliar/query/get-auxili
   providers: [],
 })
 export class AuxiliaresEditComponent {
-  auxiliar = input.required<GetAuxiliar>();
+  auxiliar = input.required<AuxiliarResponseDto>();
   submitted = input.required<boolean>();
 
   protected readonly FieldType = FieldType;
