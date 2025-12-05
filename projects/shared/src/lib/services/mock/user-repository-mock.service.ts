@@ -78,6 +78,22 @@ export class UserRepositoryMockService extends BaseMockApiService implements Use
     { id: 'b7ecc368-737c-46da-9a7e-cefa0d6b3a27', name: 'experts' },
   ];
 
+  // ONLY DESIGNED FOR MOCK CASES
+  getUsersByGroup(groupName: string): UserResponseDto[] {
+    return this.users.filter((u) => u.groups?.some((g) => g.name === groupName));
+  }
+
+  getRandomUser(): UserResponseDto {
+    return this.users[Math.floor(Math.random() * this.users.length)];
+  }
+
+  getRandomUserByGroup(groupName: string): UserResponseDto | null {
+    const groupUsers = this.getUsersByGroup(groupName);
+    if (!groupUsers.length) return null;
+    return groupUsers[Math.floor(Math.random() * groupUsers.length)];
+  }
+  // ----------------------------------
+
   // -------------------------------
   // USERS
   // -------------------------------
