@@ -1,9 +1,11 @@
-import { DocumentIdvAttachmentDto } from "./document-idv.dto";
-import { DocumentDvAttachmentDto } from "./document-dv.dto";
-import { DigitalAttachmentDto } from "./document-shared.dto";
+import { DocumentIdvAttachmentDto } from './document-idv.dto';
+import { DocumentDvAttachmentDto } from './document-dv.dto';
+import { DigitalAttachmentDto } from './document-shared.dto';
 import { AttachmentType, DocumentAttachmentType } from '../case.enums';
+import { UserSummaryDto } from './case.dto';
 
 export interface ConsultationActivityDto {
+  creator: UserSummaryDto;
   attachments: AttachmentResponseDto[];
 }
 

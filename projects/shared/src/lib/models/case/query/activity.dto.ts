@@ -1,9 +1,12 @@
 import { ActivityType, CaseResolution } from '../case.enums';
 import { ConsultationActivityDto } from './attachment.dto';
+import { UserSummaryDto } from './case.dto';
 import { DocumentVerificationAutomaticActivityDto } from './document-verification-automatic-activity.dto';
 
 export interface ActivityDto {
   type: ActivityType;
+  creationDate: Date;
+  text: string;
 
   consultation?: ConsultationActivityDto | null;
   resolution?: ResolutionActivityDto | null;
@@ -29,5 +32,6 @@ export interface FaceVerificationResultDto {
 }
 
 export interface ResolutionActivityDto {
+  creator: UserSummaryDto;
   resolution: CaseResolution;
 }

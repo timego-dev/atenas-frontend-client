@@ -1,6 +1,6 @@
 import { of, Observable, throwError } from 'rxjs';
 import { CaseRepositoryService } from '../case-repository.service';
-import { CaseDto, CaseSummaryDto } from '@shared/models/case/query/case.dto';
+import { CaseDto, CaseSummaryDto, UserSummaryDto } from '@shared/models/case/query/case.dto';
 import { AthenasMessageDto } from '@shared/models/case/command/athenas-message.dto';
 import {
   DIGITAL_ATTACHMENT_VIDEO_2,
@@ -18,6 +18,7 @@ import {
   DOCUMENT_DV_OCV_VIZ_CHIP_BACK_RESULT,
   DOCUMENT_DV_UV_MRZ_REPLACE_EXPECTED,
   DOCUMENT_DV_UV_MRZ_REPLACE_RESULT,
+  UserRepositoryMockService,
 } from '@shared';
 import {
   ActivityType,
@@ -32,12 +33,19 @@ import Prando from 'prando';
 import { FieldType } from '@shared/models/auxiliar/query/auxiliar-response.model';
 import { AttachmentDto } from '@shared/models/case/command/shared.dto';
 import { BaseMockApiService } from './base-mock-api.service';
+import { Injectable } from '@angular/core';
 
 const seed = 12345; // fixed seed → same values every run
 const rng = new Prando(seed);
-
+@Injectable({
+  providedIn: 'root',
+})
 export class CaseRepositoryMockService extends BaseMockApiService implements CaseRepositoryService {
-  private cases: CaseSummaryDto[] = generateMockCases();
+  private cases: CaseSummaryDto[];
+  constructor(private usersRepo: UserRepositoryMockService) {
+    super();
+    this.cases = this.generateMockCases();
+  }
 
   getAll(): Observable<CaseSummaryDto[]> {
     return this.handleUnauthorized(() => this.ok(this.cases));
@@ -50,7 +58,7 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
       if (!summary) {
         return this.notFound();
       }
-      return of(buildCaseDtoFromSummary(summary));
+      return of(this.buildCaseDtoFromSummary(summary));
     });
   }
 
@@ -59,7 +67,7 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
       const errors = CaseValidator.validate(message, files);
       if (errors.length) return this.badRequest(errors);
 
-      const newCase = buildCaseDtoFromSummary(generateMockCaseSummary());
+      const newCase = this.buildCaseDtoFromSummary(this.generateMockCaseSummary());
       return this.created(newCase);
     });
   }
@@ -85,7 +93,7 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
       this.cases[index] = updatedSummary;
 
       // Convert to CaseDto
-      const dto = buildCaseDtoFromSummary(updatedSummary);
+      const dto = this.buildCaseDtoFromSummary(updatedSummary);
 
       return this.ok(dto);
     });
@@ -97,27 +105,90 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
       return this.ok();
     });
   }
+
+  private generateMockCases(count = 100): CaseSummaryDto[] {
+    return Array.from({ length: count }, () => this.generateMockCaseSummary()).sort(
+      (a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime()
+    );
+  }
+
+  private generateMockCaseSummary(): CaseSummaryDto {
+    const creationDate = randomCreationDate();
+    const caseStatus = randomElement(Object.values(CaseStatus));
+    const isSolved = caseStatus === CaseStatus.SOLVED;
+    const isArchived = caseStatus === CaseStatus.ARCHIVED;
+    const isOpen = caseStatus === CaseStatus.OPEN;
+
+    const creator = this.usersRepo.getRandomUser();
+    const expert = !isOpen ? this.usersRepo.getRandomUserByGroup('experts') : null;
+
+    return {
+      id: generateGuid(),
+      trackingNumber: randomTrackingNumber(),
+      caseStatus,
+      caseResolution: isSolved
+        ? randomElement(Object.values(CaseResolution))
+        : CaseResolution.PENDING,
+      creationDate,
+      lastUpdated: creationDate,
+
+      creator: {
+        externalId: creator.id,
+        username: creator.username,
+        email: creator.email,
+      },
+
+      expert: expert
+        ? {
+            externalId: expert.id,
+            username: expert.username,
+            email: expert.email,
+          }
+        : null,
+
+      caseGroupId: null,
+      auxiliarValues: randomAuxiliarValues(),
+      alerts: [],
+
+      notSolvedTime: isSolved || isArchived ? randomNotSolvedTime() : null,
+
+      personalId: `PID-${Math.floor(100000 + Math.random() * 900000)}`,
+      documentNumber: `DOC-${Math.floor(100000 + Math.random() * 900000)}`,
+      citizenName: randomName(),
+      dateOfBirth: randomDateYearsAgo(20, 40),
+
+      documentAttachmentType: randomElement(Object.values(DocumentAttachmentType)),
+    };
+  }
+
+  private buildCaseDtoFromSummary(summary: CaseSummaryDto): CaseDto {
+    return {
+      ...summary,
+
+      // Deep-clone nested arrays/objects to avoid mutation
+      auxiliarValues: summary.auxiliarValues?.map((v) => ({ ...v })),
+      alerts: summary.alerts?.map((a) => ({ ...a })),
+      creator: { ...summary.creator },
+      expert: summary.expert ? { ...summary.expert } : null,
+
+      // Add placeholder activities
+      activities: [
+        generateConsultationActivityWithDvAttachment(summary.creator, summary.creationDate),
+      ],
+    };
+  }
 }
 
-function buildCaseDtoFromSummary(summary: CaseSummaryDto): CaseDto {
-  return {
-    ...summary,
-
-    // Deep-clone nested arrays/objects to avoid mutation
-    auxiliarValues: summary.auxiliarValues?.map((v) => ({ ...v })),
-    alerts: summary.alerts?.map((a) => ({ ...a })),
-    creator: { ...summary.creator },
-    expert: summary.expert ? { ...summary.expert } : null,
-
-    // Add placeholder activities
-    activities: [generateConsultationActivityWithDvAttachment()],
-  };
-}
-
-function generateConsultationActivityWithDvAttachment(): ActivityDto {
+function generateConsultationActivityWithDvAttachment(
+  creator: UserSummaryDto,
+  creationDate: Date
+): ActivityDto {
   return {
     type: ActivityType.CONSULTATION,
+    text: 'Consultation activity with DV attachment',
+    creationDate: creationDate,
     consultation: {
+      creator: creator,
       attachments: [
         {
           attachmentType: AttachmentType.DOCUMENT_DV,
@@ -763,63 +834,6 @@ function generateConsultationActivityWithDvAttachment(): ActivityDto {
   };
 }
 
-function generateMockCases(count = 100): CaseSummaryDto[] {
-  return Array.from({ length: count }, () => generateMockCaseSummary()).sort(
-    (a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime()
-  );
-}
-
-function generateMockCaseSummary(): CaseSummaryDto {
-  const creationDate = randomCreationDate();
-  const caseStatus = randomElement(Object.values(CaseStatus));
-  const isSolved = caseStatus === CaseStatus.SOLVED;
-  const isArchived = caseStatus === CaseStatus.ARCHIVED;
-  const isOpen = caseStatus === CaseStatus.OPEN;
-
-  const creatorName = randomName();
-  const shouldAssignExpert = !isOpen;
-
-  const expertName = randomName();
-
-  return {
-    id: generateGuid(),
-    trackingNumber: randomTrackingNumber(),
-    caseStatus,
-    caseResolution: isSolved
-      ? randomElement(Object.values(CaseResolution))
-      : CaseResolution.PENDING,
-    creationDate,
-    lastUpdated: creationDate,
-
-    creator: {
-      externalId: generateGuid(),
-      username: creatorName,
-      email: randomEmail(creatorName),
-    },
-
-    expert: shouldAssignExpert
-      ? {
-          externalId: generateGuid(),
-          username: expertName!,
-          email: randomEmail(expertName!),
-        }
-      : null,
-
-    caseGroupId: null,
-    auxiliarValues: randomAuxiliarValues(),
-    alerts: [],
-
-    notSolvedTime: isSolved || isArchived ? randomNotSolvedTime() : null,
-
-    personalId: `PID-${Math.floor(100000 + Math.random() * 900000)}`,
-    documentNumber: `DOC-${Math.floor(100000 + Math.random() * 900000)}`,
-    citizenName: randomName(),
-    dateOfBirth: randomDateYearsAgo(20, 40),
-
-    documentAttachmentType: randomElement(Object.values(DocumentAttachmentType)),
-  };
-}
-
 function randomTrackingNumber(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let suffix = '';
@@ -867,8 +881,9 @@ function randomDateYearsAgo(minYears: number, maxYears: number): Date {
 
 function randomCreationDate(): Date {
   // Define your fixed date range
-  const start = new Date(2025, 10, 1).getTime(); // Nov 1, 2025 (month 10)
-  const end = new Date(2025, 10, 26).getTime(); // Nov 26, 2025 (inclusive)
+  const today = new Date();
+  const end = today.getTime();
+  const start = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 2).getTime();
 
   // Generate a deterministic random timestamp between start and end
   const randomTimestamp = rng.nextInt(start, end);
