@@ -2,10 +2,10 @@ import { CredentialsDto, GroupDto, RoleDto } from '../user.shared';
 
 export interface UserResponseDto {
   id: string;
-  username?: string | null;
+  username: string;
   firstName?: string | null;
   lastName?: string | null;
-  email?: string | null;
+  email: string;
   emailVerified: boolean;
   enabled: boolean;
   totp: boolean;

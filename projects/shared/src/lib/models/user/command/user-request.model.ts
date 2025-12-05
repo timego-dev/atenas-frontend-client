@@ -1,17 +1,17 @@
 export interface UserRequestDto {
-  username?: string | null;
+  username: string;
   firstName?: string | null;
   lastName?: string | null;
-  email?: string | null;
+  email: string;
   enabled: boolean;
 }
 
 export function createEmptyUserRequest(): UserRequestDto {
   return {
-    username: null,
+    username: '',
     firstName: null,
     lastName: null,
-    email: null,
+    email: '',
     enabled: false,
   };
 }
