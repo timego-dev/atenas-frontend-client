@@ -6,24 +6,46 @@ import {
   output,
   ChangeDetectionStrategy,
   inject,
+  computed,
 } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { CommonModule } from '@angular/common';
+import { take } from 'rxjs';
+
+// PrimeNG
+import { CardModule } from 'primeng/card';
+import { ButtonModule } from 'primeng/button';
+import { TabsModule } from 'primeng/tabs';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+
+// Tipos y Servicios
 import { BaseDocumentScanner, IDocumentListener } from '../../types/BaseDocumentService';
 import { DocumentError } from '../../types/DocumentError';
 import { MessageError } from '../../types/MessageError';
-import { CommonModule } from '@angular/common';
-import { ConnectionModalComponent } from '../connection-modal/connection-card.component';
-import { take } from 'rxjs';
-import { CardModule } from 'primeng/card';
-import { ButtonModule } from 'primeng/button';
-import { DocumentReaderErrorCodes } from '../../types/DocumentReaderErrorCodes';
 import { CaptureOptions } from '../../types/CaptureOptions';
 import { ScannerCapturedData } from '../../types/DocumentCaptureData';
+
+// Componentes
+import { ConnectionModalComponent } from '../connection-modal/connection-card.component';
+import { DocumentImagesComponent } from '../../components/document-images/document-images';
+import { DocumentMrzComponent } from '../../components/document-mrz/document-mrz';
+import { DocumentScannerVerificationsComponent } from '../../components/document-scanner-verifications/document-scanner-verifications';
 
 @Component({
   selector: 'app-document-scanner-capture',
   standalone: true,
-  imports: [CommonModule, TranslateModule, CardModule, ButtonModule, ConnectionModalComponent],
+  imports: [
+    CommonModule,
+    TranslateModule,
+    CardModule,
+    ProgressSpinnerModule,
+    ButtonModule,
+    TabsModule,
+    ConnectionModalComponent,
+    DocumentImagesComponent,
+    DocumentMrzComponent,
+    DocumentScannerVerificationsComponent,
+  ],
   templateUrl: './document-scanner-capture.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -38,9 +60,17 @@ export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocu
   isCaptureEnabled = signal<boolean>(false);
   isConnectionBlocking = signal<boolean>(false);
 
+  // Signals para el modo revisión
+  isReviewMode = signal<boolean>(false);
+  capturedData = signal<ScannerCapturedData | null>(null);
+
+  // Computados para pasar datos limpios a los hijos
+  currentImages = computed(() => this.capturedData()?.documentData?.images);
+  currentMrz = computed(() => this.capturedData()?.documentData?.mrz);
+  currentVerifications = computed(() => this.capturedData()?.documentVerifications?.verifications);
+
   // Properties
   private isFirstFaceRead: boolean = true;
-  private isFirstCaptureTry: boolean = true;
 
   // Inyección
   private readonly documentService = inject(BaseDocumentScanner);
@@ -84,7 +114,21 @@ export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocu
   }
 
   readDocument(document: ScannerCapturedData) {
-    void this.documentService.documentStop().then(() => this.onCaptured.emit(document));
+    void this.documentService.documentStop().then(() => {
+      this.capturedData.set(document);
+      this.isReviewMode.set(true);
+    });
+  }
+
+  confirmCapture() {
+    const data = this.capturedData();
+    if (data) {
+      this.onCaptured.emit(data);
+    }
+  }
+
+  cancelReview() {
+    this.onLeave.emit();
   }
 
   partDocument(value: number) {
@@ -123,36 +167,7 @@ export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocu
       this.handleErrors.emit(this.translate.instant('document.error.message'));
       return;
     }
-
-    let msg = this.translate.instant('document.error.message');
-    switch (error.ErrorCode) {
-      case DocumentReaderErrorCodes.DISCONNECT:
-        msg = this.translate.instant('document.error.message-disconnect');
-        break;
-      case DocumentReaderErrorCodes.NOTCAPTURING:
-        msg = this.translate.instant('document.error.message-not-capture');
-        break;
-      case DocumentReaderErrorCodes.TIMEOUT:
-        msg = this.translate.instant('document.error.message-timeout');
-        await this.reconnect();
-        break;
-      case DocumentReaderErrorCodes.UNINITIALIZE:
-        msg = this.translate.instant('document.error.message-not-init');
-        break;
-      case DocumentReaderErrorCodes.YETINITIALIZE:
-        msg = this.translate.instant('document.error.message-already-started');
-        break;
-      case DocumentReaderErrorCodes.VALIDATION:
-        if (this.isFirstCaptureTry) {
-          this.isFirstCaptureTry = false;
-          await this.reconnect();
-          this.isCaptureEnabled.set(false);
-          await this.startDocumentCapture();
-          return;
-        }
-        break;
-    }
-    this.handleErrors.emit(msg);
+    this.handleErrors.emit(this.translate.instant('document.error.message'));
   }
 
   private async startDocumentCapture() {
@@ -165,11 +180,7 @@ export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocu
       };
       await this.documentService.documentStart(config);
     } catch {
-      this.handleErrors.emit(
-        this.translate.instant('document.error.error-document-msg') +
-          '. ' +
-          this.translate.instant('document.error.error-document-instructions')
-      );
+      this.handleErrors.emit(this.translate.instant('document.error.error-document-msg'));
     }
   }
 

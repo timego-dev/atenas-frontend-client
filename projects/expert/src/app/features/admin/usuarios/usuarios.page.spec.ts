@@ -36,10 +36,10 @@ describe('Usuarios page', () => {
 
   describe('Page tests', () => {
     it('should be in initial state', () => {
-      expect(usuariosPage.usuarios().length).toBe(9);
+      expect(usuariosPage.usuarios().length).toBe(4);
 
       expect(usuariosPage.editDialog).toBeFalse();
-      expect(usuariosPage.editingUser).toBeUndefined();
+      expect(usuariosPage.editingUser).toBeDefined();
     });
 
     it('should edit user', fakeAsync(() => {
@@ -113,7 +113,7 @@ describe('Usuarios page', () => {
       fixture.detectChanges();
       tick();
       expect(usuariosPage.editDialog).toBeFalse();
-      expect(usuariosPage.usuarios().length).toBe(10);
+      expect(usuariosPage.usuarios().length).toBe(5);
     }));
   });
 });

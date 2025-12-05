@@ -1,5 +1,5 @@
-<!-- Bloque: Conexión perdida -->
-<div *ngIf="displayConnectionLostDialog">
+@if (displayConnectionLostDialog) {
+<div>
   <p-card>
     <ng-template pTemplate="header">
       <h2 class="text-xl font-semibold leading-relaxed pt-4 px-3">
@@ -38,9 +38,8 @@
     </ng-template>
   </p-card>
 </div>
-
-<!-- Bloque: Reintentando conexión -->
-<div *ngIf="displayReconnectingDialog">
+} @if (displayReconnectingDialog) {
+<div>
   <p-card>
     <ng-template pTemplate="header">
       <span class="font-semibold">
@@ -60,9 +59,8 @@
     </div>
   </p-card>
 </div>
-
-<!-- Bloque: Conectando -->
-<div *ngIf="displayConnectingDialog">
+} @if (displayConnectingDialog) {
+<div>
   <p-card styleClass="w-full rounded-lg shadow-lg">
     <ng-template pTemplate="header">
       <span class="font-semibold">
@@ -82,3 +80,4 @@
     </div>
   </p-card>
 </div>
+}

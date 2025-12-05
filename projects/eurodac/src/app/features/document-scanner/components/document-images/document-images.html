@@ -1,0 +1,64 @@
+@if (hasAnyImage()) {
+<p-card>
+  <ng-template pTemplate="header">
+    <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
+      <div style="font-weight: 600">Imágenes</div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <div style="padding: 1.25rem">
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 1rem;
+        "
+      >
+        <ng-container
+          *ngTemplateOutlet="imgBlock; context: { src: images?.viz, label: 'VIZ (frontal)' }"
+        ></ng-container>
+        <ng-container
+          *ngTemplateOutlet="imgBlock; context: { src: images?.uv, label: 'UV (frontal)' }"
+        ></ng-container>
+        <ng-container
+          *ngTemplateOutlet="imgBlock; context: { src: images?.ir, label: 'IR (frontal)' }"
+        ></ng-container>
+        <ng-container
+          *ngTemplateOutlet="imgBlock; context: { src: images?.backVIZ, label: 'VIZ (reverso)' }"
+        ></ng-container>
+        <ng-container
+          *ngTemplateOutlet="imgBlock; context: { src: images?.backUV, label: 'UV (reverso)' }"
+        ></ng-container>
+        <ng-container
+          *ngTemplateOutlet="imgBlock; context: { src: images?.backIR, label: 'IR (reverso)' }"
+        ></ng-container>
+      </div>
+    </div>
+  </ng-template>
+</p-card>
+}
+
+<ng-template #imgBlock let-src="src" let-label="label">
+  @if (src | imgSrc; as finalSrc) {
+  <div style="border: 1px solid var(--surface-border); border-radius: 8px; padding: 0.75rem">
+    <div style="height: 12rem; display: flex; align-items: center; justify-content: center">
+      <p-image
+        [src]="finalSrc"
+        [alt]="label"
+        [preview]="true"
+        [imageStyle]="{
+          width: '100%',
+          maxWidth: '280px',
+          maxHeight: '180px',
+          objectFit: 'contain',
+          borderRadius: '8px'
+        }"
+      ></p-image>
+    </div>
+    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--text-color-secondary)">
+      {{ label }}
+    </div>
+  </div>
+  }
+</ng-template>

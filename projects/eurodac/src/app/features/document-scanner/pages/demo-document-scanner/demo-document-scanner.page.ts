@@ -1,10 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
-import { NgIf, NgFor, JsonPipe } from '@angular/common';
 import { TranslateModule } from '@ngx-translate/core';
 import { MappedMultipartAtenas, ScannerDvMapper } from '../../mappers/scanner-dv.mapper';
-import { ImgSrcPipe } from '../../../../shared//pipes/img-src.pipe';
 import { ProbabilityPipe } from '../../../../shared/pipes/probability.pipe';
-import { nowMs } from '../../../../shared/utils/time';
 import { ToolbarModule } from 'primeng/toolbar';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -13,19 +10,18 @@ import { ChipModule } from 'primeng/chip';
 import { ImageModule } from 'primeng/image';
 import { DynamicDialogModule, DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { DocumentScannerModalWrapperComponent } from '../../components/document-scanner-modal-wrapper/document-scanner-modal-wrapper.component';
-import { DocumentVerificationData } from '@shared/models/case/command/scanner-dv.dto';
+import { Verification } from '@shared/models/case/command/scanner-dv.dto';
 import { ActivityType } from '@shared/models/case/case.enums';
 import { ScannerCapturedData } from '../../types/DocumentCaptureData';
 import { CaseRepositoryService } from '@shared/services/case-repository.service';
+import { DocumentImagesComponent } from '../../components/document-images/document-images';
+import { DocumentMrzComponent } from '../../components/document-mrz/document-mrz';
+import { DocumentScannerVerificationsComponent } from '../../components/document-scanner-verifications/document-scanner-verifications';
 
 @Component({
   selector: 'demo-document-scanner',
   standalone: true,
   imports: [
-    // Angular
-    NgIf,
-    NgFor,
-    JsonPipe,
     // PrimeNG
     ToolbarModule,
     CardModule,
@@ -37,8 +33,11 @@ import { CaseRepositoryService } from '@shared/services/case-repository.service'
     // Translations
     TranslateModule,
     // Pipes
-    ImgSrcPipe,
     ProbabilityPipe,
+    // Components
+    DocumentImagesComponent,
+    DocumentMrzComponent,
+    DocumentScannerVerificationsComponent,
   ],
   providers: [DialogService],
   templateUrl: './demo-document-scanner.page.html',
@@ -54,13 +53,8 @@ export class DemoDocumentScannerPage {
   convertedPayload = signal<any | null>(null);
   multipartFileNames = signal<string[]>([]);
 
-  hasAnyImage = computed(() => {
-    const imgs = this.captured()?.documentData?.images;
-    return !!(imgs?.viz || imgs?.uv || imgs?.ir || imgs?.backVIZ || imgs?.backUV || imgs?.backIR);
-  });
-
-  verifications = computed<DocumentVerificationData[]>(
-    () => this.captured()?.documentData?.verificationData ?? []
+  verifications = computed<Verification[] | undefined>(
+    () => this.captured()?.documentVerifications?.verifications
   );
 
   private dialogRef?: DynamicDialogRef<DocumentScannerModalWrapperComponent> | null;
@@ -98,10 +92,12 @@ export class DemoDocumentScannerPage {
   };
 
   onLeave = () => {
+    console.log('Scanner modal closed without capture');
     this.lastEvent.set('leave');
   };
 
   onError = (msg: string) => {
+    console.error('Scanner error:', msg);
     this.errorMessage.set(msg ?? 'Error desconocido');
     this.lastEvent.set('error');
   };

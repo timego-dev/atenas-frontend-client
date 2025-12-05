@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
-import { FieldType, GetAuxiliar } from '@shared/models/auxiliar/query/get-auxiliar-response.model';
 import { AuxiliaresService } from './auxiliares.service';
+import { UiSafeCallerService } from '@shared/services/ui-safe-caller.service';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { CommonModule } from '@angular/common';
 import { Table, TableModule } from 'primeng/table';
@@ -13,9 +13,14 @@ import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TagModule } from 'primeng/tag';
-import { PostAuxiliar } from '@shared/models/auxiliar/command/post-auxiliar-request.model';
 import { AuxiliaresEditComponent } from './auxiliares-edit.component';
 import { AuxiliarValidator } from '@shared/services/mock/auxiliar-repository-mock.service';
+import {
+  AuxiliarResponseDto,
+  createEmptyAuxiliarRequest,
+  FieldType,
+} from '@shared/models/auxiliar/query/auxiliar-response.model';
+import { AuxiliarRequestDto } from '@shared/models/auxiliar/command/auxiliar-request.model';
 
 interface Column {
   field: string;
@@ -40,11 +45,12 @@ interface Column {
     AuxiliaresEditComponent,
   ],
   templateUrl: './auxiliares.page.html',
-  providers: [MessageService, AuxiliaresService, ConfirmationService],
+  providers: [AuxiliaresService, ConfirmationService],
 })
 export class AuxiliaresPage implements OnInit {
-  auxiliares = signal<GetAuxiliar[]>([]);
-  auxiliar: Partial<GetAuxiliar> = {};
+  auxiliares = signal<AuxiliarResponseDto[]>([]);
+  selectedAuxiliar: AuxiliarResponseDto | null = null;
+  editingAuxiliar: AuxiliarRequestDto | null = createEmptyAuxiliarRequest();
   editDialog = false;
   submitted = false;
   @ViewChild('dt') table!: Table;
@@ -70,18 +76,18 @@ export class AuxiliaresPage implements OnInit {
   protected readonly auxiliarService = inject(AuxiliaresService);
   protected readonly messageService = inject(MessageService);
   protected readonly confirmationService = inject(ConfirmationService);
+  protected readonly uiSafeCallerService = inject(UiSafeCallerService);
 
   ngOnInit(): void {
     this.loadAuxiliares();
   }
 
   loadAuxiliares() {
-    this.auxiliarService.getAuxiliares().subscribe({
-      next: (data) => {
-        this.auxiliares.set(data);
-      },
-      error: (error) => this.handlingErrorMessage(error?.error),
-    });
+    this.uiSafeCallerService
+      .callWithErrorHandling('Cargar auxiliares', () => this.auxiliarService.getAuxiliares())
+      .subscribe({
+        next: (data) => this.auxiliares.set(data),
+      });
   }
 
   onGlobalFilter(event: Event) {
@@ -89,36 +95,49 @@ export class AuxiliaresPage implements OnInit {
   }
 
   openNew() {
-    this.auxiliar = { options: [] };
+    this.selectedAuxiliar = null;
+    this.editingAuxiliar = createEmptyAuxiliarRequest();
     this.submitted = false;
     this.editDialog = true;
   }
 
-  editAuxiliar(auxiliar: GetAuxiliar) {
-    this.auxiliar = { ...auxiliar };
+  editAuxiliar(auxiliar: AuxiliarResponseDto) {
+    this.selectedAuxiliar = auxiliar;
+    this.editingAuxiliar = {
+      ...auxiliar,
+      minValue: auxiliar.minValue ?? undefined,
+      maxValue: auxiliar.maxValue ?? undefined,
+      decimals: auxiliar.decimals ?? undefined,
+      maxLength: auxiliar.maxLength ?? undefined,
+      options: auxiliar.options.map((opt) => ({ ...opt })),
+    };
     this.editDialog = true;
   }
 
-  deleteAuxiliar(auxiliar: GetAuxiliar) {
+  deleteAuxiliar(auxiliar: AuxiliarResponseDto) {
     this.hideDialog();
+
     this.confirmationService.confirm({
       message: `¿Estás seguro de eliminar ${auxiliar.title}?`,
       header: 'Confirmación',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        this.auxiliarService.delete(auxiliar.id).subscribe({
-          next: () => {
-            this.auxiliar = {};
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Correcto',
-              detail: 'Campo auxiliar eliminado',
-              life: 3000,
-            });
-            this.auxiliares.update((list) => list.filter((a) => a.id !== auxiliar.id));
-          },
-          error: (error) => this.handlingErrorMessage(error?.error),
-        });
+        this.uiSafeCallerService
+          .callWithErrorHandling('Eliminar auxiliar', () =>
+            this.auxiliarService.delete(auxiliar.id)
+          )
+          .subscribe({
+            next: () => {
+              this.messageService.add({
+                severity: 'success',
+                summary: 'Correcto',
+                detail: 'Campo auxiliar eliminado',
+                life: 3000,
+              });
+
+              this.auxiliares.update((list) => list.filter((a) => a.id !== auxiliar.id));
+            },
+          });
       },
     });
   }
@@ -160,42 +179,36 @@ export class AuxiliaresPage implements OnInit {
   guardar(): void {
     this.submitted = true;
 
-    if (AuxiliarValidator.validate(this.auxiliar as PostAuxiliar).length > 0) {
+    if (AuxiliarValidator.validate(this.editingAuxiliar as AuxiliarRequestDto).length > 0) {
       return;
     }
 
-    if (this.auxiliar.id) {
-      this.auxiliarService.update(this.auxiliar.id, this.auxiliar as PostAuxiliar).subscribe({
-        next: (data) => {
-          this.messageService.add({
-            severity: data ? 'success' : 'error',
-            summary: data ? 'Correcto' : 'Error',
-            detail: data ? 'Campo auxiliar actualizado' : 'Campo auxiliar no encontrado',
-            life: 3000,
-          });
-          if (data) {
-            this.loadAuxiliares();
-          }
-        },
-        error: (error) => this.handlingErrorMessage(error?.error),
-      });
-    } else {
-      this.auxiliarService.create(this.auxiliar as PostAuxiliar).subscribe({
+    const isUpdating = !!this.selectedAuxiliar?.id;
+
+    const actionName = isUpdating ? 'Actualizar auxiliar' : 'Crear auxiliar';
+
+    const operation$ = isUpdating
+      ? this.auxiliarService.update(this.selectedAuxiliar?.id!, this.editingAuxiliar as AuxiliarRequestDto)
+      : this.auxiliarService.create(this.editingAuxiliar as AuxiliarRequestDto);
+
+    this.uiSafeCallerService
+      .callWithErrorHandling(actionName, () => operation$)
+      .subscribe({
         next: (_) => {
           this.messageService.add({
             severity: 'success',
             summary: 'Correcto',
-            detail: 'Campo auxiliar creado',
+            detail: isUpdating ? 'Campo auxiliar actualizado' : 'Campo auxiliar creado',
             life: 3000,
           });
+
           this.loadAuxiliares();
         },
-        error: (error) => this.handlingErrorMessage(error?.error),
       });
-    }
 
     this.editDialog = false;
-    this.auxiliar = {};
+    this.selectedAuxiliar = null;
+    this.editingAuxiliar = createEmptyAuxiliarRequest();
   }
 
   hideDialog() {
@@ -203,16 +216,4 @@ export class AuxiliaresPage implements OnInit {
     this.submitted = false;
   }
 
-  private handlingErrorMessage(errors: string[] | undefined): void {
-    let errorMessage = 'Error Interno del Servidor';
-    if (errors && errors.length > 0) {
-      errorMessage = errors.join(', ');
-    }
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Error',
-      detail: errorMessage,
-      life: 3000,
-    });
-  }
 }

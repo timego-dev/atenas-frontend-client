@@ -1,4 +1,6 @@
-export interface GetAuxiliar {
+import { AuxiliarRequestDto } from "../command/auxiliar-request.model";
+
+export interface AuxiliarResponseDto {
   id: string; // Guid as string
   alias: string;
   title: string;
@@ -12,7 +14,7 @@ export interface GetAuxiliar {
   decimals?: number | null;
   maxLength?: number | null;
 
-  options: GetAuxiliarOption[];
+  options: AuxiliarResponseOptionDto[];
 }
 
 export interface AuxiliarFilterOptions {
@@ -24,7 +26,7 @@ export interface AuxiliarFilterOptions {
   creationDateTo?: Date;
 }
 
-export interface GetAuxiliarOption {
+export interface AuxiliarResponseOptionDto {
   code: string;
   description: string;
 }
@@ -36,4 +38,18 @@ export enum FieldType {
   Numeric = 'Numeric',
   Text = 'Text',
   List = 'List',
+}
+
+export function createEmptyAuxiliarRequest(): AuxiliarRequestDto {
+  return {
+    alias: '',
+    title: '',
+    type: FieldType.Text,
+    required: false,
+    minValue: undefined,
+    maxValue: undefined,
+    decimals: undefined,
+    maxLength: undefined,
+    options: [],
+  }
 }

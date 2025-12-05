@@ -29,7 +29,7 @@ import {
 
 import { ActivityDto } from '@shared/models/case/query/activity.dto';
 import Prando from 'prando';
-import { FieldType } from '@shared/models/auxiliar/query/get-auxiliar-response.model';
+import { FieldType } from '@shared/models/auxiliar/query/auxiliar-response.model';
 import { AttachmentDto } from '@shared/models/case/command/shared.dto';
 import { BaseMockApiService } from './base-mock-api.service';
 

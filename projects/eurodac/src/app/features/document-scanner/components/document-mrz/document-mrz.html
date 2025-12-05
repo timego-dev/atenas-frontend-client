@@ -1,0 +1,56 @@
+<p-card class="h-full">
+  <ng-template pTemplate="header">
+    <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
+      <div style="font-weight: 600">MRZ</div>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="content">
+    <div style="padding: 1.25rem; color: var(--text-color)">
+      <div style="margin-bottom: 0.35rem">
+        <strong>Nº Documento:</strong>
+        <span> {{ data?.numeroDocumento || '—' }} </span>
+      </div>
+      <div style="margin-bottom: 0.35rem">
+        <strong>Nombre:</strong>
+        <span> {{ data?.nombre || '—' }} </span>
+      </div>
+      <div style="margin-bottom: 0.35rem">
+        <strong>Apellidos:</strong>
+        <span> {{ data?.apellidos || '—' }} </span>
+      </div>
+      <div style="margin-bottom: 0.35rem">
+        <strong>Nacionalidad:</strong>
+        <span> {{ data?.nacionalidad || '—' }} </span>
+      </div>
+      <div style="margin-bottom: 0.35rem">
+        <strong>Fecha Nacimiento:</strong>
+        <span> {{ data?.fechaNacimiento || '—' }} </span>
+      </div>
+      <div style="margin-bottom: 0.35rem">
+        <strong>Fecha Expedición:</strong>
+        <span> {{ data?.fechaExpedicion || '—' }} </span>
+      </div>
+      <div style="margin-bottom: 0.35rem">
+        <strong>Fecha Caducidad:</strong>
+        <span> {{ data?.fechaCaducidad || '—' }} </span>
+      </div>
+      <div style="margin-top: 0.5rem">
+        <strong>MRZ:</strong>
+        <code
+          style="
+            display: block;
+            margin-top: 0.25rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--surface-ground);
+            border-radius: 4px;
+            border: 1px solid var(--surface-border);
+            font-size: 0.8rem;
+            overflow-x: auto;
+          "
+        >
+          {{ data?.mrzCode || '—' }}
+        </code>
+      </div>
+    </div>
+  </ng-template>
+</p-card>
