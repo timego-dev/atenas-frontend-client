@@ -2,7 +2,11 @@ import { inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ConfigurationService } from './configuration.service';
 import { HttpClient } from '@angular/common/http';
-import { AlertResponseDto } from '@shared/models/alert/query/alert-response.model';
+import {
+  AlertCodeListDto,
+  AlertFieldNameDto,
+  AlertResponseDto,
+} from '@shared/models/alert/query/alert-response.model';
 import { AlertRequestDto } from '@shared/models/alert/command/alert-request.model';
 
 export abstract class AlertRepositoryService {
@@ -24,6 +28,11 @@ export abstract class AlertRepositoryService {
 
   /** DELETE /alert/{id} */
   abstract delete(id: string): Observable<void>;
+
+  abstract getAlertFieldNames(): Observable<AlertFieldNameDto[]>;
+  abstract getAlertCountryList(): Observable<AlertCodeListDto[]>;
+  abstract getAlertDocTypeList(): Observable<AlertCodeListDto[]>;
+  abstract getAlertSexList(): Observable<AlertCodeListDto[]>;
 }
 
 export class AlertRepositoryRemoteService implements AlertRepositoryService {
@@ -63,5 +72,18 @@ export class AlertRepositoryRemoteService implements AlertRepositoryService {
   /** DELETE /alert/{id} */
   delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  getAlertFieldNames(): Observable<AlertFieldNameDto[]> {
+    return this.http.get<AlertFieldNameDto[]>(`${this.baseUrl}/field-names`);
+  }
+  getAlertCountryList(): Observable<AlertCodeListDto[]> {
+    return this.http.get<AlertCodeListDto[]>(`${this.baseUrl}/codelists/countries`);
+  }
+  getAlertDocTypeList(): Observable<AlertCodeListDto[]> {
+    return this.http.get<AlertCodeListDto[]>(`${this.baseUrl}/codelists/doc-types`);
+  }
+  getAlertSexList(): Observable<AlertCodeListDto[]> {
+    return this.http.get<AlertCodeListDto[]>(`${this.baseUrl}/codelists/sexes`);
   }
 }
