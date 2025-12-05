@@ -1,4 +1,4 @@
-import { AuxiliarRequestDto } from "../command/auxiliar-request.model";
+import { AuxiliarRequestDto } from '../command/auxiliar-request.model';
 
 export interface AuxiliarResponseDto {
   id: string; // Guid as string
@@ -14,7 +14,7 @@ export interface AuxiliarResponseDto {
   decimals?: number | null;
   maxLength?: number | null;
 
-  options: AuxiliarResponseOptionDto[];
+  options?: AuxiliarResponseOptionDto[] | null;
 }
 
 export interface AuxiliarFilterOptions {
@@ -51,5 +51,5 @@ export function createEmptyAuxiliarRequest(): AuxiliarRequestDto {
     decimals: undefined,
     maxLength: undefined,
     options: [],
-  }
+  };
 }

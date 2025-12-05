@@ -109,7 +109,7 @@ export class AuxiliaresPage implements OnInit {
       maxValue: auxiliar.maxValue ?? undefined,
       decimals: auxiliar.decimals ?? undefined,
       maxLength: auxiliar.maxLength ?? undefined,
-      options: auxiliar.options.map((opt) => ({ ...opt })),
+      options: auxiliar.options?.map((opt) => ({ ...opt })),
     };
     this.editDialog = true;
   }

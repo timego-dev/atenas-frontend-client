@@ -12,7 +12,7 @@ export interface AuxiliarRequestDto {
   decimals?: number;
   maxLength?: number;
 
-  options: AuxiliarRequestOptionDto[];
+  options?: AuxiliarRequestOptionDto[] | undefined;
 }
 
 export interface AuxiliarRequestOptionDto {

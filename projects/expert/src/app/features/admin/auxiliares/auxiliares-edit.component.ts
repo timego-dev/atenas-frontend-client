@@ -136,7 +136,7 @@ import {
       <div>
         <label class="block font-bold mb-3">Opciones</label>
 
-        @if(submitted() && (!auxiliar().options || auxiliar().options.length === 0)) {
+        @if(submitted() && (!auxiliar().options || auxiliar().options?.length === 0)) {
         <small class="text-red-500 block pb-3">Se requieren opciones para el tipo de lista.</small>
         }
 
@@ -190,10 +190,10 @@ export class AuxiliaresEditComponent {
   ];
 
   addOption() {
-    this.auxiliar().options.push({ code: '', description: '' });
+    this.auxiliar().options?.push({ code: '', description: '' });
   }
 
   removeOption(index: number) {
-    this.auxiliar().options.splice(index, 1);
+    this.auxiliar().options?.splice(index, 1);
   }
 }
