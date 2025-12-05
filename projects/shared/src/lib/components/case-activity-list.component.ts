@@ -12,10 +12,9 @@ import { CommonModule } from '@angular/common';
 import { PanelModule } from 'primeng/panel';
 import { EstadoConsultaComponent } from '../../../../expert/src/app/shared/components/estado-consulta.component';
 import { CaseDto } from '@shared/models/case/query/case.dto';
-import { CaseActivityListComponent } from './case-activity-list.component';
 
 @Component({
-  selector: 'case-detail',
+  selector: 'case-activity-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -28,12 +27,21 @@ import { CaseActivityListComponent } from './case-activity-list.component';
     IconFieldModule,
     ToggleSwitchModule,
     PanelModule,
-    EstadoConsultaComponent,
-    CaseActivityListComponent,
   ],
-  templateUrl: './case-detail.component.html',
+  template: `
+    @for (activity of case().activities; track $index) {
+    <div>Unidad 2</div>
+    <div>Envío información adicional</div>
+    <div>Hace 39 minutos</div>
+    <div>Adjuntos:</div>
+    @for (attachment of activity.consultation?.attachments; track $index) {
+    <div>{{ attachment.name }}</div>
+    }
+    <hr />
+    }
+  `,
   providers: [ConfirmationService],
 })
-export class CaseDetailComponent {
+export class CaseActivityListComponent {
   case = input.required<CaseDto>();
 }
