@@ -1,11 +1,13 @@
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { UserRepositoryMockService, UserRepositoryService } from '@shared';
+import { Role } from '@shared/auth/types/Role';
 import { UserRequestDto } from '@shared/models/user/command/user-request.model';
 import { UserResponseDto } from '@shared/models/user/query/user-response.model';
-
+import { GroupDto, RoleDto, RoleType } from '@shared/models/user/user.shared';
 import { AuthService } from '@shared/services/auth.service';
 import { AuthMockService } from '@shared/services/mock/auth-mock.service';
-
+import { CredentialsDto } from '@shared/models/user/user.shared';
 describe('Usuarios service', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -20,17 +22,20 @@ describe('Usuarios service', () => {
   describe('Service tests', () => {
     it('should receive users', fakeAsync(() => {
       const service = TestBed.inject(UserRepositoryService);
-
+      let ad;
       let users!: UserResponseDto[];
       service.getAll().subscribe((u) => {
         users = u;
+        // Comprobar que com a mínim hi ha un usuari amb rol administrador
+        let admin = users.some((u) => u.firstName === 'Admin');
+        expect(admin).toBeTrue;
       });
 
       tick();
+
       expect(users.length).toBe(4);
 
       //TODO
-      // Comprobar que com a mínim hi ha un usuari amb rol administrador
     }));
 
     it('should create new user', fakeAsync(() => {
@@ -81,8 +86,14 @@ describe('Usuarios service', () => {
 
       service
         .update('80f96bd2-d528-476a-9307-6eb6df4ab387', <UserRequestDto>{ username: 'updatedName' })
-        .subscribe((u) => {
-          updatedUser = u;
+        .subscribe({
+          next(value) {
+            expect(value).toBeDefined();
+            updatedUser = value;
+          },
+          error(err) {
+            fail();
+          },
         });
       tick();
 
@@ -97,21 +108,25 @@ describe('Usuarios service', () => {
       });
       tick();
 
-      const user = usersAfterUpdate.find((u) => u.id === '1');
+      const user = usersAfterUpdate.find((u) => u.id === '80f96bd2-d528-476a-9307-6eb6df4ab387');
       expect(user).toBeDefined();
       expect(user!.username).toBe('updatedName');
     }));
 
-    it('should return undefined when updating non existing user', fakeAsync(() => {
+    it('should return 404 when updating non existing user', fakeAsync(() => {
       const service = TestBed.inject(UserRepositoryService);
 
       let updatedUser!: UserResponseDto | undefined;
 
-      service
-        .update('non-existing-id', <UserRequestDto>{ username: 'updatedName' })
-        .subscribe((u) => {
-          updatedUser = u;
-        });
+      service.update('non-existing-id', <UserRequestDto>{ username: 'updatedName' }).subscribe({
+        next(value) {
+          fail('No pot actualitzar un usuari que no existeix');
+        },
+        complete() {},
+        error(err: HttpErrorResponse) {
+          expect(err.status).toBe(404);
+        },
+      });
       tick();
 
       expect(updatedUser).toBeUndefined();
@@ -126,21 +141,28 @@ describe('Usuarios service', () => {
 
       service.getAll().subscribe((u) => {
         usersAfterDelete = u;
+        // Comprovar que si l'usuari eliminat era l'únic administrador, ara n'hi ha un altre
+        let admin = usersAfterDelete.some((u) => u.firstName === 'Admin');
+        expect(admin).toBeFalse;
       });
       tick();
 
       expect(usersAfterDelete.length).toBe(3);
       const user = usersAfterDelete.find((u) => u.id === '80f96bd2-d528-476a-9307-6eb6df4ab387');
       expect(user).toBeUndefined();
-
-      //TODO
-      // Comprovar que si l'usuari eliminat era l'únic administrador, ara n'hi ha un altre
-      // Comprovar que no es pugui eliminar el propi usuari actiu
     }));
 
     it('should do nothing when deleting non existing user', fakeAsync(() => {
       const service = TestBed.inject(UserRepositoryService);
-      service.delete('non-existing-id').subscribe(() => {});
+      service.delete('non-existing-id').subscribe({
+        next(value) {
+          fail();
+        },
+        error(err: HttpErrorResponse) {
+          console.log(err);
+          expect(err.status).toBe(404);
+        },
+      });
       tick();
 
       let usersAfterDelete!: UserResponseDto[];
@@ -150,6 +172,138 @@ describe('Usuarios service', () => {
       tick();
 
       expect(usersAfterDelete.length).toBe(4);
+    }));
+
+    it('Comprovar que no es pugui eliminar el propi usuari actiu', fakeAsync(() => {
+      const service = TestBed.inject(UserRepositoryService);
+      const auth = TestBed.inject(AuthService);
+
+      //fer login
+      (auth as AuthMockService).applyBehavior({ userName: '80f96bd2-d528-476a-9307-6eb6df4ab387' });
+
+      service.delete('80f96bd2-d528-476a-9307-6eb6df4ab387').subscribe({
+        next(value) {
+          fail();
+        },
+        error(err: HttpErrorResponse) {
+          console.log(err);
+          expect(err.status).toBe(404);
+        },
+      });
+      tick();
+    }));
+
+    //SE TIENE QUE CAMBIAR
+    it('should remove a role', fakeAsync(() => {
+      const service = TestBed.inject(UserRepositoryService);
+
+      const roles = {
+        [RoleType.ADMINISTRATOR]: 'Administrador',
+        [RoleType.ATENAS_CLIENT]: 'Cliente',
+        [RoleType.EURODAC_CLIENT]: 'Eurodac',
+        [RoleType.MBI_CLIENT]: 'MBI',
+        [RoleType.OPERATOR]: 'Operador',
+        [RoleType.SUPERVISOR]: 'Supervisor',
+      };
+
+      const role: RoleDto = {
+        id: roles[RoleType.ADMINISTRATOR],
+        name: RoleType.ADMINISTRATOR,
+      };
+
+      let users!: UserResponseDto[];
+
+      service.deleteRole('80f96bd2-d528-476a-9307-6eb6df4ab387', role).subscribe({
+        next(value) {},
+        error(err) {
+          fail();
+        },
+      });
+    }));
+
+    it('should add user to group', fakeAsync(() => {
+      const service = TestBed.inject(UserRepositoryService);
+
+      let user!: UserResponseDto;
+
+      service.getById('80f96bd2-d528-476a-9307-6eb6df4ab387').subscribe((u) => {
+        user = u;
+      });
+      tick();
+
+      service.addToGroup(user.id, 'a47fac6e-da2c-4f55-ae0b-df1e30ef8a8e').subscribe({
+        next(value) {
+          expect(user.groups?.map((a) => a.id)).toContain('a47fac6e-da2c-4f55-ae0b-df1e30ef8a8e');
+        },
+        error(err) {
+          fail();
+        },
+      });
+      tick;
+    }));
+
+    it('should delete user to group', fakeAsync(() => {
+      const service = TestBed.inject(UserRepositoryService);
+
+      let user!: UserResponseDto;
+      service.getById('80f96bd2-d528-476a-9307-6eb6df4ab387').subscribe((u) => {
+        user = u;
+      });
+      tick();
+
+      service.removeFromGroup(user.id, 'b7ecc368-737c-46da-9a7e-cefa0d6b3a27').subscribe(() => {
+        expect(user.groups).toBeNull;
+      });
+      tick();
+    }));
+
+    it('should update your password', fakeAsync(() => {
+      const service = TestBed.inject(UserRepositoryService);
+
+      const pass: CredentialsDto = {
+        type: 'prueba',
+        value: 'valor',
+        temporary: false,
+      };
+
+      let user!: UserResponseDto;
+
+      service.getById('80f96bd2-d528-476a-9307-6eb6df4ab387').subscribe((u) => {
+        user = u;
+      });
+      tick();
+
+      service.updatePassword(user.id, pass).subscribe(() => {
+        expect(user.credentials).toBeTruthy();
+      });
+      tick();
+    }));
+
+    it('should obtain the user roles', fakeAsync(() => {
+      const service = TestBed.inject(UserRepositoryService);
+
+      let roles!: RoleDto[];
+
+      service.getAllRoles().subscribe((r) => {
+        roles = r;
+      });
+      tick;
+
+      expect(roles).toBeDefined;
+      expect(roles.length).toBe(5);
+    }));
+
+    it('should get the user groups', fakeAsync(() => {
+      const service = TestBed.inject(UserRepositoryService);
+
+      let groups!: GroupDto[];
+      service.getAllGroups().subscribe((g) => {
+        groups = g;
+      });
+      tick;
+
+      expect(groups).toBeDefined;
+      expect(groups.length).toBe(2);
     }));
 
     /*
