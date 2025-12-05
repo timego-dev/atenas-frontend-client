@@ -7,6 +7,7 @@ export interface ActivityDto {
   type: ActivityType;
   creationDate: Date;
   text: string;
+  creator?: UserSummaryDto | null;
 
   consultation?: ConsultationActivityDto | null;
   resolution?: ResolutionActivityDto | null;
@@ -32,6 +33,5 @@ export interface FaceVerificationResultDto {
 }
 
 export interface ResolutionActivityDto {
-  creator: UserSummaryDto;
   resolution: CaseResolution;
 }

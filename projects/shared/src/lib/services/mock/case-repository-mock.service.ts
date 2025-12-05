@@ -162,6 +162,16 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
   }
 
   private buildCaseDtoFromSummary(summary: CaseSummaryDto): CaseDto {
+    var activities = [
+      generateConsultationActivityWithDvAttachment(summary.creator, summary.creationDate),
+    ];
+
+    if (summary.caseStatus === CaseStatus.SOLVED && summary.expert) {
+      activities.push(
+        generateResolutionActivity(summary.expert, summary.lastUpdated, summary.caseResolution)
+      );
+    }
+
     return {
       ...summary,
 
@@ -172,11 +182,31 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
       expert: summary.expert ? { ...summary.expert } : null,
 
       // Add placeholder activities
-      activities: [
-        generateConsultationActivityWithDvAttachment(summary.creator, summary.creationDate),
-      ],
+      activities: activities,
     };
   }
+}
+
+function generateResolutionActivity(
+  expert: UserSummaryDto,
+  lastUpdated: Date,
+  resolution: CaseResolution
+): ActivityDto {
+  // Generate random minutes between 1 and 5 (inclusive)
+  const minutesToAdd = rng.nextInt(1, 5);
+
+  // Create a new date with the added minutes
+  const creationDate = new Date(lastUpdated.getTime() + minutesToAdd * 60000);
+
+  return {
+    type: ActivityType.RESOLUTION,
+    text: 'Case resolved',
+    creationDate,
+    creator: expert,
+    resolution: {
+      resolution: resolution,
+    },
+  };
 }
 
 function generateConsultationActivityWithDvAttachment(
@@ -187,8 +217,8 @@ function generateConsultationActivityWithDvAttachment(
     type: ActivityType.CONSULTATION,
     text: 'Consultation activity with DV attachment',
     creationDate: creationDate,
+    creator: creator,
     consultation: {
-      creator: creator,
       attachments: [
         {
           attachmentType: AttachmentType.DOCUMENT_DV,

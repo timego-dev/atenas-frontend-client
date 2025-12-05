@@ -5,7 +5,6 @@ import { AttachmentType, DocumentAttachmentType } from '../case.enums';
 import { UserSummaryDto } from './case.dto';
 
 export interface ConsultationActivityDto {
-  creator: UserSummaryDto;
   attachments: AttachmentResponseDto[];
 }
 
