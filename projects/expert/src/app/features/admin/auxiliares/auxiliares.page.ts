@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { AuxiliaresService } from './auxiliares.service';
 import { UiSafeCallerService } from '@shared/services/ui-safe-caller.service';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -48,12 +48,14 @@ interface Column {
   providers: [AuxiliaresService, ConfirmationService],
 })
 export class AuxiliaresPage implements OnInit {
+  editDialogComponent = viewChild<AuxiliaresEditComponent>('editDialogComponent');
   auxiliares = signal<AuxiliarResponseDto[]>([]);
   selectedAuxiliar: AuxiliarResponseDto | null = null;
   editingAuxiliar: AuxiliarRequestDto | null = createEmptyAuxiliarRequest();
   editDialog = false;
   submitted = false;
-  @ViewChild('dt') table!: Table;
+  table = viewChild<Table>('dt');
+
   cols: Column[] = [
     {
       field: 'alias',
@@ -91,7 +93,7 @@ export class AuxiliaresPage implements OnInit {
   }
 
   onGlobalFilter(event: Event) {
-    this.table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
+    this.table()?.filterGlobal((event.target as HTMLInputElement).value, 'contains');
   }
 
   openNew() {
@@ -188,7 +190,10 @@ export class AuxiliaresPage implements OnInit {
     const actionName = isUpdating ? 'Actualizar auxiliar' : 'Crear auxiliar';
 
     const operation$ = isUpdating
-      ? this.auxiliarService.update(this.selectedAuxiliar?.id!, this.editingAuxiliar as AuxiliarRequestDto)
+      ? this.auxiliarService.update(
+          this.selectedAuxiliar?.id!,
+          this.editingAuxiliar as AuxiliarRequestDto
+        )
       : this.auxiliarService.create(this.editingAuxiliar as AuxiliarRequestDto);
 
     this.uiSafeCallerService
@@ -215,5 +220,4 @@ export class AuxiliaresPage implements OnInit {
     this.editDialog = false;
     this.submitted = false;
   }
-
 }

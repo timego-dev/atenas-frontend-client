@@ -8,7 +8,9 @@ import {
 import { AuxiliarRepositoryService } from '@shared/services/auxiliar-repository.service';
 import { Observable } from 'rxjs';
 
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class AuxiliaresService {
   private readonly auxiliarRepositoryService = inject(AuxiliarRepositoryService);
 

@@ -60,9 +60,18 @@
   </ng-template>
 </p-table>
 
-<p-dialog [(visible)]="editDialog" [style]="{ width: '500px' }" header="Campo auxiliar" [modal]="true">
+<p-dialog
+  [(visible)]="editDialog"
+  [style]="{ width: '500px' }"
+  header="Campo auxiliar"
+  [modal]="true"
+>
   <ng-template #content>
-    <edit-auxiliares [auxiliar]="$any(editingAuxiliar)" [submitted]="submitted" />
+    <edit-auxiliares
+      #editDialogComponent
+      [auxiliar]="$any(editingAuxiliar)"
+      [submitted]="submitted"
+    />
   </ng-template>
 
   <ng-template #footer>
@@ -81,5 +90,5 @@
   </ng-template>
 </p-dialog>
 
-<p-confirmdialog/>
+<p-confirmdialog />
 <p-toast></p-toast>

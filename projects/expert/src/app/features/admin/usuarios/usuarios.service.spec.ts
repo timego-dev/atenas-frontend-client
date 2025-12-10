@@ -24,17 +24,16 @@ describe('Usuarios service', () => {
       const service = TestBed.inject(UserRepositoryService);
       let ad;
       let users!: UserResponseDto[];
+
       service.getAll().subscribe((u) => {
         users = u;
-        // Comprobar que com a mínim hi ha un usuari amb rol administrador
-        let admin = users.some((u) => u.firstName === 'Admin');
-        expect(admin).toBeTrue;
       });
-
       tick();
 
       expect(users.length).toBe(4);
-
+      // Comprobar que com a mínim hi ha un usuari amb rol administrador
+      let admin = users.some((u) => u.firstName === 'Admin');
+      expect(admin).toBeTrue;
       //TODO
     }));
 
@@ -141,15 +140,15 @@ describe('Usuarios service', () => {
 
       service.getAll().subscribe((u) => {
         usersAfterDelete = u;
-        // Comprovar que si l'usuari eliminat era l'únic administrador, ara n'hi ha un altre
-        let admin = usersAfterDelete.some((u) => u.firstName === 'Admin');
-        expect(admin).toBeFalse;
       });
       tick();
 
       expect(usersAfterDelete.length).toBe(3);
       const user = usersAfterDelete.find((u) => u.id === '80f96bd2-d528-476a-9307-6eb6df4ab387');
       expect(user).toBeUndefined();
+      // Comprovar que si l'usuari eliminat era l'únic administrador, ara n'hi ha un altre
+      let admin = usersAfterDelete.some((u) => u.firstName === 'Admin');
+      expect(admin).toBeFalse;
     }));
 
     it('should do nothing when deleting non existing user', fakeAsync(() => {
@@ -251,10 +250,10 @@ describe('Usuarios service', () => {
       });
       tick();
 
-      service.removeFromGroup(user.id, 'b7ecc368-737c-46da-9a7e-cefa0d6b3a27').subscribe(() => {
-        expect(user.groups).toBeNull;
-      });
+      service.removeFromGroup(user.id, 'b7ecc368-737c-46da-9a7e-cefa0d6b3a27').subscribe(() => {});
       tick();
+      expect(user.groups).toBeNull;
+      expect(user.groups?.map((a) => a.id)).toBeFalse;
     }));
 
     it('should update your password', fakeAsync(() => {
@@ -274,7 +273,9 @@ describe('Usuarios service', () => {
       tick();
 
       service.updatePassword(user.id, pass).subscribe(() => {
-        expect(user.credentials).toBeTruthy();
+        service.getById('80f96bd2-d528-476a-9307-6eb6df4ab387').subscribe((u) => {
+          expect(user.credentials).toBeTruthy();
+        });
       });
       tick();
     }));

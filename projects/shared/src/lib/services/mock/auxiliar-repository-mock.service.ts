@@ -76,7 +76,7 @@ export class AuxiliarRepositoryMockService
         maxValue: postAux.maxValue,
         decimals: postAux.decimals,
         maxLength: postAux.maxLength,
-        options: postAux.options?.map((o) => ({ code: o.code, description: o.description })),
+        options: postAux.options.map((o) => ({ code: o.code, description: o.description })),
       };
 
       this.auxiliars[index] = updated;
@@ -185,10 +185,12 @@ export class AuxiliarValidator {
         errors.push('Options are required for List type.');
       }
 
-      aux.options?.forEach((o, i) => {
+      // Option-level validation
+      for (let i = 0; i < aux.options!.length; i++) {
+        const o = aux.options![i];
         if (!o.code) errors.push(`Option ${i}: code is required.`);
         if (!o.description) errors.push(`Option ${i}: description is required.`);
-      });
+      }
     }
 
     return errors;
