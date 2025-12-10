@@ -182,7 +182,7 @@ describe('Auxiliares services', () => {
     expect(auxResponse.options).toBeDefined;
     expect(auxResponse.alias).toBe('moneda');
     expect(auxResponse.title).toBe('bitcoin');
-    expect(auxResponse.options.map((a) => a.code)).toEqual(['codigo']);
+    expect(auxResponse.options?.map((a) => a.code)).toEqual(['codigo']);
   }));
 
   it('should create an auxiliary (error 400 unknow url)', fakeAsync(() => {

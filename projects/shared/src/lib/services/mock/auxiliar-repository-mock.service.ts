@@ -76,7 +76,7 @@ export class AuxiliarRepositoryMockService
         maxValue: postAux.maxValue,
         decimals: postAux.decimals,
         maxLength: postAux.maxLength,
-        options: postAux.options.map((o) => ({ code: o.code, description: o.description })),
+        options: postAux.options?.map((o) => ({ code: o.code, description: o.description })),
       };
 
       this.auxiliars[index] = updated;
