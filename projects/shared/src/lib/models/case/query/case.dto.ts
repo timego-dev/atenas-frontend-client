@@ -2,29 +2,7 @@ import { AlertSummaryDto, AuxiliarValueDto } from './auxiliar-alert.dto';
 import { ActivityDto } from './activity.dto';
 import { CaseResolution, CaseStatus, DocumentAttachmentType } from '../case.enums';
 
-export interface CaseDto {
-  id: string;
-  trackingNumber: string;
-  caseStatus: CaseStatus;
-  caseResolution: CaseResolution;
-
-  creationDate: Date;
-  lastUpdated: Date;
-
-  creator: UserSummaryDto;
-  expert?: UserSummaryDto | null;
-  caseGroupId?: string | null;
-
-  auxiliarValues?: AuxiliarValueDto[];
-  alerts?: AlertSummaryDto[];
-
-  notSolvedTime?: string | null; // TimeSpan in .NET → can be string (ISO 8601 duration) or number (ms)
-  personalId: string;
-  documentNumber: string;
-  citizenName: string;
-  dateOfBirth: Date;
-  documentAttachmentType: DocumentAttachmentType;
-
+export interface CaseDto extends CaseSummaryDto {
   activities: ActivityDto[];
 }
 
@@ -35,20 +13,32 @@ export interface CaseSummaryDto {
   caseResolution: CaseResolution;
 
   creationDate: Date;
-  lastUpdated: Date;
+  lastConsultation: Date;
+  lastResolution?: Date | null;
 
   creator: UserSummaryDto;
   expert?: UserSummaryDto | null;
+
   caseGroupId?: string | null;
 
   auxiliarValues?: AuxiliarValueDto[];
   alerts?: AlertSummaryDto[];
 
-  notSolvedTime?: string | null; // TimeSpan in .NET → can be string (ISO 8601 duration) or number (ms)
-  personalId: string;
-  documentNumber: string;
-  citizenName: string;
-  dateOfBirth: Date;
+  // --- Citizen and document data (added) ---
+  citizenship?: string | null;
+  issuingCountry?: string | null;
+  issuingDate?: Date | null;
+  citizenName?: string | null;
+  citizenSurnames?: string | null;
+  documentType?: string | null;
+  expiryDate?: Date | null;
+  gender?: string | null;
+  placeOfBirth?: string | null;
+  personalId?: string | null;
+  documentNumber?: string | null;
+  dateOfBirth?: Date | null;
+  authority?: string | null;
+
   documentAttachmentType: DocumentAttachmentType;
 }
 

@@ -1,4 +1,4 @@
-import { of, Observable, throwError } from 'rxjs';
+import { of, Observable, throwError, generate } from 'rxjs';
 import { CaseRepositoryService } from '../case-repository.service';
 import { CaseDto, CaseSummaryDto, UserSummaryDto } from '@shared/models/case/query/case.dto';
 import { AthenasMessageDto } from '@shared/models/case/command/athenas-message.dto';
@@ -34,6 +34,11 @@ import { FieldType } from '@shared/models/auxiliar/query/auxiliar-response.model
 import { AttachmentDto } from '@shared/models/case/command/shared.dto';
 import { BaseMockApiService } from './base-mock-api.service';
 import { Injectable } from '@angular/core';
+import {
+  AttachmentResponseDto,
+  ConsultationActivityDto,
+} from '@shared/models/case/query/attachment.dto';
+import { UserResponseDto } from '@shared/models/user/query/user-response.model';
 
 const seed = 12345; // fixed seed → same values every run
 const rng = new Prando(seed);
@@ -41,24 +46,25 @@ const rng = new Prando(seed);
   providedIn: 'root',
 })
 export class CaseRepositoryMockService extends BaseMockApiService implements CaseRepositoryService {
-  private cases: CaseSummaryDto[];
+  private cases: CaseDto[];
   constructor(private usersRepo: UserRepositoryMockService) {
     super();
     this.cases = this.generateMockCases();
   }
 
   getAll(): Observable<CaseSummaryDto[]> {
-    return this.handleUnauthorized(() => this.ok(this.cases));
+    return this.handleUnauthorized(() => this.ok(this.cases.map((c) => this.toSummary(c))));
   }
 
   getById(id: string): Observable<CaseDto> {
     return this.handleUnauthorized(() => {
-      const summary = this.cases.find((c) => c.id === id);
+      const caseDto = this.cases.find((c) => c.id === id);
 
-      if (!summary) {
+      if (!caseDto) {
         return this.notFound();
       }
-      return of(this.buildCaseDtoFromSummary(summary));
+
+      return this.ok(caseDto);
     });
   }
 
@@ -67,7 +73,7 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
       const errors = CaseValidator.validate(message, files);
       if (errors.length) return this.badRequest(errors);
 
-      const newCase = this.buildCaseDtoFromSummary(this.generateMockCaseSummary());
+      const newCase = this.generateMockCase();
       return this.created(newCase);
     });
   }
@@ -84,18 +90,47 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
       const errors = CaseValidator.validate(message, files);
       if (errors.length) return this.badRequest(errors);
 
-      const updatedSummary: CaseSummaryDto = {
-        ...existing,
-        lastUpdated: new Date(),
+      // Determine creator: resolution = expert, consultation = case creator
+      const activityCreator =
+        message.type === ActivityType.RESOLUTION ? existing.expert ?? null : existing.creator;
+
+      // Convert AthenasMessageDto to ActivityDto
+      const newActivity: ActivityDto = {
+        type: message.type,
+        text: message.text || '',
+        creationDate: new Date(),
+        creator: activityCreator,
+        consultation:
+          message.type === ActivityType.CONSULTATION
+            ? {
+                attachments: [generateDvAttachment(this.generateCitizenDocumentData())], //By the moment, we don't convert parameters
+              }
+            : null,
+        resolution:
+          message.type === ActivityType.RESOLUTION
+            ? {
+                resolution: message.resolution!,
+              }
+            : null,
       };
 
+      // Push the new activity
+      existing.activities = existing.activities || [];
+      existing.activities.push(newActivity);
+
+      // Update lastConsultation / lastResolution and caseResolution if needed
+      if (message.type === ActivityType.CONSULTATION) {
+        existing.lastConsultation = newActivity.creationDate;
+      } else if (message.type === ActivityType.RESOLUTION) {
+        existing.lastResolution = newActivity.creationDate;
+        if (message.resolution) {
+          existing.caseResolution = message.resolution;
+        }
+      }
       // Replace in internal array
-      this.cases[index] = updatedSummary;
+      this.cases[index] = existing;
 
-      // Convert to CaseDto
-      const dto = this.buildCaseDtoFromSummary(updatedSummary);
-
-      return this.ok(dto);
+      return this.ok(existing); // already a CaseDto
     });
   }
 
@@ -106,83 +141,99 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
     });
   }
 
-  private generateMockCases(count = 100): CaseSummaryDto[] {
-    return Array.from({ length: count }, () => this.generateMockCaseSummary()).sort(
-      (a, b) => b.lastUpdated.getTime() - a.lastUpdated.getTime()
+  private toSummary(caseDto: CaseDto): CaseSummaryDto {
+    const {
+      activities, // strip this
+      ...summary
+    } = caseDto;
+
+    return summary;
+  }
+
+  private generateMockCases(count = 100): CaseDto[] {
+    return Array.from({ length: count }, () => this.generateMockCase()).sort(
+      (a, b) => b.lastConsultation.getTime() - a.lastConsultation.getTime()
     );
   }
 
-  private generateMockCaseSummary(): CaseSummaryDto {
+  private generateCitizenDocumentData(): CitizenDocumentData {
+    return {
+      citizenship: randomCountryCode(), //Implement this method, should be a country code
+      issuingCountry: randomName(),
+      issuingDate: randomDateYearsAgo(1, 10),
+      citizenName: randomName(),
+      citizenSurnames: randomName(),
+      documentType: randomElement(['P', 'ID', 'DL']),
+      expiryDate: randomFutureDate(1, 10), //Implement this. Parameters are from year to year
+      gender: randomElement(['M', 'F', 'X']),
+      placeOfBirth: randomName(),
+      personalId: `PID-${Math.floor(100000 + Math.random() * 900000)}`,
+      documentNumber: `DOC-${Math.floor(100000 + Math.random() * 900000)}`,
+      dateOfBirth: randomDateYearsAgo(20, 40),
+      authority: 'National Authority',
+    };
+  }
+
+  private generateMockCase(): CaseDto {
     const creationDate = randomCreationDate();
     const caseStatus = randomElement(Object.values(CaseStatus));
+
     const isSolved = caseStatus === CaseStatus.SOLVED;
+    const isClarification = caseStatus === CaseStatus.CLARIFICATION_PENDING;
     const isArchived = caseStatus === CaseStatus.ARCHIVED;
     const isOpen = caseStatus === CaseStatus.OPEN;
 
-    const creator = this.usersRepo.getRandomUser();
-    const expert = !isOpen ? this.usersRepo.getRandomUserByGroup('experts') : null;
+    const creator = toUserSummaryDto(this.usersRepo.getRandomUser());
+
+    const expert = !isOpen
+      ? toUserSummaryDto(this.usersRepo.getRandomUserByGroup('experts')!)
+      : null;
+
+    // Base resolution for the case
+    const caseResolution =
+      isSolved || isClarification
+        ? randomElement(Object.values(CaseResolution))
+        : CaseResolution.PENDING;
+
+    // --- Activities --- //
+    const consultationActivity = generateConsultationActivity(creator, creationDate);
+
+    const citizen = this.generateCitizenDocumentData();
+
+    var attachment = generateDvAttachment(citizen);
+    addAttachment(consultationActivity.consultation!, attachment);
+
+    const activities = [consultationActivity];
+
+    let resolutionActivity: ActivityDto | null = null;
+
+    if (isSolved) {
+      resolutionActivity = generateResolutionActivity(expert!, creationDate, caseResolution);
+      activities.push(resolutionActivity);
+    }
+
+    const lastConsultation = consultationActivity.creationDate;
+    const lastResolution = resolutionActivity?.creationDate || null;
 
     return {
       id: generateGuid(),
       trackingNumber: randomTrackingNumber(),
       caseStatus,
-      caseResolution: isSolved
-        ? randomElement(Object.values(CaseResolution))
-        : CaseResolution.PENDING,
+      caseResolution,
       creationDate,
-      lastUpdated: creationDate,
-
-      creator: {
-        externalId: creator.id,
-        username: creator.username,
-        email: creator.email,
-      },
-
-      expert: expert
-        ? {
-            externalId: expert.id,
-            username: expert.username,
-            email: expert.email,
-          }
-        : null,
-
+      lastConsultation,
+      lastResolution,
+      creator,
+      expert,
       caseGroupId: null,
       auxiliarValues: randomAuxiliarValues(),
       alerts: [],
-
-      notSolvedTime: isSolved || isArchived ? randomNotSolvedTime() : null,
-
       personalId: `PID-${Math.floor(100000 + Math.random() * 900000)}`,
       documentNumber: `DOC-${Math.floor(100000 + Math.random() * 900000)}`,
       citizenName: randomName(),
       dateOfBirth: randomDateYearsAgo(20, 40),
-
       documentAttachmentType: randomElement(Object.values(DocumentAttachmentType)),
-    };
-  }
-
-  private buildCaseDtoFromSummary(summary: CaseSummaryDto): CaseDto {
-    var activities = [
-      generateConsultationActivityWithDvAttachment(summary.creator, summary.creationDate),
-    ];
-
-    if (summary.caseStatus === CaseStatus.SOLVED && summary.expert) {
-      activities.push(
-        generateResolutionActivity(summary.expert, summary.lastUpdated, summary.caseResolution)
-      );
-    }
-
-    return {
-      ...summary,
-
-      // Deep-clone nested arrays/objects to avoid mutation
-      auxiliarValues: summary.auxiliarValues?.map((v) => ({ ...v })),
-      alerts: summary.alerts?.map((a) => ({ ...a })),
-      creator: { ...summary.creator },
-      expert: summary.expert ? { ...summary.expert } : null,
-
-      // Add placeholder activities
-      activities: activities,
+      activities,
     };
   }
 }
@@ -209,655 +260,686 @@ function generateResolutionActivity(
   };
 }
 
-function generateConsultationActivityWithDvAttachment(
-  creator: UserSummaryDto,
-  creationDate: Date
-): ActivityDto {
+export function toUserSummaryDto(user: UserResponseDto): UserSummaryDto {
+  return {
+    externalId: user.id, // or another field if needed
+    username: user.username,
+    email: user.email,
+  };
+}
+
+function generateConsultationActivity(creator: UserSummaryDto, creationDate: Date): ActivityDto {
   return {
     type: ActivityType.CONSULTATION,
-    text: 'Consultation activity with DV attachment',
-    creationDate: creationDate,
-    creator: creator,
+    text: 'Consultation activity',
+    creationDate,
+    creator,
     consultation: {
-      attachments: [
+      attachments: [],
+    },
+  };
+}
+
+export interface CitizenDocumentData {
+  citizenship: string;
+  issuingCountry: string;
+  issuingDate: Date;
+  citizenName: string;
+  citizenSurnames: string;
+  documentType: string; // 'P' | 'ID' | 'DL'
+  expiryDate: Date;
+  gender: string; // 'M' | 'F' | 'X'
+  placeOfBirth: string;
+  personalId: string;
+  documentNumber: string;
+  dateOfBirth: Date;
+  authority: string;
+}
+
+function addAttachment(activity: ConsultationActivityDto, attachment: AttachmentResponseDto) {
+  activity.attachments.push(attachment);
+}
+
+function generateDvAttachment(data: CitizenDocumentData): AttachmentResponseDto {
+  return {
+    attachmentType: AttachmentType.DOCUMENT_DV,
+    name: 'ScanDoc1',
+    metadata: null,
+
+    documentDvAttachment: {
+      documentType: DocumentAttachmentType.TD1,
+
+      scannerDvData: {
+        nombre: data.documentType === 'ID' ? 'ID Card' : 'Passport',
+        tipoDocumento: data.documentType,
+        codigoPais: data.issuingCountry,
+        pais: data.citizenship,
+        probability: 0,
+
+        chip: {
+          fotoId: DOCUMENT_DV_ATTACHMENT_CHIP,
+          idPersonal: data.personalId,
+          tipoDocumento: data.documentType,
+          paisExpedidor: data.issuingCountry,
+          numeroDocumento: data.documentNumber,
+          fechaCaducidad: data.expiryDate.toISOString(),
+          fechaExpedicion: data.issuingDate.toISOString(),
+          nombre: data.citizenName,
+          apellidos: data.citizenSurnames,
+          fechaNacimiento: data.dateOfBirth.toISOString(),
+          nacionalidad: data.citizenship,
+          sexo: data.gender,
+          lugarNacimiento: data.placeOfBirth,
+          mrzCode: 'TODO: generate MRZ from data',
+        },
+
+        visual: {
+          fotoId: DOCUMENT_DV_ATTACHMENT_VISUAL,
+          idPersonal: data.personalId,
+          tipoDocumento: data.documentType,
+          paisExpedidor: data.issuingCountry,
+          numeroDocumento: data.documentNumber,
+          fechaCaducidad: data.expiryDate.toISOString(),
+          fechaExpedicion: data.issuingDate.toISOString(),
+          nombre: data.citizenName,
+          apellidos: data.citizenSurnames,
+          fechaNacimiento: data.dateOfBirth.toISOString(),
+          nacionalidad: data.citizenship,
+          sexo: data.gender,
+          lugarNacimiento: data.placeOfBirth,
+          mrzCode: 'TODO: generate MRZ',
+        },
+
+        mrz: {
+          fotoId: null,
+          idPersonal: data.personalId,
+          tipoDocumento: data.documentType,
+          paisExpedidor: data.issuingCountry,
+          numeroDocumento: data.documentNumber,
+          fechaCaducidad: data.expiryDate.toISOString(),
+          fechaExpedicion: data.issuingDate.toISOString(),
+          nombre: data.citizenName,
+          apellidos: data.citizenSurnames,
+          fechaNacimiento: data.dateOfBirth.toISOString(),
+          nacionalidad: data.citizenship,
+          sexo: data.gender,
+          lugarNacimiento: data.placeOfBirth,
+          mrzCode: 'TODO: generate MRZ',
+        },
+
+        imageMaps: [
+          { type: 'IR', mediaBinaryId: DOCUMENT_DV_ATTACHMENT_IR },
+          { type: 'UV', mediaBinaryId: DOCUMENT_DV_ATTACHMENT_UV },
+          { type: 'VIZ', mediaBinaryId: DOCUMENT_DV_ATTACHMENT_VIZ },
+        ],
+      },
+
+      // keep as-is
+      mrzVizVerifications: [
         {
-          attachmentType: AttachmentType.DOCUMENT_DV,
-          name: 'ScanDoc1',
-          metadata: null,
-          documentDvAttachment: {
-            documentType: DocumentAttachmentType.TD1,
-            scannerDvData: {
-              nombre: 'Spain Electronic ID Card 2015',
-              tipoDocumento: 'ID Card',
-              codigoPais: 'ESP',
-              pais: 'Spain',
-              probability: 0,
-              chip: {
-                fotoId: DOCUMENT_DV_ATTACHMENT_CHIP,
-                idPersonal: '12345678R',
-                tipoDocumento: 'TravelDocument1',
-                paisExpedidor: 'ESP',
-                numeroDocumento: 'BOD111111',
-                fechaCaducidad: null,
-                fechaExpedicion: null,
-                nombre: 'MOCK',
-                apellidos: 'SURNAME1 SURNAME2',
-                fechaNacimiento: '123456',
-                nacionalidad: 'ESP',
-                sexo: 'M',
-                mrzCode:
-                  'IDESPBOD111111912345678R<<<<<<,1122334M2603183ESP<<<<<<<<<<<8,SURNAME1<SURNAME2<<MOCK<<<<<<<<',
-                lugarNacimiento: null,
-              },
-              visual: {
-                fotoId: DOCUMENT_DV_ATTACHMENT_VISUAL,
-                idPersonal: '12345678R',
-                tipoDocumento: 'TravelDocument1',
-                paisExpedidor: 'ESP',
-                numeroDocumento: 'BOD111111',
-                fechaCaducidad: null,
-                fechaExpedicion: null,
-                nombre: 'MOCK',
-                apellidos: 'SURNAME1 SURNAME2',
-                fechaNacimiento: '123456',
-                nacionalidad: 'ESP',
-                sexo: 'M',
-                mrzCode:
-                  'IDESPBOD111111912345678R<<<<<<,1122334M2603183ESP<<<<<<<<<<<8,SURNAME1<SURNAME2<<MOCK<<<<<<<<',
-                lugarNacimiento: null,
-              },
-              mrz: {
-                fotoId: null,
-                idPersonal: '12345678R',
-                tipoDocumento: 'TravelDocument1',
-                paisExpedidor: 'ESP',
-                numeroDocumento: 'BOD111111',
-                fechaCaducidad: null,
-                fechaExpedicion: null,
-                nombre: 'MOCK',
-                apellidos: 'SURNAME1 SURNAME2',
-                fechaNacimiento: '123456',
-                nacionalidad: 'ESP',
-                sexo: 'M',
-                mrzCode:
-                  'IDESPBOD111111912345678R<<<<<<,1122334M2603183ESP<<<<<<<<<<<8,SURNAME1<SURNAME2<<MOCK<<<<<<<<',
-                lugarNacimiento: null,
-              },
-              imageMaps: [
-                { type: 'IR', mediaBinaryId: DOCUMENT_DV_ATTACHMENT_IR },
-                { type: 'UV', mediaBinaryId: DOCUMENT_DV_ATTACHMENT_UV },
-                { type: 'VIZ', mediaBinaryId: DOCUMENT_DV_ATTACHMENT_VIZ },
-              ],
-            },
+          nombre: 'OCR Birth Date',
+          mrz: '991228',
+          rawVIZ: '28 12 1999',
+          viz: '991228',
+        },
+        {
+          nombre: 'OCR Extract CAN',
+          mrz: '',
+          rawVIZ: '123456',
+          viz: '123456',
+        },
+        {
+          nombre: 'OCR Expiry Date',
+          mrz: '260317',
+          rawVIZ: '17 03 2026',
+          viz: '260317',
+        },
+        {
+          nombre: 'OCR Extract Street',
+          mrz: '',
+          rawVIZ: 'CRER. MOCK 42 B',
+          viz: 'CRER.MOCKSTREET',
+        },
+        {
+          nombre: 'OCR Document Number',
+          mrz: 'BOD111111',
+          rawVIZ: 'BOD111111',
+          viz: 'BOD1111111',
+        },
+        {
+          nombre: 'OCR Personal Number',
+          mrz: '12345678R<<',
+          rawVIZ: '12345678R',
+          viz: '12345678R',
+        },
+        {
+          nombre: 'OCR Extract Nationality',
+          mrz: '',
+          rawVIZ: 'ESP',
+          viz: 'ESP',
+        },
+        {
+          nombre: 'OCR Extract Place Of Birth',
+          mrz: '',
+          rawVIZ: 'SANT PERE DE RIBES\r\nBARCELONA\r\n',
+          viz: 'SANTPEREDERIBES\r\nBARCELONA\r\n',
+        },
+        {
+          nombre: 'OCR Last Name',
+          mrz: 'SURNAME1<SURNAME2',
+          rawVIZ: 'SURNAME1\rSURNAME2\r\n',
+          viz: 'SURNAME1\rSURNAME2\r\n',
+        },
+        {
+          nombre: 'OCR Extract City',
+          mrz: '',
+          rawVIZ: 'SANT PERE DE RIBES',
+          viz: 'SANTPEREDERIBES',
+        },
+        {
+          nombre: 'OCR First Name',
+          mrz: 'MOCK<<<<<<<<',
+          rawVIZ: 'MOCK',
+          viz: 'MOCK',
+        },
+      ],
 
-            mrzVizVerifications: [
-              {
-                nombre: 'OCR Birth Date',
-                mrz: '991228',
-                rawVIZ: '28 12 1999',
-                viz: '991228',
-              },
-              {
-                nombre: 'OCR Extract CAN',
-                mrz: '',
-                rawVIZ: '123456',
-                viz: '123456',
-              },
-              {
-                nombre: 'OCR Expiry Date',
-                mrz: '260317',
-                rawVIZ: '17 03 2026',
-                viz: '260317',
-              },
-              {
-                nombre: 'OCR Extract Street',
-                mrz: '',
-                rawVIZ: 'CRER. MOCK 42 B',
-                viz: 'CRER.MOCKSTREET',
-              },
-              {
-                nombre: 'OCR Document Number',
-                mrz: 'BOD111111',
-                rawVIZ: 'BOD111111',
-                viz: 'BOD1111111',
-              },
-              {
-                nombre: 'OCR Personal Number',
-                mrz: '12345678R<<',
-                rawVIZ: '12345678R',
-                viz: '12345678R',
-              },
-              {
-                nombre: 'OCR Extract Nationality',
-                mrz: '',
-                rawVIZ: 'ESP',
-                viz: 'ESP',
-              },
-              {
-                nombre: 'OCR Extract Place Of Birth',
-                mrz: '',
-                rawVIZ: 'SANT PERE DE RIBES\r\nBARCELONA\r\n',
-                viz: 'SANTPEREDERIBES\r\nBARCELONA\r\n',
-              },
-              {
-                nombre: 'OCR Last Name',
-                mrz: 'SURNAME1<SURNAME2',
-                rawVIZ: 'SURNAME1\rSURNAME2\r\n',
-                viz: 'SURNAME1\rSURNAME2\r\n',
-              },
-              {
-                nombre: 'OCR Extract City',
-                mrz: '',
-                rawVIZ: 'SANT PERE DE RIBES',
-                viz: 'SANTPEREDERIBES',
-              },
-              {
-                nombre: 'OCR First Name',
-                mrz: 'MOCK<<<<<<<<',
-                rawVIZ: 'MOCK',
-                viz: 'MOCK',
-              },
-            ],
-
-            documentVerifications: [
-              {
-                group: 'Chip',
-                code: 'ChipAccess',
-                value: 0,
-                sourceMessage: 'Chip Access Verification',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Chip',
-                code: 'ChipActiveAuthentication',
-                value: 0,
-                sourceMessage: 'Chip Active Authentication',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'Date of birth check digit test',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'Composite check digit test',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Chip',
-                code: 'ChipPassiveAuthentication',
-                value: 0,
-                sourceMessage: 'Chip Passive Authentication',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'Document number check digit test',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Chip',
-                code: 'ChipPresent',
-                value: 1,
-                sourceMessage: 'Chip Present',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'Expiry date check digit test',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Chip',
-                code: 'ChipAuthentication',
-                value: 0,
-                sourceMessage: 'Chip Authentication',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'Correct padding check',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'Complete expiry date check',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: CompositeCheckDigit',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: DocumentType',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: DocumentNumberCheckDigit',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: ExpiryDateCheckDigit',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: ExpiryDate',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: DocumentNumber',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: DateOfBirth',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: DateOfBirthCheckDigit',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: Sex',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'TD1 type field check',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'Valid expiry date check',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: OptionalData1',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: OptionalData2',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'Valid date of birth check',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'TD1 number of rows and columns',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: Nationality',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: SecondaryIdentifier',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: IssuingState',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'ICAO characters: PrimaryIdentifier',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'Data Integrity Chip - MRZ: Issuer',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'Data Integrity Chip - MRZ: Nationality',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'Data Integrity Chip - MRZ: Expiry Date Check digit',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'Data Integrity Chip - MRZ: Date of Birth',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'Data Integrity Chip - MRZ: Document number Check digit',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'Data Integrity Chip - MRZ: Composite Check Digit',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'Valid sex field check',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'Data Integrity Chip - MRZ: Given Name',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'Data Integrity Chip - MRZ: Expiry Date',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'Data Integrity Chip - MRZ: Date of Birth Check digit',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'Data Integrity Chip - MRZ: Document Number',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'Valid issuing state check',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'MRZ',
-                code: 'InvalidValue',
-                value: 1,
-                sourceMessage: 'Valid nationality check',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'Data Integrity Chip - MRZ: Sex',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'OCR Birth Date',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'OCR Expiry Date',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'OCR Document Number',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'OCR First Name',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'OCR Last Name',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'Data Integrity Chip - MRZ: Optional Data',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'OCR',
-                code: 'DataIntegrity',
-                value: 1,
-                sourceMessage: 'OCR Extract Nationality',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Integrity',
-                code: 'TextMatch',
-                value: 1,
-                sourceMessage: 'OCR Personal Number',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'OCR',
-                code: 'DataIntegrity',
-                value: 1,
-                sourceMessage: 'OCR Extract CAN',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'OCR',
-                code: 'DataIntegrity',
-                value: 1,
-                sourceMessage: 'OCR Extract Place Of Birth',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'OCR',
-                code: 'DataIntegrity',
-                value: 1,
-                sourceMessage: 'OCR Extract Gender ',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'OCR',
-                code: 'DataIntegrity',
-                value: 1,
-                sourceMessage: 'OCR Extract City',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Security',
-                code: 'UV',
-                value: 1,
-                sourceMessage: 'Front - UV Photo Replace',
-                expected: null,
-                result: DOCUMENT_DV_FRONT_UV_PHOTO_REPLACE,
-              },
-              {
-                group: 'OCR',
-                code: 'DataIntegrity',
-                value: 1,
-                sourceMessage: 'OCR Extract Street',
-                expected: null,
-                result: null,
-              },
-              {
-                group: 'Security',
-                code: 'ImageMatch',
-                value: 1,
-                sourceMessage: 'OCV Front - IR Chip Check',
-                expected: DOCUMENT_DV_FRONT_OCV_IR_CHIP_CHECK_EXPECTED,
-                result: DOCUMENT_DV_FRONT_OCV_IR_CHIP_CHECK_RESULT,
-              },
-              {
-                group: 'Security',
-                code: 'ImageMatch',
-                value: 1,
-                sourceMessage: 'OCV VIS Chip - Back',
-                expected: DOCUMENT_DV_OCV_VIZ_CHIP_BACK_EXPECTED,
-                result: DOCUMENT_DV_OCV_VIZ_CHIP_BACK_RESULT,
-              },
-              {
-                group: 'Security',
-                code: 'ImageMatch',
-                value: 1,
-                sourceMessage: 'OCV IR MRZ Check',
-                expected: DOCUMENT_DV_OCV_IR_MRZ_CHECK_EXPECTED,
-                result: DOCUMENT_DV_OCV_IR_MRZ_CHECK_RESULT,
-              },
-              {
-                group: 'Security',
-                code: 'UV',
-                value: 1,
-                sourceMessage: 'UV MRZ Replace',
-                expected: DOCUMENT_DV_UV_MRZ_REPLACE_EXPECTED,
-                result: DOCUMENT_DV_UV_MRZ_REPLACE_RESULT,
-              },
-            ],
-          },
+      documentVerifications: [
+        {
+          group: 'Chip',
+          code: 'ChipAccess',
+          value: 0,
+          sourceMessage: 'Chip Access Verification',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Chip',
+          code: 'ChipActiveAuthentication',
+          value: 0,
+          sourceMessage: 'Chip Active Authentication',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'Date of birth check digit test',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'Composite check digit test',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Chip',
+          code: 'ChipPassiveAuthentication',
+          value: 0,
+          sourceMessage: 'Chip Passive Authentication',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'Document number check digit test',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Chip',
+          code: 'ChipPresent',
+          value: 1,
+          sourceMessage: 'Chip Present',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'Expiry date check digit test',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Chip',
+          code: 'ChipAuthentication',
+          value: 0,
+          sourceMessage: 'Chip Authentication',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'Correct padding check',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'Complete expiry date check',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: CompositeCheckDigit',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: DocumentType',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: DocumentNumberCheckDigit',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: ExpiryDateCheckDigit',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: ExpiryDate',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: DocumentNumber',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: DateOfBirth',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: DateOfBirthCheckDigit',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: Sex',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'TD1 type field check',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'Valid expiry date check',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: OptionalData1',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: OptionalData2',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'Valid date of birth check',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'TD1 number of rows and columns',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: Nationality',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: SecondaryIdentifier',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: IssuingState',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'ICAO characters: PrimaryIdentifier',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'Data Integrity Chip - MRZ: Issuer',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'Data Integrity Chip - MRZ: Nationality',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'Data Integrity Chip - MRZ: Expiry Date Check digit',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'Data Integrity Chip - MRZ: Date of Birth',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'Data Integrity Chip - MRZ: Document number Check digit',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'Data Integrity Chip - MRZ: Composite Check Digit',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'Valid sex field check',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'Data Integrity Chip - MRZ: Given Name',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'Data Integrity Chip - MRZ: Expiry Date',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'Data Integrity Chip - MRZ: Date of Birth Check digit',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'Data Integrity Chip - MRZ: Document Number',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'Valid issuing state check',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'MRZ',
+          code: 'InvalidValue',
+          value: 1,
+          sourceMessage: 'Valid nationality check',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'Data Integrity Chip - MRZ: Sex',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'OCR Birth Date',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'OCR Expiry Date',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'OCR Document Number',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'OCR First Name',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'OCR Last Name',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'Data Integrity Chip - MRZ: Optional Data',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'OCR',
+          code: 'DataIntegrity',
+          value: 1,
+          sourceMessage: 'OCR Extract Nationality',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Integrity',
+          code: 'TextMatch',
+          value: 1,
+          sourceMessage: 'OCR Personal Number',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'OCR',
+          code: 'DataIntegrity',
+          value: 1,
+          sourceMessage: 'OCR Extract CAN',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'OCR',
+          code: 'DataIntegrity',
+          value: 1,
+          sourceMessage: 'OCR Extract Place Of Birth',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'OCR',
+          code: 'DataIntegrity',
+          value: 1,
+          sourceMessage: 'OCR Extract Gender ',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'OCR',
+          code: 'DataIntegrity',
+          value: 1,
+          sourceMessage: 'OCR Extract City',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Security',
+          code: 'UV',
+          value: 1,
+          sourceMessage: 'Front - UV Photo Replace',
+          expected: null,
+          result: DOCUMENT_DV_FRONT_UV_PHOTO_REPLACE,
+        },
+        {
+          group: 'OCR',
+          code: 'DataIntegrity',
+          value: 1,
+          sourceMessage: 'OCR Extract Street',
+          expected: null,
+          result: null,
+        },
+        {
+          group: 'Security',
+          code: 'ImageMatch',
+          value: 1,
+          sourceMessage: 'OCV Front - IR Chip Check',
+          expected: DOCUMENT_DV_FRONT_OCV_IR_CHIP_CHECK_EXPECTED,
+          result: DOCUMENT_DV_FRONT_OCV_IR_CHIP_CHECK_RESULT,
+        },
+        {
+          group: 'Security',
+          code: 'ImageMatch',
+          value: 1,
+          sourceMessage: 'OCV VIS Chip - Back',
+          expected: DOCUMENT_DV_OCV_VIZ_CHIP_BACK_EXPECTED,
+          result: DOCUMENT_DV_OCV_VIZ_CHIP_BACK_RESULT,
+        },
+        {
+          group: 'Security',
+          code: 'ImageMatch',
+          value: 1,
+          sourceMessage: 'OCV IR MRZ Check',
+          expected: DOCUMENT_DV_OCV_IR_MRZ_CHECK_EXPECTED,
+          result: DOCUMENT_DV_OCV_IR_MRZ_CHECK_RESULT,
+        },
+        {
+          group: 'Security',
+          code: 'UV',
+          value: 1,
+          sourceMessage: 'UV MRZ Replace',
+          expected: DOCUMENT_DV_UV_MRZ_REPLACE_EXPECTED,
+          result: DOCUMENT_DV_UV_MRZ_REPLACE_RESULT,
         },
       ],
     },
@@ -907,6 +989,47 @@ function randomDateYearsAgo(minYears: number, maxYears: number): Date {
   const timestamp = rng.nextInt(start, end);
 
   return new Date(timestamp);
+}
+
+function randomCountryCode(): string {
+  const codes = [
+    'ESP',
+    'FRA',
+    'DEU',
+    'ITA',
+    'PRT',
+    'GBR',
+    'USA',
+    'CAN',
+    'MEX',
+    'BRA',
+    'ARG',
+    'CHL',
+    'COL',
+    'PER',
+    'AUS',
+    'NZL',
+    'JPN',
+    'CHN',
+    'KOR',
+    'IND',
+    'ZAF',
+    'MAR',
+    'EGY',
+    'TUR',
+  ];
+  return randomElement(codes);
+}
+
+function randomFutureDate(minYears: number, maxYears: number): Date {
+  const years = Math.floor(Math.random() * (maxYears - minYears + 1)) + minYears;
+  const now = new Date();
+
+  return new Date(
+    now.getFullYear() + years,
+    Math.floor(Math.random() * 12),
+    Math.floor(Math.random() * 28) + 1
+  );
 }
 
 function randomCreationDate(): Date {
