@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, viewChild, ViewEncapsulation } from '@angular/core';
 
 import { PanelModule } from 'primeng/panel';
 import { MenuModule } from 'primeng/menu';
@@ -13,7 +13,7 @@ import { EstadoConsultaComponent } from '../../shared/components/estado-consulta
 import { SelectChangeEvent, SelectModule } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { MultiSelectModule } from 'primeng/multiselect';
-import { DialogModule } from 'primeng/dialog';
+import { Dialog, DialogModule } from 'primeng/dialog';
 
 import { CaseDto, CaseSummaryDto } from '@shared/models/case/query/case.dto';
 import { CaseResolution, CaseStatus } from '@shared/models/case/case.enums';
@@ -49,22 +49,37 @@ interface Column {
     ToastModule,
   ],
   templateUrl: './cases.page.html',
+  encapsulation: ViewEncapsulation.None,
+  styles: [
+    `
+      .p-dialog {
+        border-radius: var(--p-overlay-modal-border-radius); /* o el que facis servir */
+        background: var(--surface-ground) !important;
+      }
+
+      .p-dialog-header,
+      .p-dialog-content,
+      .p-dialog-footer {
+        background: var(--surface-ground) !important;
+        border-radius: inherit;
+      }
+    `,
+  ],
   providers: [],
 })
 export class CasesPage {
-  protected editDialog: boolean = false;
-  protected createCaseDialog: boolean = false;
+  editDialogComponent = viewChild<Dialog>('editDialogComponent');
+  createDialogComponent = viewChild<Dialog>('createDialogComponent');
 
-  protected case!: CaseDto;
-  protected athenasMessage!: AthenasMessage;
+  editDialog: boolean = false;
+  createCaseDialog: boolean = false;
+  case?: CaseDto;
+  athenasMessage!: AthenasMessage;
+  caseList: CaseSummaryDto[] = [];
+  caseFilter: CaseFilters = <CaseFilters>{};
 
   private readonly caseService = inject(CaseService);
-
-  protected caseList: CaseSummaryDto[] = [];
-  protected caseFilter: CaseFilters = <CaseFilters>{};
-
   private readonly ref = inject(ChangeDetectorRef);
-
   private readonly uiSafeCallerService = inject(UiSafeCallerService);
 
   constructor() {

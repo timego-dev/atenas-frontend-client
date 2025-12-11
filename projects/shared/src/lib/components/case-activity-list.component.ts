@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
 import { PanelModule } from 'primeng/panel';
 import { EstadoConsultaComponent } from '../../../../expert/src/app/shared/components/estado-consulta.component';
 import { CaseDto } from '@shared/models/case/query/case.dto';
-import { AttachmentType } from '@shared/models/case/case.enums';
+import { ActivityType, AttachmentType } from '@shared/models/case/case.enums';
 
 @Component({
   selector: 'case-activity-list',
@@ -31,18 +31,20 @@ import { AttachmentType } from '@shared/models/case/case.enums';
   ],
   template: `
     @for (activity of case().activities; track $index) {
-    <div>{{ activity.creator?.username }}</div>
-    <div>{{ activity.creationDate.toLocaleDateString() }}</div>
-    <div>Envío información adicional</div>
-    <div>Hace 39 minutos</div>
-    <div>Adjuntos:</div>
-    @for (attachment of activity.consultation?.attachments; track $index) {
-    <div>{{ attachment.name }}</div>
-    <div>{{ attachment.attachmentType }}</div>
-    @if (attachment.attachmentType == AttachmentType.DOCUMENT_DV) {
-    <div>{{ attachment.documentDvAttachment?.scannerDvData?.chip }}</div>
-    } }
-    <hr />
+    <p-panel>
+      <i class="pi pi-user"></i>
+      <div>{{ activity.creator?.username }}</div>
+      <div>{{ activity.creationDate | date : 'dd/MM/yyyy HH:mm:ss' }}</div>
+      <div>{{ typeActivityDisplay(activity.type) }}</div>
+
+      <div>Adjuntos:</div>
+      @for (attachment of activity.consultation?.attachments; track $index) {
+      <div>{{ attachment.name }}</div>
+      <div>{{ attachment.attachmentType }}</div>
+      @if (attachment.attachmentType == AttachmentType.DOCUMENT_DV) {
+      <div>{{ attachment.documentDvAttachment?.scannerDvData?.chip }}</div>
+      } }
+    </p-panel>
     }
   `,
   providers: [ConfirmationService],
@@ -50,4 +52,17 @@ import { AttachmentType } from '@shared/models/case/case.enums';
 export class CaseActivityListComponent {
   case = input.required<CaseDto>();
   AttachmentType = AttachmentType;
+
+  typeActivityDisplay(type: ActivityType) {
+    switch (type) {
+      case ActivityType.CONSULTATION:
+        return 'Envío consulta';
+      case ActivityType.DOCUMENT_VERIFICATION_AUTOMATIC:
+        return 'Verificación automática de documento';
+      case ActivityType.RESOLUTION:
+        return 'Resolución';
+      case ActivityType.FACE_VERIFICATION_AUTOMATIC:
+        return 'Verificación autmática facial';
+    }
+  }
 }

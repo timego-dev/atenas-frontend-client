@@ -77,9 +77,14 @@
   </ng-template>
 </p-table>
 
-<p-dialog [(visible)]="editDialog" header="Consulta" [modal]="true">
+<p-dialog
+  #editDialogComponent
+  [(visible)]="editDialog"
+  [header]="`Consulta ${case?.trackingNumber}`"
+  [modal]="true"
+>
   <ng-template #content>
-    <case-detail [case]="case" />
+    <case-detail [case]="case!" />
   </ng-template>
 
   <ng-template #footer>
@@ -88,7 +93,12 @@
   </ng-template>
 </p-dialog>
 
-<p-dialog [(visible)]="createCaseDialog" header="Nueva consulta" [modal]="true">
+<p-dialog
+  #createDialogComponent
+  [(visible)]="createCaseDialog"
+  header="Nueva consulta"
+  [modal]="true"
+>
   <ng-template #content>
     <case-create [athenasMessage]="athenasMessage" />
   </ng-template>

@@ -13,6 +13,9 @@ import { PanelModule } from 'primeng/panel';
 import { EstadoConsultaComponent } from '../../../../expert/src/app/shared/components/estado-consulta.component';
 import { CaseDto } from '@shared/models/case/query/case.dto';
 import { CaseActivityListComponent } from './case-activity-list.component';
+import { TableModule } from 'primeng/table';
+import { TabsModule } from 'primeng/tabs';
+import { BadgeModule } from 'primeng/badge';
 
 @Component({
   selector: 'case-detail',
@@ -30,6 +33,9 @@ import { CaseActivityListComponent } from './case-activity-list.component';
     PanelModule,
     EstadoConsultaComponent,
     CaseActivityListComponent,
+    TableModule,
+    TabsModule,
+    BadgeModule,
   ],
   templateUrl: './case-detail.component.html',
   providers: [ConfirmationService],

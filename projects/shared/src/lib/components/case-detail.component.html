@@ -1,15 +1,15 @@
 <div class="flex flex-col gap-2">
   <div class="flex flex-row gap-2">
-    <p-panel header="Consulta">
+    <p-panel class="flex-1" header="Consulta">
       <div class="flex flex-row gap-6">
-        <div class="mr-auto"><strong>Consulta</strong></div>
+        <div class="mr-auto"><strong>Referencia</strong></div>
         <div>
           {{ case().trackingNumber }}
         </div>
       </div>
       <div class="flex flex-row gap-6">
-        <div class="mr-auto"><strong>Fecha entrada</strong></div>
-        <div>
+        <div class="mr-auto text-nowrap"><strong>Fecha entrada</strong></div>
+        <div class="text-nowrap">
           {{ case().creationDate | date : 'dd/MM/yyyy HH:mm:ss' }}
         </div>
       </div>
@@ -20,10 +20,10 @@
         </div>
       </div>
     </p-panel>
-    <p-panel header="Respuesta">
+    <p-panel class="flex-1" header="Respuesta">
       <div class="flex flex-row gap-6">
-        <div class="mr-auto"><strong>Fecha respuesta</strong></div>
-        <div>
+        <div class="mr-auto text-nowrap"><strong>Fecha respuesta</strong></div>
+        <div class="text-nowrap">
           {{ case().lastUpdated | date : 'dd/MM/yyyy HH:mm:ss' }}
         </div>
       </div>
@@ -34,16 +34,29 @@
         </div>
       </div>
       <div class="flex flex-row gap-6">
-        <div class="mr-auto"><strong>Respuesta</strong></div>
+        <div class="mr-auto"><strong>Estado</strong></div>
         <div>
           <lib-estado-consulta [consulta]="case()" />
         </div>
       </div>
     </p-panel>
-    <p-panel> </p-panel>
+    <p-panel class="flex-1" header="Tiempo respuesta">
+      <h1 class="text-right !text-green-500">2' 14"</h1>
+    </p-panel>
   </div>
 
-  <p-panel header="Actividad">
-    <case-activity-list [case]="case()" />
-  </p-panel>
+  <p-tabs value="0">
+    <p-tablist>
+      <p-tab value="0">Actividad</p-tab>
+      <p-tab value="1">Alertas <p-badge severity="danger" value="1" /></p-tab>
+      <p-tab value="2">Casos relacionados <p-badge value="2" /></p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="0">
+        <case-activity-list [case]="case()" />
+      </p-tabpanel>
+      <p-tabpanel value="1"> </p-tabpanel>
+      <p-tabpanel value="2"> </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
 </div>
