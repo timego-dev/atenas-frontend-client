@@ -42,6 +42,12 @@ describe('Auxiliars page', () => {
       expect(auxiliaresPage.auxiliares.length).toBe(0);
       expect(auxiliaresPage.editDialog).toBeFalse();
       expect(auxiliaresPage.editAuxiliar).toBeDefined;
+
+      // TODO: comprovar que s'han llegit 4 camps auxiliars
+
+      // TODO: comprovar que estan per ordre alfabètic pel camp "alias"
+
+      // TODO: comprovar que hi ha 3 que son requerits
     });
 
     it('should add a new auxiliar', fakeAsync(() => {

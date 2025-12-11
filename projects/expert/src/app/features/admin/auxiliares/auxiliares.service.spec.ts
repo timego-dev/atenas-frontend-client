@@ -22,6 +22,10 @@ describe('Auxiliares services', () => {
     }).compileComponents();
   });
 
+  // TODO: Afegir test per service.getAuxiliares
+
+  // TODO: Afegir test per service.getById
+
   //CREATE
   it('should create an auxiliary (text)', fakeAsync(() => {
     const service = TestBed.inject(AuxiliaresService);
@@ -150,6 +154,8 @@ describe('Auxiliares services', () => {
     expect(auxResponse.decimals).toBe(2);
   }));
 
+  // TODO: Afegir el cas d'intentar crear un camp auxiliar amb un alias d'un que ja existeix. Ha de retornar http status 400
+
   it('should create an auxiliary (list)', fakeAsync(() => {
     const service = TestBed.inject(AuxiliaresService);
 
@@ -267,4 +273,6 @@ describe('Auxiliares services', () => {
     expect(aux).toBeUndefined;
     expect(auxiliars.length).toBe(3);
   }));
+
+  // TODO: Afegir test d'intentar eliminar un camp auxilir que no existeix
 });
