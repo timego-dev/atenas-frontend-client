@@ -190,10 +190,18 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
       : null;
 
     // Base resolution for the case
-    const caseResolution =
-      isSolved || isClarification
-        ? randomElement(Object.values(CaseResolution))
-        : CaseResolution.PENDING;
+    // Determine allowed resolutions based on case status
+    let allowedResolutions: CaseResolution[];
+    if (isSolved) {
+      allowedResolutions = [CaseResolution.WITH_EVIDENCES, CaseResolution.WITHOUT_EVIDENCES]; // exclude INVALID_DOCUMENT, INSUFFICIENT_QUALITY, PENDING
+    } else if (isClarification) {
+      allowedResolutions = [CaseResolution.INVALID_DOCUMENT, CaseResolution.INSUFFICIENT_QUALITY]; // exclude WITH_EVIDENCES, WITHOUT_EVIDENCES, PENDING
+    } else {
+      allowedResolutions = [CaseResolution.PENDING]; // other statuses just use PENDING
+    }
+
+    // Pick a random allowed resolution
+    const caseResolution = randomElement(allowedResolutions);
 
     // --- Activities --- //
     const consultationActivity = generateConsultationActivity(creator, creationDate);
