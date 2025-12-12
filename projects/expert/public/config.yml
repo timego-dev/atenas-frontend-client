@@ -3,6 +3,7 @@ services:
   user: 'UserRepositoryMockService'
   auxiliar: 'AuxiliarRepositoryMockService'
   case: 'CaseRepositoryMockService'
+  alert: 'AlertRepositoryMockService'
 backend:
   url: 'https://localhost:7526'
 clientService:

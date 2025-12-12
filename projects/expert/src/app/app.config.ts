@@ -42,6 +42,8 @@ import 'dayjs/locale/es';
 import { MessageService } from 'primeng/api';
 import { ConfigurationFileService } from '@shared/services/configuration-file.service';
 import { IConfig } from './shared/types/config';
+import { AlertRepositoryRemoteService, AlertRepositoryService } from '@shared/services/alert-repository.service';
+import { AlertRepositoryMockService } from '@shared/services/mock/alert-repository-mock.service';
 dayjs.extend(relativeTime);
 dayjs.locale('es');
 
@@ -61,6 +63,10 @@ const SERVICE_REGISTRY: Record<string, Type<any>> = {
   // Auxiliar
   AuxiliarRepositoryRemoteService: AuxiliarRepositoryRemoteService,
   AuxiliarRepositoryMockService: AuxiliarRepositoryMockService,
+
+  // Alertas
+  AlertRepositoryRemoteService:  AlertRepositoryRemoteService,
+  AlertRepositoryMockService: AlertRepositoryMockService,
 };
 
 export const appConfig: ApplicationConfig = {
@@ -84,6 +90,8 @@ export const appConfig: ApplicationConfig = {
     CaseRepositoryRemoteService,
     AuxiliarRepositoryRemoteService,
     AuxiliarRepositoryMockService,
+    AlertRepositoryRemoteService,
+    AlertRepositoryMockService,
     provideAppInitializer(() => {
       const configService = inject(ConfigurationFileService);
       return configService.initialize();
@@ -151,6 +159,20 @@ export const appConfig: ApplicationConfig = {
             ? SERVICE_REGISTRY[serviceKey]
             : AuxiliarRepositoryRemoteService;
 
+        return injector.get(ServiceClass);
+      },
+      deps: [ConfigurationFileService, Injector],
+    },
+    // ALERT REPOSITORY
+    {
+      provide: AlertRepositoryService,
+      useFactory: (configService: ConfigurationFileService<IConfig>, injector: Injector) => {
+        const config = configService.getConfig();
+        const serviceKey = config?.services?.alert;
+        const ServiceClass =
+          serviceKey && SERVICE_REGISTRY[serviceKey]
+            ? SERVICE_REGISTRY[serviceKey]
+            : AlertRepositoryRemoteService; // default
         return injector.get(ServiceClass);
       },
       deps: [ConfigurationFileService, Injector],

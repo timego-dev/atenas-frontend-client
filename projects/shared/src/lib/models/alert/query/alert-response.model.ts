@@ -1,6 +1,18 @@
+export interface RuleGroup {
+  operator: 'AND' | 'OR';
+  children: (RuleGroup | RuleClause)[];
+}
+
+export interface RuleClause {
+  field: string;
+  operator: string;
+  value: any;
+}
 export class AlertResponseDto {
-  id: string = ''; // Guid in C# becomes string in TS
+  id: string = '';
   name: string = '';
+  description: string = '';
+  category: string = '';
   nCases: number = 0;
   nCounterfeits: number = 0;
   lastModifiedBy: string = '';
@@ -8,8 +20,13 @@ export class AlertResponseDto {
   filtersAQL: string = '';
   active: boolean = false;
 
+  ruleGroup?: RuleGroup;
+
   constructor(init?: Partial<AlertResponseDto>) {
     Object.assign(this, init);
+    if (!this.ruleGroup) {
+      this.ruleGroup = { operator: 'AND', children: [] };
+    }
   }
 }
 
@@ -41,4 +58,6 @@ export enum AlertFieldType {
   Date = 'date',
   DocTypeList = 'docTypeList',
   SexList = 'sexList',
+  Text = 'text',
+  Number = 'number',
 }
