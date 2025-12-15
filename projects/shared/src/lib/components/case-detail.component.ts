@@ -17,6 +17,10 @@ import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { BadgeModule } from 'primeng/badge';
 
+import { DateTimeComponent } from '@shared/components/date-time.component';
+import { ToolbarModule } from 'primeng/toolbar';
+import { CaseAlertasListComponent } from './case-alerts-list.component';
+
 @Component({
   selector: 'case-detail',
   standalone: true,
@@ -36,8 +40,23 @@ import { BadgeModule } from 'primeng/badge';
     TableModule,
     TabsModule,
     BadgeModule,
+    DateTimeComponent,
+    ToolbarModule,
+    CaseAlertasListComponent,
   ],
   templateUrl: './case-detail.component.html',
+  styles: [
+    `
+      .p-toolbar {
+        background: none;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        padding-top: 0;
+        padding-bottom: 0;
+        border: none;
+      }
+    `,
+  ],
   providers: [ConfirmationService],
 })
 export class CaseDetailComponent {

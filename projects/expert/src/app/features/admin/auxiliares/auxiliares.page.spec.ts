@@ -40,12 +40,19 @@ describe('Auxiliars page', () => {
   describe('Page tests', () => {
     it('should be in initial state', () => {
       expect(auxiliaresPage.auxiliares.length).toBe(0);
-      expect(auxiliaresPage.editDialog).toBeFalse();
+      expect(auxiliaresPage.editDialogVisible).toBeFalse();
       expect(auxiliaresPage.editAuxiliar).toBeDefined;
 
       // TODO: comprovar que s'han llegit 4 camps auxiliars
 
       // TODO: comprovar que estan per ordre alfabètic pel camp "alias"
+
+      var anterior = '';
+
+      auxiliaresPage.auxiliares().forEach((aux) => {
+        expect(aux.alias > anterior).toBeTrue();
+        anterior = aux.alias;
+      });
 
       // TODO: comprovar que hi ha 3 que son requerits
     });
@@ -54,7 +61,7 @@ describe('Auxiliars page', () => {
       auxiliaresPage.openNew();
       fixture.detectChanges();
       tick();
-      expect(auxiliaresPage.editDialog).toBeTrue();
+      expect(auxiliaresPage.editDialogVisible).toBeTrue();
       expect(auxiliaresPage.editingAuxiliar).toBeDefined();
 
       expect(auxiliaresPage.editDialogComponent()).toBeDefined();
@@ -67,7 +74,7 @@ describe('Auxiliars page', () => {
       auxiliaresPage.guardar();
       fixture.detectChanges();
       tick();
-      expect(auxiliaresPage.editDialog).toBeFalse();
+      expect(auxiliaresPage.editDialogVisible).toBeFalse();
       expect(auxiliaresPage.auxiliares().length).toBe(5);
     }));
 
@@ -77,7 +84,7 @@ describe('Auxiliars page', () => {
       fixture.detectChanges();
       tick();
 
-      expect(auxiliaresPage.editDialog).toBeTrue();
+      expect(auxiliaresPage.editDialogVisible).toBeTrue();
       expect(auxiliaresPage.selectedAuxiliar).toEqual(auxiliar);
 
       expect(auxiliaresPage.editDialogComponent()).toBeDefined();
@@ -96,7 +103,7 @@ describe('Auxiliars page', () => {
 
       fixture.detectChanges();
       tick();
-      expect(auxiliaresPage.editDialog).toBeFalse();
+      expect(auxiliaresPage.editDialogVisible).toBeFalse();
 
       expect(auxiliaresPage.auxiliares()[0].alias).toBe('Mortadelo');
       expect(auxiliaresPage.auxiliares()[0].type).toBe(FieldType.Text);

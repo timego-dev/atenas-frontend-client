@@ -52,7 +52,7 @@ export class AuxiliaresPage implements OnInit {
   auxiliares = signal<AuxiliarResponseDto[]>([]);
   selectedAuxiliar: AuxiliarResponseDto | null = null;
   editingAuxiliar: AuxiliarRequestDto | null = createEmptyAuxiliarRequest();
-  editDialog = false;
+  editDialogVisible = false;
   submitted = false;
   table = viewChild<Table>('dt');
 
@@ -100,7 +100,7 @@ export class AuxiliaresPage implements OnInit {
     this.selectedAuxiliar = null;
     this.editingAuxiliar = createEmptyAuxiliarRequest();
     this.submitted = false;
-    this.editDialog = true;
+    this.editDialogVisible = true;
   }
 
   editAuxiliar(auxiliar: AuxiliarResponseDto) {
@@ -113,7 +113,7 @@ export class AuxiliaresPage implements OnInit {
       maxLength: auxiliar.maxLength ?? undefined,
       options: auxiliar.options?.map((opt) => ({ ...opt })),
     };
-    this.editDialog = true;
+    this.editDialogVisible = true;
   }
 
   deleteAuxiliar(auxiliar: AuxiliarResponseDto) {
@@ -211,13 +211,13 @@ export class AuxiliaresPage implements OnInit {
         },
       });
 
-    this.editDialog = false;
+    this.editDialogVisible = false;
     this.selectedAuxiliar = null;
     this.editingAuxiliar = createEmptyAuxiliarRequest();
   }
 
   hideDialog() {
-    this.editDialog = false;
+    this.editDialogVisible = false;
     this.submitted = false;
   }
 }

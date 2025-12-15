@@ -7,19 +7,23 @@ import { TagModule } from 'primeng/tag';
   selector: 'lib-estado-consulta',
   imports: [TagModule],
   template: `
-    @switch (consulta().caseStatus) { @case (EstadoConsulta.OPEN) {
+    @switch (consulta().caseStatus) { @case (EstadoConsulta.CLARIFICATION_PENDING) {
+    <p-tag severity="warn" value="Requiere más información" />
+    } @case (EstadoConsulta.ARCHIVED) {
+    <p-tag severity="success" value="Archivado" />
+    } @case (EstadoConsulta.OPEN) {
     <p-tag severity="info" value="En curso" />
     } @case (EstadoConsulta.PENDING) {
-    <p-tag severity="warn" value="Pendiente" />
+    <p-tag severity="secondary" value="Pendiente" />
     } @case (EstadoConsulta.SOLVED) { @switch (consulta().caseResolution) { @case
     (RespuestaConsulta.WITHOUT_EVIDENCES) {
     <p-tag severity="success" value="Sin evidencias de falsificación" />
     } @case (RespuestaConsulta.WITH_EVIDENCES) {
     <p-tag severity="danger" value="Con evidencias de falsificación" />
     } @case (RespuestaConsulta.INSUFFICIENT_QUALITY) {
-    <p-tag severity="secondary" value="Calidad insuficiente" />
+    <p-tag severity="warn" value="Calidad insuficiente" />
     } @case (RespuestaConsulta.INVALID_DOCUMENT) {
-    <p-tag severity="secondary" value="Documento no válido" />
+    <p-tag severity="warn" value="Documento no válido" />
     }} } }
   `,
 })

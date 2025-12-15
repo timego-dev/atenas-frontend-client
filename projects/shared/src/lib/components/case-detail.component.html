@@ -1,4 +1,7 @@
 <div class="flex flex-col gap-2">
+  <p-toolbar>
+    <p-button label="Resolver" />
+  </p-toolbar>
   <div class="flex flex-row gap-2">
     <p-panel class="flex-1" header="Consulta">
       <div class="flex flex-row gap-6">
@@ -10,7 +13,7 @@
       <div class="flex flex-row gap-6">
         <div class="mr-auto text-nowrap"><strong>Fecha entrada</strong></div>
         <div class="text-nowrap">
-          {{ case().creationDate | date : 'dd/MM/yyyy HH:mm:ss' }}
+          <lib-date-time [dateTime]="case().creationDate" />
         </div>
       </div>
       <div class="flex flex-row gap-6">
@@ -24,7 +27,7 @@
       <div class="flex flex-row gap-6">
         <div class="mr-auto text-nowrap"><strong>Fecha respuesta</strong></div>
         <div class="text-nowrap">
-          {{ case().lastConsultation | date : 'dd/MM/yyyy HH:mm:ss' }}
+          <lib-date-time [dateTime]="case().lastResolution" />
         </div>
       </div>
       <div class="flex flex-row gap-6">
@@ -40,7 +43,7 @@
         </div>
       </div>
     </p-panel>
-    <p-panel class="flex-1" header="Tiempo respuesta">
+    <p-panel class="flex" header="Tiempo respuesta">
       <h1 class="text-right !text-green-500">2' 14"</h1>
     </p-panel>
   </div>
@@ -48,14 +51,22 @@
   <p-tabs value="0">
     <p-tablist>
       <p-tab value="0">Actividad</p-tab>
-      <p-tab value="1">Alertas <p-badge severity="danger" value="1" /></p-tab>
+      @if (case().alerts?.length) {
+      <p-tab value="1"
+        >Alertas <p-badge severity="danger" [value]="case().alerts?.length" />
+      </p-tab>
+      }
       <p-tab value="2">Casos relacionados <p-badge value="2" /></p-tab>
     </p-tablist>
     <p-tabpanels>
       <p-tabpanel value="0">
         <case-activity-list [case]="case()" />
       </p-tabpanel>
-      <p-tabpanel value="1"> </p-tabpanel>
+      @if (case().alerts?.length) {
+      <p-tabpanel value="1">
+        <case-alerts-list [case]="case()" />
+      </p-tabpanel>
+      }
       <p-tabpanel value="2"> </p-tabpanel>
     </p-tabpanels>
   </p-tabs>

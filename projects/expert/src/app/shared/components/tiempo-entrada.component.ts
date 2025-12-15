@@ -3,11 +3,12 @@ import { TagModule } from 'primeng/tag';
 import dayjs from 'dayjs';
 import { CaseSummaryDto } from '@shared/models/case/query/case.dto';
 import { CaseStatus } from '@shared/models/case/case.enums';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'lib-tiempo-entrada',
-  imports: [TagModule],
-  template: ` <p-tag [severity]="severityColor()" [value]="value()" /> `,
+  imports: [TagModule, Tooltip],
+  template: ` <p-tag [severity]="severityColor()" [value]="value()" [pTooltip]="tooltip" /> `,
 })
 export class TiempoEntrada {
   consulta = input.required<CaseSummaryDto>();
@@ -29,5 +30,9 @@ export class TiempoEntrada {
 
   value() {
     return dayjs(this.consulta().creationDate).fromNow();
+  }
+
+  get tooltip() {
+    return dayjs(this.consulta().creationDate).format('DD-MM-YYYY HH:mm:ss');
   }
 }

@@ -1,0 +1,15 @@
+.p-dialog {
+  border-radius: var(--p-overlay-modal-border-radius); /* o el que facis servir */
+  background: var(--surface-ground) !important;
+}
+
+.p-dialog-header,
+.p-dialog-content,
+.p-dialog-footer {
+  background: var(--surface-ground) !important;
+  border-radius: inherit;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'opsz' 48;
+}

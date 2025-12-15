@@ -45,16 +45,16 @@ export class CaseService {
     let resultado = [...caseList];
 
     if (filters.response?.length) {
-      resultado = resultado.filter((c) => filters.response.includes(c.caseResolution!));
+      resultado = resultado.filter((c) => filters.response?.includes(c.caseResolution!));
     }
 
     if (filters.status?.length) {
       resultado = resultado.filter(
         (c) =>
-          (c.caseStatus === CaseStatus.PENDING && filters.status.includes(CaseStatus.PENDING)) ||
-          (c.caseStatus === CaseStatus.OPEN && filters.status.includes(CaseStatus.OPEN)) ||
-          (c.caseStatus === CaseStatus.SOLVED && filters.status.includes(CaseStatus.SOLVED)) ||
-          (c.caseStatus === CaseStatus.ARCHIVED && filters.status.includes(CaseStatus.ARCHIVED))
+          (c.caseStatus === CaseStatus.PENDING && filters.status?.includes(CaseStatus.PENDING)) ||
+          (c.caseStatus === CaseStatus.OPEN && filters.status?.includes(CaseStatus.OPEN)) ||
+          (c.caseStatus === CaseStatus.SOLVED && filters.status?.includes(CaseStatus.SOLVED)) ||
+          (c.caseStatus === CaseStatus.ARCHIVED && filters.status?.includes(CaseStatus.ARCHIVED))
       );
     }
 

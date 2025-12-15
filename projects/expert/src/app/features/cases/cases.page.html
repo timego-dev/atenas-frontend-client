@@ -69,27 +69,29 @@
         </button>
       </td>
       <td><lib-tiempo-entrada [consulta]="consulta" /></td>
-      <td>{{ consulta.creatorId }}</td>
+      <td>{{ consulta.creator.username }}</td>
       <td><lib-tiempo-respuesta [consulta]="consulta" /></td>
-      <td>{{ consulta.expertId }}</td>
+      <td>{{ consulta.expert?.username }}</td>
       <td><lib-estado-consulta [consulta]="consulta" /></td>
     </tr>
   </ng-template>
 </p-table>
 
 <p-dialog
+  [style]="{ width: '900px', height: '600px' }"
   #editDialogComponent
   [(visible)]="editDialog"
-  [header]="`Consulta ${case?.trackingNumber}`"
   [modal]="true"
 >
-  <ng-template #content>
-    <case-detail [case]="case!" />
+  <ng-template #header>
+    <div class="flex flex-row gap-4 mr-auto items-center">
+      <h4 class="!m-0 inline">Consulta {{ case?.trackingNumber }}</h4>
+      <lib-estado-consulta [consulta]="case!" />
+    </div>
   </ng-template>
 
-  <ng-template #footer>
-    <p-button severity="secondary" label="Cancelar" icon="pi pi-times" (click)="hideDialog()" />
-    <p-button label="Guardar" icon="pi pi-check" (click)="saveDetail()" />
+  <ng-template #content>
+    <case-detail [case]="case!" />
   </ng-template>
 </p-dialog>
 

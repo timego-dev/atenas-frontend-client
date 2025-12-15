@@ -63,6 +63,20 @@ interface Column {
         background: var(--surface-ground) !important;
         border-radius: inherit;
       }
+
+      .p-tablist,
+      .p-tabpanels {
+        background: none !important;
+      }
+
+      .p-tabpanels {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+
+      .material-symbols-outlined {
+        font-variation-settings: 'opsz' 48;
+      }
     `,
   ],
   providers: [],
@@ -141,8 +155,6 @@ export class CasesPage {
 
     this.createCaseDialog = true;
   }
-
-  saveDetail() {}
 
   saveCreate() {
     this.uiSafeCallerService
