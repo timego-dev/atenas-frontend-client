@@ -4,12 +4,15 @@ import { HttpClient } from '@angular/common/http';
 import { ConfigurationService } from './configuration.service';
 import { CaseDto, CaseSummaryDto } from '@shared/models/case/query/case.dto';
 import { AthenasMessageDto } from '@shared/models/case/command/athenas-message.dto';
+import { AuxiliarValueRequestDto } from '@shared/models/auxiliar/command/auxiliar-request.model';
 
 export abstract class CaseRepositoryService {
   abstract getAll(): Observable<CaseSummaryDto[]>;
   abstract getById(id: string): Observable<CaseDto>;
   abstract create(message: AthenasMessageDto, files: File[]): Observable<CaseDto>;
-  abstract update(id: string, message: AthenasMessageDto, files: File[]): Observable<CaseDto>;
+  abstract addActivity(id: string, message: AthenasMessageDto, files: File[]): Observable<CaseDto>;
+  abstract assignExpert(id: string, expertId: string): Observable<CaseDto>;
+  abstract updateAuxiliarValues(id: string, values: AuxiliarValueRequestDto[]): Observable<CaseDto>;
   abstract delete(id: string): Observable<void>;
 }
 
@@ -47,21 +50,28 @@ export class CaseRepositoryRemoteService implements CaseRepositoryService {
     return this.http.post<CaseDto>(`${this.baseUrl}`, form);
   }
 
-  update(id: string, message: AthenasMessageDto, files: File[]): Observable<CaseDto> {
+  addActivity(id: string, message: AthenasMessageDto, files: File[]): Observable<CaseDto> {
     const form = new FormData();
 
-    // Always include the message JSON
     form.append('message', JSON.stringify(message));
 
-    // Only append files if there are any
-    if (files && files.length > 0) {
+    if (files?.length) {
       for (const file of files) {
         form.append(file.name, file);
       }
     }
 
-    // Send as multipart/form-data ALWAYS
-    return this.http.put<CaseDto>(`${this.baseUrl}/${id}`, form);
+    return this.http.post<CaseDto>(`${this.baseUrl}/${id}/activities`, form);
+  }
+
+  updateAuxiliarValues(id: string, values: AuxiliarValueRequestDto[]): Observable<CaseDto> {
+    return this.http.put<CaseDto>(`${this.baseUrl}/${id}/auxiliar-values`, values);
+  }
+
+  assignExpert(id: string, expertId: string | null): Observable<CaseDto> {
+    return this.http.patch<CaseDto>(`${this.baseUrl}/${id}/expert`, {
+      expertId: expertId,
+    });
   }
 
   delete(id: string): Observable<void> {

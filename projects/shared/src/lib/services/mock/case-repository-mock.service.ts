@@ -1,4 +1,4 @@
-import { of, Observable, throwError, generate } from 'rxjs';
+import { of, Observable, throwError, generate, switchMap } from 'rxjs';
 import { CaseRepositoryService } from '../case-repository.service';
 import { CaseDto, CaseSummaryDto, UserSummaryDto } from '@shared/models/case/query/case.dto';
 import { AthenasMessageDto } from '@shared/models/case/command/athenas-message.dto';
@@ -39,6 +39,7 @@ import {
   ConsultationActivityDto,
 } from '@shared/models/case/query/attachment.dto';
 import { UserResponseDto } from '@shared/models/user/query/user-response.model';
+import { AuxiliarValueRequestDto } from '@shared/models/auxiliar/command/auxiliar-request.model';
 
 const seed = 12345; // fixed seed → same values every run
 const rng = new Prando(seed);
@@ -78,7 +79,7 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
     });
   }
 
-  update(id: string, message: AthenasMessageDto, files: File[]): Observable<CaseDto> {
+  addActivity(id: string, message: AthenasMessageDto, files: File[]): Observable<CaseDto> {
     return this.handleUnauthorized(() => {
       const index = this.cases.findIndex((c) => c.id === id);
 
@@ -131,6 +132,61 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
       this.cases[index] = existing;
 
       return this.ok(existing); // already a CaseDto
+    });
+  }
+
+  assignExpert(id: string, expertId: string | null): Observable<CaseDto> {
+    return this.handleUnauthorized(() => {
+      const caseDto = this.cases.find((c) => c.id === id);
+      if (!caseDto) return this.notFound();
+
+      // Block changes if solved or archived
+      if (caseDto.caseStatus === CaseStatus.SOLVED || caseDto.caseStatus === CaseStatus.ARCHIVED) {
+        return this.badRequest(['Cannot assign expert: case is closed.']);
+      }
+
+      // If no expertId, simply unassign expert
+      if (!expertId) {
+        caseDto.expert = null;
+        return this.ok(caseDto);
+      }
+
+      // expertId IS provided → lookup in user repo
+      // We must return an Observable here
+      return this.usersRepo.getById(expertId).pipe(
+        switchMap((resp) => {
+          if (!resp) {
+            return this.badRequest(['Expert not found']);
+          }
+
+          const expertSummary = toUserSummaryDto(resp);
+          caseDto.expert = expertSummary;
+
+          if (caseDto.caseStatus === CaseStatus.OPEN) {
+            caseDto.caseStatus = CaseStatus.PENDING;
+          }
+
+          return this.ok(caseDto);
+        })
+      );
+    });
+  }
+
+  updateAuxiliarValues(id: string, values: AuxiliarValueRequestDto[]): Observable<CaseDto> {
+    return this.handleUnauthorized(() => {
+      const caseDto = this.cases.find((c) => c.id === id);
+      if (!caseDto) return this.notFound();
+
+      // Map incoming values → patch only id/alias/value
+      for (const patch of values) {
+        const original = caseDto.auxiliarValues?.find((v) => v.id === patch.id);
+        if (original) {
+          original.value = patch.value ?? null;
+          original.alias = patch.alias;
+        }
+      }
+
+      return this.ok(caseDto);
     });
   }
 
@@ -288,7 +344,7 @@ function generateConsultationActivity(creator: UserSummaryDto, creationDate: Dat
   };
 }
 
-export interface CitizenDocumentData {
+interface CitizenDocumentData {
   citizenship: string;
   issuingCountry: string;
   issuingDate: Date;
@@ -382,7 +438,6 @@ function generateDvAttachment(data: CitizenDocumentData): AttachmentResponseDto 
         ],
       },
 
-      // keep as-is
       mrzVizVerifications: [
         {
           nombre: 'OCR Birth Date',
