@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BaseMockApiService } from './base-mock-api.service';
-import { AlertRepositoryService } from '../alert-repository.service';
+import { AlertRequestDto } from '@shared/models/alert/command/alert-request.model';
 import {
   AlertCodeListDto,
   AlertFieldNameDto,
   AlertFieldType,
   AlertResponseDto,
 } from '@shared/models/alert/query/alert-response.model';
-import { AlertRequestDto } from '@shared/models/alert/command/alert-request.model';
 import { AqlParser } from './parsers/aql-parser';
+import { AlertRepositoryService } from '../alert-repository.service';
 
 @Injectable({
   providedIn: 'root',
@@ -18,37 +18,13 @@ export class AlertRepositoryMockService
   extends BaseMockApiService
   implements AlertRepositoryService
 {
-  // private alerts: AlertResponseDto[] = [
-  //   {
-  //     id: '9052f6f2-91d3-4b04-a3c8-e46f845c6c09',
-  //     name: 'DNIe entre los años 2000 y 2002 con Lugar de Nacimiento León',
-  //     lastModifiedBy: 'Jane Doe',
-  //     lastModifiedAt: new Date('2025-12-03T09:52:55.010542'),
-  //     nCases: 33,
-  //     nCounterfeits: 5,
-  //     filtersAQL:
-  //       "FechaExpedicion >= 2000-01-01 Y FechaExpedicion < 1970-01-01 Y LugarNacimiento Contiene 'León'",
-  //     active: true,
-  //   },
-  //   {
-  //     id: 'eb03ced1-8563-422b-971f-70bd920dee56',
-  //     name: 'Pasaportes Expedidos en Kazakhstan en las oficinas 01234 y 56780',
-  //     lastModifiedBy: 'John Doe',
-  //     lastModifiedAt: new Date('2025-12-03T09:52:55.010428'),
-  //     nCases: 18,
-  //     nCounterfeits: 12,
-  //     filtersAQL:
-  //       "(OficinaExpedidora = '01234' O OficinaExpedidora = '56780') Y Nacionalidad = 'KAZ'",
-  //     active: true,
-  //   },
-  // ];
-
   private alerts: AlertResponseDto[] = [
-    new AlertResponseDto({
+    {
       id: '9052f6f2-91d3-4b04-a3c8-e46f845c6c09',
       name: 'DNIe entre los años 2000 y 2002 con Lugar de Nacimiento León',
-      description: 'Documentos emitidos entre 2000–2002 cuyo lugar de nacimiento contiene León',
-      category: 'DNI',
+      description:
+        'Alerta para detectar DNIs electrónicos expedidos entre los años 2000 y 2002 con Lugar de Nacimiento León',
+      category: 'Documentos de identidad',
       lastModifiedBy: 'Jane Doe',
       lastModifiedAt: new Date('2025-12-03T09:52:55.010542'),
       nCases: 33,
@@ -56,17 +32,13 @@ export class AlertRepositoryMockService
       filtersAQL:
         "FechaExpedicion >= 2000-01-01 Y FechaExpedicion < 1970-01-01 Y LugarNacimiento Contiene 'León'",
       active: true,
-      ruleGroup: {
-        operator: 'AND',
-        children: [],
-      },
-    }),
-
-    new AlertResponseDto({
+    },
+    {
       id: 'eb03ced1-8563-422b-971f-70bd920dee56',
       name: 'Pasaportes Expedidos en Kazakhstan en las oficinas 01234 y 56780',
-      description: 'Pasaportes de Kazakhstan emitidos en oficinas específicas',
-      category: 'PAS',
+      description:
+        'Alerta para detectar pasaportes expedidos en Kazakhstan en las oficinas 01234 y 56780',
+      category: 'Pasaportes',
       lastModifiedBy: 'John Doe',
       lastModifiedAt: new Date('2025-12-03T09:52:55.010428'),
       nCases: 18,
@@ -74,11 +46,7 @@ export class AlertRepositoryMockService
       filtersAQL:
         "(OficinaExpedidora = '01234' O OficinaExpedidora = '56780') Y Nacionalidad = 'KAZ'",
       active: true,
-      ruleGroup: {
-        operator: 'AND',
-        children: [],
-      },
-    }),
+    },
   ];
 
   private fieldNames: AlertFieldNameDto[] = [
