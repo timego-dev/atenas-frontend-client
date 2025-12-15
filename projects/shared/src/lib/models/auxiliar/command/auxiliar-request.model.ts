@@ -19,3 +19,9 @@ export interface AuxiliarRequestOptionDto {
   code: string;
   description: string;
 }
+
+export interface AuxiliarValueRequestDto {
+  id: string;
+  alias: string;
+  value: string;
+}
