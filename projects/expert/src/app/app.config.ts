@@ -42,7 +42,15 @@ import 'dayjs/locale/es';
 import { MessageService } from 'primeng/api';
 import { ConfigurationFileService } from '@shared/services/configuration-file.service';
 import { IConfig } from './shared/types/config';
-import { AlertRepositoryRemoteService, AlertRepositoryService } from '@shared/services/alert-repository.service';
+import {
+  AlertRepositoryRemoteService,
+  AlertRepositoryService,
+} from '@shared/services/alert-repository.service';
+import {
+  SystemConfigurationRepositoryRemoteService,
+  SystemConfigurationRepositoryService,
+} from '@shared/services/system-configuration-repository.service';
+import { SystemConfigurationRepositoryMockService } from '@shared/services/mock/system-configuration-repository-mock.service';
 import { AlertRepositoryMockService } from '@shared/services/mock/alert-repository-mock.service';
 dayjs.extend(relativeTime);
 dayjs.locale('es');
@@ -65,8 +73,11 @@ const SERVICE_REGISTRY: Record<string, Type<any>> = {
   AuxiliarRepositoryMockService: AuxiliarRepositoryMockService,
 
   // Alertas
-  AlertRepositoryRemoteService:  AlertRepositoryRemoteService,
+  AlertRepositoryRemoteService: AlertRepositoryRemoteService,
   AlertRepositoryMockService: AlertRepositoryMockService,
+
+  SystemConfigurationRepositoryRemoteService: SystemConfigurationRepositoryRemoteService,
+  SystemConfigurationRepositoryMockService: SystemConfigurationRepositoryMockService,
 };
 
 export const appConfig: ApplicationConfig = {
@@ -177,7 +188,20 @@ export const appConfig: ApplicationConfig = {
       },
       deps: [ConfigurationFileService, Injector],
     },
-
+    // SYSTEM CONFIGURATION REPOSITORY
+    {
+      provide: SystemConfigurationRepositoryService,
+      useFactory: (configService: ConfigurationFileService<IConfig>, injector: Injector) => {
+        const config = configService.getConfig();
+        const serviceKey = config?.services?.systemConfiguration;
+        const ServiceClass =
+          serviceKey && SERVICE_REGISTRY[serviceKey]
+            ? SERVICE_REGISTRY[serviceKey]
+            : SystemConfigurationRepositoryRemoteService; // default
+        return injector.get(ServiceClass);
+      },
+      deps: [ConfigurationFileService, Injector],
+    },
     provideAppInitializer(() => {
       const configService = inject(ConfigurationFileService);
       const injector = inject(Injector);

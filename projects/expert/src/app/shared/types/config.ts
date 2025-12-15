@@ -7,6 +7,7 @@ export interface IConfig extends SharedConfig {
     case?: string;
     auxiliar?: string;
     alert?: string;
+    systemConfiguration?: string;
     documentScanner?: string;
   };
 }
