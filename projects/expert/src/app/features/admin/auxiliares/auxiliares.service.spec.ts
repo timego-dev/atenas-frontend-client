@@ -23,8 +23,33 @@ describe('Auxiliares services', () => {
   });
 
   // TODO: Afegir test per service.getAuxiliares
+  it('should return all the auxiliary', fakeAsync(() => {
+    const service = TestBed.inject(AuxiliaresService);
+
+    let auxiliars!: AuxiliarResponseDto[];
+
+    service.getAuxiliares().subscribe((a) => {
+      auxiliars = a;
+    });
+    tick();
+    expect(auxiliars).toBeDefined();
+    expect(auxiliars.length).toBe(4);
+  }));
 
   // TODO: Afegir test per service.getById
+  it('should return an auxiliar by ID', fakeAsync(() => {
+    const service = TestBed.inject(AuxiliaresService);
+
+    let auxiliar!: AuxiliarResponseDto;
+
+    service.getById('08de26bb-483e-44b0-85a5-81acfafebac3').subscribe((a) => {
+      auxiliar = a;
+    });
+    tick();
+
+    expect(auxiliar).toBeDefined();
+    expect(auxiliar.id).toBe('08de26bb-483e-44b0-85a5-81acfafebac3');
+  }));
 
   //CREATE
   it('should create an auxiliary (text)', fakeAsync(() => {
@@ -156,6 +181,29 @@ describe('Auxiliares services', () => {
 
   // TODO: Afegir el cas d'intentar crear un camp auxiliar amb un alias d'un que ja existeix. Ha de retornar http status 400
 
+  it('create an auxiliary with an existing alias', fakeAsync(() => {
+    const service = TestBed.inject(AuxiliaresService);
+
+    const newAux: AuxiliarRequestDto = {
+      alias: 'Computers & Electronics',
+      title: 'Academia',
+      type: FieldType.Text,
+      required: false,
+    };
+    let aux;
+
+    service.create(newAux).subscribe({
+      next(value) {
+        aux = value;
+        fail();
+      },
+      error(err: HttpErrorResponse) {
+        expect(err.status).toBe(400);
+      },
+    });
+    tick;
+  }));
+
   it('should create an auxiliary (list)', fakeAsync(() => {
     const service = TestBed.inject(AuxiliaresService);
 
@@ -275,4 +323,28 @@ describe('Auxiliares services', () => {
   }));
 
   // TODO: Afegir test d'intentar eliminar un camp auxilir que no existeix
+  it('try to delete an auxiliary not existing', fakeAsync(() => {
+    const service = TestBed.inject(AuxiliaresService);
+
+    let auxiliars!: AuxiliarResponseDto[];
+
+    service.delete('non-existent auxiliary').subscribe({
+      next(value) {
+        fail();
+      },
+      error(err: HttpErrorResponse) {
+        expect(err.status).toBeUndefined;
+      },
+    });
+    tick();
+
+    service.getAuxiliares().subscribe((a) => {
+      auxiliars = a;
+    });
+    tick();
+
+    const aux = auxiliars.some((a) => a.id === 'non-existent auxiliary');
+    expect(aux).toBeFalse();
+    expect(auxiliars.length).toBe(4);
+  }));
 });
