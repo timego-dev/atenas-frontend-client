@@ -1,42 +1,24 @@
 @if (hasAnyImage()) {
-<p-card>
-  <ng-template pTemplate="header">
-    <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
-      <div style="font-weight: 600">Imágenes</div>
-    </div>
-  </ng-template>
-
-  <ng-template pTemplate="content">
-    <div style="padding: 1.25rem">
-      <div
-        style="
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 1rem;
-        "
-      >
-        <ng-container
-          *ngTemplateOutlet="imgBlock; context: { src: images?.viz, label: 'VIZ (frontal)' }"
-        ></ng-container>
-        <ng-container
-          *ngTemplateOutlet="imgBlock; context: { src: images?.uv, label: 'UV (frontal)' }"
-        ></ng-container>
-        <ng-container
-          *ngTemplateOutlet="imgBlock; context: { src: images?.ir, label: 'IR (frontal)' }"
-        ></ng-container>
-        <ng-container
-          *ngTemplateOutlet="imgBlock; context: { src: images?.backVIZ, label: 'VIZ (reverso)' }"
-        ></ng-container>
-        <ng-container
-          *ngTemplateOutlet="imgBlock; context: { src: images?.backUV, label: 'UV (reverso)' }"
-        ></ng-container>
-        <ng-container
-          *ngTemplateOutlet="imgBlock; context: { src: images?.backIR, label: 'IR (reverso)' }"
-        ></ng-container>
-      </div>
-    </div>
-  </ng-template>
-</p-card>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem">
+  <ng-container
+    *ngTemplateOutlet="imgBlock; context: { src: images?.viz, label: 'VIZ (frontal)' }"
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="imgBlock; context: { src: images?.uv, label: 'UV (frontal)' }"
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="imgBlock; context: { src: images?.ir, label: 'IR (frontal)' }"
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="imgBlock; context: { src: images?.backVIZ, label: 'VIZ (reverso)' }"
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="imgBlock; context: { src: images?.backUV, label: 'UV (reverso)' }"
+  ></ng-container>
+  <ng-container
+    *ngTemplateOutlet="imgBlock; context: { src: images?.backIR, label: 'IR (reverso)' }"
+  ></ng-container>
+</div>
 }
 
 <ng-template #imgBlock let-src="src" let-label="label">

@@ -1,169 +1,99 @@
-<p-toolbar styleClass="mb-6">
+<p-toolbar>
   <div class="p-toolbar-group-start">
-    <span class="font-semibold text-xl">{{ title }}</span>
+    <span style="font-weight: bold">{{ title }}</span>
   </div>
   <div class="p-toolbar-group-end">
-    <button pButton type="button" (click)="openScannerModal()" severity="secondary" outlined="true">
-      <i class="pi pi-scanner mr-2"></i>
-      <span class="hidden md:inline">Abrir escáner</span>
-    </button>
+    <p-button
+      label="Abrir escáner"
+      icon="pi pi-scanner"
+      severity="secondary"
+      [outlined]="true"
+      (onClick)="openScannerModal()"
+    >
+    </p-button>
   </div>
 </p-toolbar>
 
-<div style="padding-bottom: 2rem">
+<div class="p-component">
   @if (lastEvent() === 'error') {
-  <p-card>
-    <ng-template pTemplate="header">
-      <div
-        style="
-          padding: 1rem;
-          border-bottom: 1px solid var(--surface-border);
-          display: flex;
-          align-items: center;
-        "
-      >
-        <i
-          class="pi pi-times-circle"
-          style="font-size: 1.4rem; color: #f44336; margin-right: 0.75rem"
-        ></i>
-        <div>
-          <div style="font-weight: 600">Error durante la captura</div>
-          <div style="font-size: 0.875rem; color: var(--text-color-secondary)">
-            Se ha producido un problema
-          </div>
-        </div>
-      </div>
-    </ng-template>
+  <br />
+  <p-card header="Error durante la captura" subheader="Se ha producido un problema">
+    <ng-template pTemplate="header"> </ng-template>
 
-    <ng-template pTemplate="content">
-      <div style="padding: 1.25rem; color: var(--text-color)">
-        {{ errorMessage() | translate }}
-      </div>
-    </ng-template>
+    <div class="p-error">
+      <i class="pi pi-times-circle" style="vertical-align: middle"></i>
+      {{ errorMessage() | translate }}
+    </div>
 
     <ng-template pTemplate="footer">
-      <div style="padding: 0 1.25rem 1rem 1.25rem; text-align: right">
-        <button pButton type="button" severity="primary" (click)="openScannerModal()">
-          Reintentar
-        </button>
-      </div>
+      <p-button label="Reintentar" (onClick)="openScannerModal()"></p-button>
     </ng-template>
   </p-card>
   } @if (lastEvent() === 'leave') {
-  <p-card>
-    <ng-template pTemplate="header">
-      <div
-        style="
-          padding: 1rem;
-          border-bottom: 1px solid var(--surface-border);
-          display: flex;
-          align-items: center;
-        "
-      >
-        <i
-          class="pi pi-info-circle"
-          style="font-size: 1.4rem; color: #2196f3; margin-right: 0.75rem"
-        ></i>
-        <div>
-          <div style="font-weight: 600">Flujo cancelado</div>
-          <div style="font-size: 0.875rem; color: var(--text-color-secondary)">
-            Has salido del flujo de captura
-          </div>
-        </div>
-      </div>
-    </ng-template>
-
-    <ng-template pTemplate="content">
-      <div style="padding: 1.25rem; color: var(--text-color)">
-        Puedes volver a intentarlo cuando quieras.
-      </div>
-    </ng-template>
+  <br />
+  <p-card header="Flujo cancelado" subheader="Has salido del flujo de captura">
+    <p>Puedes volver a intentarlo cuando quieras.</p>
 
     <ng-template pTemplate="footer">
-      <div style="padding: 0 1.25rem 1rem 1.25rem; text-align: right">
-        <button pButton type="button" severity="secondary" (click)="openScannerModal()">
-          Volver a abrir
-        </button>
-      </div>
+      <p-button label="Volver a abrir" severity="secondary" (onClick)="openScannerModal()">
+      </p-button>
     </ng-template>
   </p-card>
   } @if (lastEvent() === 'idle' && !captured()) {
-  <p-card>
-    <ng-template pTemplate="header">
-      <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
-        <div style="font-weight: 600">Bienvenido a {{ title }}</div>
-        <div style="font-size: 0.875rem; color: var(--text-color-secondary)">
-          Escanea un documento y visualiza sus datos estructurados
-        </div>
-      </div>
-    </ng-template>
-
-    <ng-template pTemplate="content">
-      <div style="padding: 1.25rem; color: var(--text-color)">
-        Pulsa en <strong>Abrir escáner</strong> para iniciar la captura del documento.
-      </div>
-    </ng-template>
+  <br />
+  <p-card [header]="'Bienvenido a ' + title" subheader="Escanea un documento y visualiza sus datos">
+    <p>Pulsa en el botón inferior para iniciar la captura.</p>
 
     <ng-template pTemplate="footer">
-      <div style="padding: 0 1.25rem 1rem 1.25rem">
-        <button pButton type="button" severity="primary" (click)="openScannerModal()">
-          <i class="pi pi-scanner" style="margin-right: 0.5rem"></i>
-          <span>Abrir escáner</span>
-        </button>
-      </div>
+      <p-button label="Abrir escáner" icon="pi pi-scanner" (onClick)="openScannerModal()">
+      </p-button>
     </ng-template>
   </p-card>
   } @if (captured()) {
-  <div style="display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem">
-    <div style="flex: 1 1 280px; min-width: 0">
-      <p-card class="h-full">
-        <ng-template pTemplate="header">
-          <div style="padding: 1rem; border-bottom: 1px solid var(--surface-border)">
-            <div style="font-weight: 600">Resumen</div>
-          </div>
-        </ng-template>
-        <ng-template pTemplate="content">
-          <div style="padding: 1.25rem; color: var(--text-color)">
-            <div style="margin-bottom: 0.35rem">
-              <strong>Nombre:</strong>
-              <span> {{ captured()?.documentData?.identification?.nombre || '—' }} </span>
-            </div>
-            <div style="margin-bottom: 0.35rem">
-              <strong>Tipo documento:</strong>
-              <span> {{ captured()?.documentData?.identification?.tipoDocumento || '—' }} </span>
-            </div>
-            <div style="margin-bottom: 0.35rem">
-              <strong>País:</strong>
-              <span>
-                {{
-                  captured()?.documentData?.identification?.pais ||
-                    captured()?.documentData?.identification?.codigoPais ||
-                    '—'
-                }}
-              </span>
-            </div>
-            <div>
-              <strong>Probabilidad:</strong>
-              <span>
-                {{ captured()?.documentData?.identification?.probability | probability }}
-              </span>
-            </div>
-          </div>
-        </ng-template>
-      </p-card>
-    </div>
+  <br />
 
-    <div style="flex: 1 1 280px; min-width: 0">
-      <app-document-mrz [data]="captured()?.documentData?.mrz"></app-document-mrz>
-    </div>
-  </div>
+  <p-panel header="Resumen del Documento" [toggleable]="true">
+    <p><strong>Nombre:</strong> {{ captured()?.documentData?.identification?.nombre || '—' }}</p>
+    <p>
+      <strong>Tipo:</strong> {{ captured()?.documentData?.identification?.tipoDocumento || '—' }}
+    </p>
+    <p>
+      <strong>País:</strong>
+      {{
+        captured()?.documentData?.identification?.pais ||
+          captured()?.documentData?.identification?.codigoPais ||
+          '—'
+      }}
+    </p>
+    <p>
+      <strong>Probabilidad:</strong>
+      {{ captured()?.documentData?.identification?.probability | probability }}
+    </p>
 
-  <app-document-scanner-verifications [verifications]="verifications()" class="mb-4 block">
-  </app-document-scanner-verifications>
+    <p-divider></p-divider>
 
-  <app-document-images [images]="captured()?.documentData?.images" class="mb-4 block">
-  </app-document-images>
+    <h3>Datos MRZ</h3>
+    <app-document-mrz [data]="captured()?.documentData?.mrz"></app-document-mrz>
+  </p-panel>
 
-  <div style="display: flex; flex-wrap: wrap; gap: 1rem"></div>
+  <br />
+
+  <p-panel header="Verificaciones" [toggleable]="true">
+    <app-document-scanner-verifications [verifications]="verifications()">
+    </app-document-scanner-verifications>
+  </p-panel>
+
+  <br />
+
+  <p-panel header="Imágenes Capturadas" [toggleable]="true">
+    <app-document-images [images]="captured()?.documentData?.images"> </app-document-images>
+  </p-panel>
   }
 </div>
+
+<app-document-scanner-capture
+  [(visible)]="isScannerModalVisible"
+  (onCaptured)="onCaptured($event)"
+  (onLeave)="onLeave()"
+  (onError)="onError($event)"
+></app-document-scanner-capture>

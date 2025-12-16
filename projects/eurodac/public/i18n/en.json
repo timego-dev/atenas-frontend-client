@@ -16,12 +16,12 @@
     "connecting": "The connection to the device is being established. This process may take some time."
   },
   "document": {
+    "title": "Document Capture",
     "continue": "Press «Continue» to start reading.",
     "capture": "Press «Capture» when you are ready.",
     "wait-initialization": "Preparing the reader… please wait.",
     "reading-placeholder": "Reading… keep the document still.",
     "change-side": "Turn the document over and capture the other side.",
-    "review-title": "Capture Review",
     "tabs": {
       "images": "Images",
       "mrz": "MRZ Data",

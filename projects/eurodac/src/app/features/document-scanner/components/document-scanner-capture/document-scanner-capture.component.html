@@ -1,117 +1,92 @@
-@if (!isConnectionBlocking() && !isReviewMode()) {
-<div class="surface-card shadow-4 border-round-xl w-full max-w-xl overflow-hidden">
-  <div class="flex flex-column align-items-center justify-content-center py-7 px-5">
-    <div class="mb-5">
-      @if (!isCaptureEnabled()) {
-      <p-progressSpinner
-        strokeWidth="4"
-        fill="transparent"
-        animationDuration=".8s"
-        [style]="{ width: '20px', height: '20px' }"
-      ></p-progressSpinner>
-      } @else {
-      <i class="pi pi-camera text-6xl text-700"></i>
-      }
-    </div>
+<p-dialog
+  [(visible)]="visible"
+  [header]="'document.title' | translate"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{
+    width: '90vw',
+    maxWidth: '600px',
+    height: isReviewMode() ? '80vh' : 'auto'
+  }"
+  [contentStyle]="{ display: 'flex', 'flex-direction': 'column', height: '100%' }"
+  (onHide)="handleLeaveClick()"
+>
+  @if (!isConnectionBlocking() && !isReviewMode()) {
+  <span class="p-text-secondary block mb-8">{{ textInstruccions() }}</span>
+  } @if (isReviewMode() && capturedData()) {
+  <p-tabs value="images">
+    <p-tablist>
+      <p-tab value="images">{{ 'document.tabs.images' | translate }}</p-tab>
+      <p-tab value="mrz">{{ 'document.tabs.mrz' | translate }}</p-tab>
+      <p-tab value="verifications">{{ 'document.tabs.verifications' | translate }}</p-tab>
+    </p-tablist>
 
-    <h2 class="text-2xl font-medium text-900 m-0 text-center line-height-3">
-      {{ textInstruccions() }}
-    </h2>
-  </div>
+    <p-tabpanels>
+      <div style="max-height: 55vh; overflow-y: auto" class="p-3">
+        <p-tabpanel value="images">
+          <div class="flex justify-content-center">
+            <app-document-images [images]="currentImages()" class="w-full"></app-document-images>
+          </div>
+        </p-tabpanel>
 
-  <div
-    class="surface-50 border-top-1 surface-border p-4 flex flex-column md:flex-row align-items-center justify-content-end gap-3"
+        <p-tabpanel value="mrz">
+          <app-document-mrz [data]="currentMrz()"></app-document-mrz>
+        </p-tabpanel>
+
+        <p-tabpanel value="verifications">
+          <app-document-scanner-verifications [verifications]="currentVerifications()">
+          </app-document-scanner-verifications>
+        </p-tabpanel>
+      </div>
+    </p-tabpanels>
+  </p-tabs>
+  }
+
+  <app-connection-card
+    [onStatusChange]="onStatusChange"
+    (onReconnectClicked)="reconnect()"
+    (onReconnected)="reconnect()"
+    (onLeave)="handleLeaveClick()"
+    (blockingUiChange)="handleBlockingUiChange($event)"
   >
+  </app-connection-card>
+
+  <ng-template pTemplate="footer">
+    @if (!isReviewMode()) {
     <p-button
       [label]="'common.buttons.leave' | translate"
       icon="pi pi-times"
       severity="secondary"
-      [text]="true"
       (onClick)="handleLeaveClick()"
-      styleClass="w-full md:w-auto"
-    ></p-button>
+    >
+    </p-button>
 
     <p-button
       [label]="'common.buttons.capture' | translate"
       icon="pi pi-arrow-right"
       iconPos="right"
       severity="primary"
-      [raised]="true"
       [disabled]="!isCaptureEnabled()"
       (onClick)="handleContinue()"
-      styleClass="w-full md:w-auto"
-    ></p-button>
-  </div>
-</div>
-} @if (isReviewMode() && capturedData()) {
-<p-card class="w-full max-w-4xl">
-  <ng-template pTemplate="header">
-    <div class="px-4 py-3 border-b surface-border flex align-items-center justify-content-between">
-      <span class="font-semibold text-xl">{{ 'document.review-title' | translate }}</span>
-      <i class="pi pi-check-circle text-green-500 text-xl"></i>
-    </div>
+    >
+    </p-button>
+    } @if (isReviewMode()) {
+    <p-button
+      [label]="'common.buttons.cancel' | translate"
+      icon="pi pi-times"
+      severity="secondary"
+      (onClick)="cancelReview()"
+    >
+    </p-button>
+
+    <p-button
+      [label]="'common.buttons.confirm' | translate"
+      icon="pi pi-check"
+      severity="primary"
+      (onClick)="confirmCapture()"
+    >
+    </p-button>
+    }
   </ng-template>
-
-  <ng-template pTemplate="content">
-    <p-tabs value="images">
-      <p-tablist>
-        <p-tab value="images">{{ 'document.tabs.images' | translate }}</p-tab>
-        <p-tab value="mrz">{{ 'document.tabs.mrz' | translate }}</p-tab>
-        <p-tab value="verifications">{{ 'document.tabs.verifications' | translate }}</p-tab>
-      </p-tablist>
-
-      <p-tabpanels>
-        <p-tabpanel value="images">
-          <div style="max-height: 55vh; overflow-y: auto; padding: 0.5rem">
-            <div class="flex justify-content-center">
-              <app-document-images [images]="currentImages()" class="w-full"> </app-document-images>
-            </div>
-          </div>
-        </p-tabpanel>
-
-        <p-tabpanel value="mrz">
-          <div style="max-height: 55vh; overflow-y: auto; padding: 0.5rem">
-            <app-document-mrz [data]="currentMrz()"> </app-document-mrz>
-          </div>
-        </p-tabpanel>
-
-        <p-tabpanel value="verifications">
-          <div style="max-height: 55vh; overflow-y: auto; padding: 0.5rem">
-            <app-document-scanner-verifications [verifications]="currentVerifications()">
-            </app-document-scanner-verifications>
-          </div>
-        </p-tabpanel>
-      </p-tabpanels>
-    </p-tabs>
-  </ng-template>
-
-  <ng-template pTemplate="footer">
-    <div class="flex flex-col md:flex-row md:justify-end gap-3 w-full border-t surface-border pt-3">
-      <p-button
-        [label]="'common.buttons.cancel' | translate"
-        icon="pi pi-times"
-        severity="secondary"
-        [outlined]="true"
-        (onClick)="cancelReview()"
-        styleClass="w-full md:w-auto"
-      ></p-button>
-
-      <p-button
-        [label]="'common.buttons.confirm' | translate"
-        icon="pi pi-check"
-        severity="success"
-        (onClick)="confirmCapture()"
-        styleClass="w-full md:w-auto"
-      ></p-button>
-    </div>
-  </ng-template>
-</p-card>
-}
-
-<app-connection-card
-  [onStatusChange]="onStatusChange"
-  (onReconnectClicked)="reconnect()"
-  (onReconnected)="reconnect()"
-  (onLeave)="handleLeaveClick()"
-  (blockingUiChange)="handleBlockingUiChange($event)"
-></app-connection-card>
+</p-dialog>

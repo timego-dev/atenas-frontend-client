@@ -6,10 +6,11 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
+import { PanelModule } from 'primeng/panel';
 import { ChipModule } from 'primeng/chip';
 import { ImageModule } from 'primeng/image';
-import { DynamicDialogModule, DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { DocumentScannerModalWrapperComponent } from '../../components/document-scanner-modal-wrapper/document-scanner-modal-wrapper.component';
+import { DynamicDialogModule, DialogService } from 'primeng/dynamicdialog';
+import { DocumentScannerCaptureComponent } from '../../components/document-scanner-capture/document-scanner-capture.component';
 import { Verification } from '@shared/models/case/command/scanner-dv.dto';
 import { ActivityType } from '@shared/models/case/case.enums';
 import { ScannerCapturedData } from '../../types/DocumentCaptureData';
@@ -30,6 +31,7 @@ import { DocumentScannerVerificationsComponent } from '../../components/document
     ChipModule,
     DynamicDialogModule,
     ImageModule,
+    PanelModule,
     // Translations
     TranslateModule,
     // Pipes
@@ -38,6 +40,7 @@ import { DocumentScannerVerificationsComponent } from '../../components/document
     DocumentImagesComponent,
     DocumentMrzComponent,
     DocumentScannerVerificationsComponent,
+    DocumentScannerCaptureComponent,
   ],
   providers: [DialogService],
   templateUrl: './demo-document-scanner.page.html',
@@ -52,39 +55,20 @@ export class DemoDocumentScannerPage {
 
   convertedPayload = signal<any | null>(null);
   multipartFileNames = signal<string[]>([]);
+  isScannerModalVisible = signal<boolean>(false);
 
   verifications = computed<Verification[] | undefined>(
     () => this.captured()?.documentVerifications?.verifications
   );
 
-  private dialogRef?: DynamicDialogRef<DocumentScannerModalWrapperComponent> | null;
-
-  constructor(
-    private dialogService: DialogService,
-    private caseRepositoryService: CaseRepositoryService
-  ) {}
+  constructor(private caseRepositoryService: CaseRepositoryService) {}
 
   openScannerModal(): void {
-    this.dialogRef = this.dialogService.open(DocumentScannerModalWrapperComponent, {
-      showHeader: false,
-      modal: true,
-      closable: true,
-      dismissableMask: false,
-      contentStyle: {
-        padding: '0',
-        overflow: 'hidden',
-        background: 'transparent',
-      },
-    });
-
-    this.dialogRef?.onClose.subscribe((result) => {
-      if (result?.status === 'captured') this.onCaptured(result.data);
-      else if (result?.status === 'error') this.onError(result.error);
-      else this.onLeave();
-    });
+    this.isScannerModalVisible.set(true);
   }
 
   onCaptured = (data: ScannerCapturedData) => {
+    this.isScannerModalVisible.set(false);
     this.captured.set(data);
     this.errorMessage.set(null);
     this.lastEvent.set('captured');
@@ -92,11 +76,13 @@ export class DemoDocumentScannerPage {
   };
 
   onLeave = () => {
+    this.isScannerModalVisible.set(false);
     console.log('Scanner modal closed without capture');
     this.lastEvent.set('leave');
   };
 
   onError = (msg: string) => {
+    this.isScannerModalVisible.set(false);
     console.error('Scanner error:', msg);
     this.errorMessage.set(msg ?? 'Error desconocido');
     this.lastEvent.set('error');
