@@ -20,6 +20,7 @@ import { BadgeModule } from 'primeng/badge';
 import { DateTimeComponent } from '@shared/components/date-time.component';
 import { ToolbarModule } from 'primeng/toolbar';
 import { CaseAlertasListComponent } from './case-alerts-list.component';
+import { TiempoRespuesta } from '../../../../expert/src/app/shared/components/tiempo-respuesta.component';
 
 @Component({
   selector: 'case-detail',
@@ -43,6 +44,7 @@ import { CaseAlertasListComponent } from './case-alerts-list.component';
     DateTimeComponent,
     ToolbarModule,
     CaseAlertasListComponent,
+    TiempoRespuesta,
   ],
   templateUrl: './case-detail.component.html',
   styles: [

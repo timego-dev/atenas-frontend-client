@@ -1,7 +1,9 @@
 <div class="flex flex-col gap-2">
+  @if (case().lastResolution == undefined) {
   <p-toolbar>
     <p-button label="Resolver" />
   </p-toolbar>
+  }
   <div class="flex flex-row gap-2">
     <p-panel class="flex-1" header="Consulta">
       <div class="flex flex-row gap-6">
@@ -22,12 +24,22 @@
           {{ case().creator.username }}
         </div>
       </div>
+      @if (case().auxiliarValues) {
+      <hr />
+      @for (item of case().auxiliarValues; track $index) {
+      <div class="flex flex-row gap-6">
+        <div class="mr-auto">
+          <strong>{{ item.title }}</strong>
+        </div>
+        <div>{{ item.value }}</div>
+      </div>
+      } }
     </p-panel>
     <p-panel class="flex-1" header="Respuesta">
       <div class="flex flex-row gap-6">
-        <div class="mr-auto text-nowrap"><strong>Fecha respuesta</strong></div>
+        <div class="mr-auto text-nowrap"><strong>Tiempo respuesta</strong></div>
         <div class="text-nowrap">
-          <lib-date-time [dateTime]="case().lastResolution" />
+          <lib-tiempo-respuesta [consulta]="case()" />
         </div>
       </div>
       <div class="flex flex-row gap-6">
@@ -43,9 +55,11 @@
         </div>
       </div>
     </p-panel>
+    @if (case().lastResolution == undefined) {
     <p-panel class="flex" header="Tiempo respuesta">
       <h1 class="text-right !text-green-500">2' 14"</h1>
     </p-panel>
+    }
   </div>
 
   <p-tabs value="0">
