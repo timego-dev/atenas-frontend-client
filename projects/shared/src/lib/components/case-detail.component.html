@@ -3,6 +3,8 @@
   <p-toolbar>
     <p-button label="Resolver" />
   </p-toolbar>
+  } @else {
+  <p-button label="Liberar" />
   }
   <div class="flex flex-row gap-2">
     <p-panel class="flex-1" header="Consulta">
@@ -65,22 +67,20 @@
   <p-tabs value="0">
     <p-tablist>
       <p-tab value="0">Actividad</p-tab>
-      @if (case().alerts?.length) {
-      <p-tab value="1"
-        >Alertas <p-badge severity="danger" [value]="case().alerts?.length" />
-      </p-tab>
-      }
+      <!--@if (case().alerts?.length) {-->
+      <p-tab value="1">Alertas <p-badge severity="danger" [value]="1" /> </p-tab>
+      <!--}-->
       <p-tab value="2">Casos relacionados <p-badge value="2" /></p-tab>
     </p-tablist>
     <p-tabpanels>
       <p-tabpanel value="0">
         <case-activity-list [case]="case()" />
       </p-tabpanel>
-      @if (case().alerts?.length) {
+
       <p-tabpanel value="1">
         <case-alerts-list [case]="case()" />
       </p-tabpanel>
-      }
+
       <p-tabpanel value="2"> </p-tabpanel>
     </p-tabpanels>
   </p-tabs>

@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, inject, viewChild, ViewEncapsulation } fr
 
 import { PanelModule } from 'primeng/panel';
 import { MenuModule } from 'primeng/menu';
-import { TableModule } from 'primeng/table';
+import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { CaseFilters, CaseService, DateRangeFilter } from './case.service';
@@ -22,6 +22,9 @@ import { CaseDetailComponent } from '@shared/components/case-detail.component';
 
 import { UiSafeCallerService } from '@shared/services/ui-safe-caller.service';
 import { ToastModule } from 'primeng/toast';
+import { InputIcon } from 'primeng/inputicon';
+import { IconField } from 'primeng/iconfield';
+import { InputText } from 'primeng/inputtext';
 
 interface Column {
   field: string;
@@ -47,6 +50,9 @@ interface Column {
     CaseDetailComponent,
     CaseCreateComponent,
     ToastModule,
+    InputIcon,
+    IconField,
+    InputText,
   ],
   templateUrl: './cases.page.html',
   encapsulation: ViewEncapsulation.None,
@@ -134,6 +140,10 @@ export class CasesPage {
     { field: 'operador', header: 'Operador' },
     { field: 'estado', header: 'Estado' },
   ];
+
+  onGlobalFilter(table: Table, event: Event) {
+    table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
+  }
 
   filterChange(event: SelectChangeEvent) {
     this.caseService.applyFilter(this.caseFilter);

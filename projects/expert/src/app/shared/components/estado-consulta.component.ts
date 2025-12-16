@@ -12,9 +12,9 @@ import { TagModule } from 'primeng/tag';
     } @case (EstadoConsulta.ARCHIVED) {
     <p-tag severity="success" value="Archivado" />
     } @case (EstadoConsulta.OPEN) {
-    <p-tag severity="info" value="En curso" />
+    <p-tag severity="secondary" value="Nuevo" />
     } @case (EstadoConsulta.PENDING) {
-    <p-tag severity="secondary" value="Pendiente" />
+    <p-tag severity="info" value="Pendiente" />
     } @case (EstadoConsulta.SOLVED) { @switch (consulta().caseResolution) { @case
     (RespuestaConsulta.WITHOUT_EVIDENCES) {
     <p-tag severity="success" value="Sin evidencias de falsificación" />
