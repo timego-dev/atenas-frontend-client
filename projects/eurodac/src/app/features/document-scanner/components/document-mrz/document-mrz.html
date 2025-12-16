@@ -1,34 +1,40 @@
-<div style="margin-bottom: 0.35rem">
-  <strong>Nº Documento:</strong>
+<div class="mb-4">
+  <strong class="font-bold">Nº Documento:</strong>
   <span> {{ data?.numeroDocumento || '—' }} </span>
 </div>
-<div style="margin-bottom: 0.35rem">
-  <strong>Nombre:</strong>
+
+<div class="mb-4">
+  <strong class="font-bold">Nombre:</strong>
   <span> {{ data?.nombre || '—' }} </span>
 </div>
-<div style="margin-bottom: 0.35rem">
-  <strong>Apellidos:</strong>
+
+<div class="mb-4">
+  <strong class="font-bold">Apellidos:</strong>
   <span> {{ data?.apellidos || '—' }} </span>
 </div>
-<div style="margin-bottom: 0.35rem">
-  <strong>Nacionalidad:</strong>
+
+<div class="mb-4">
+  <strong class="font-bold">Nacionalidad:</strong>
   <span> {{ data?.nacionalidad || '—' }} </span>
 </div>
-<div style="margin-bottom: 0.35rem">
-  <strong>Fecha Nacimiento:</strong>
+
+<div class="mb-4">
+  <strong class="font-bold">Fecha Nacimiento:</strong>
   <span> {{ data?.fechaNacimiento || '—' }} </span>
 </div>
-<div style="margin-bottom: 0.35rem">
-  <strong>Fecha Expedición:</strong>
+
+<div class="mb-4">
+  <strong class="font-bold">Fecha Expedición:</strong>
   <span> {{ data?.fechaExpedicion || '—' }} </span>
 </div>
-<div style="margin-bottom: 0.35rem">
-  <strong>Fecha Caducidad:</strong>
+
+<div class="mb-4">
+  <strong class="font-bold">Fecha Caducidad:</strong>
   <span> {{ data?.fechaCaducidad || '—' }} </span>
 </div>
-<div style="margin-top: 0.5rem">
-  <strong>MRZ:</strong>
-  <code>
+
+<p-fieldset legend="MRZ" [toggleable]="true">
+  <p class="block break-all">
     {{ data?.mrzCode || '—' }}
-  </code>
-</div>
+  </p>
+</p-fieldset>

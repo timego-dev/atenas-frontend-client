@@ -1,13 +1,13 @@
-<div class="verifications-container">
+<div class="flex flex-col gap-4">
   @for (v of verifications; track $index; let last = $last) {
-  <div class="verification-item">
-    <div class="verification-row">
-      <div class="verification-title">
-        <span class="group-name">
+  <div>
+    <div class="flex items-center justify-between mb-2">
+      <div class="flex items-center gap-2 text-sm">
+        <span class="font-bold text-gray-500 dark:text-gray-400">
           {{ 'document.verifications.groups.' + VerificationGroup[v.group] | translate }}
         </span>
-        <i class="pi pi-chevron-right separator-icon"></i>
-        <span class="code-name">
+        <i class="pi pi-chevron-right text-xs text-gray-400"></i>
+        <span class="font-semibold text-gray-900 dark:text-gray-100">
           {{ 'document.verifications.codes.' + VerificationCode[v.code] | translate }}
         </span>
       </div>
@@ -16,39 +16,52 @@
       </p-tag>
     </div>
 
-    <div class="verification-details">
+    <div class="pl-3 ml-1 border-l-2 border-surface-200 dark:border-surface-700">
       @if (v.sourceMessage) {
-      <div class="source-message">{{ v.sourceMessage }}</div>
+      <div class="text-sm text-gray-500 mb-3">
+        {{ v.sourceMessage }}
+      </div>
       } @if (v.expected || v.result) {
-      <div class="comparison-row">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
         @if (v.expected) {
-        <div class="comparison-col">
-          <span class="label">{{ 'document.verifications.expected' | translate }}</span>
+        <div class="flex flex-col gap-1">
+          <span class="text-xs text-gray-500 uppercase font-bold tracking-wider">
+            {{ 'document.verifications.expected' | translate }}
+          </span>
+
           @if (isBase64(v.expected)) {
           <p-image
             [src]="getImageSrc(v.expected!)"
             alt="Expected"
             [preview]="true"
-            [imageStyle]="{ 'max-height': '50px', width: 'auto', 'border-radius': '4px' }"
+            [imageStyle]="{ 'max-height': '50px', width: 'auto', 'border-radius': '0.25rem' }"
           >
           </p-image>
           } @else {
-          <span class="value">{{ v.expected }}</span>
+          <span class="text-sm font-medium break-all text-gray-900 dark:text-gray-100">
+            {{ v.expected }}
+          </span>
           }
         </div>
         } @if (v.result) {
-        <div class="comparison-col">
-          <span class="label">{{ 'document.verifications.result' | translate }}</span>
+        <div class="flex flex-col gap-1">
+          <span class="text-xs text-gray-500 uppercase font-bold tracking-wider">
+            {{ 'document.verifications.result' | translate }}
+          </span>
+
           @if (isBase64(v.result)) {
           <p-image
             [src]="getImageSrc(v.result!)"
             alt="Result"
             [preview]="true"
-            [imageStyle]="{ 'max-height': '50px', width: 'auto', 'border-radius': '4px' }"
+            [imageStyle]="{ 'max-height': '50px', width: 'auto', 'border-radius': '0.25rem' }"
           >
           </p-image>
           } @else {
-          <span class="value" [class.error-text]="v.value !== 1">
+          <span
+            class="text-sm font-medium break-all"
+            [ngClass]="v.value !== 1 ? 'text-red-500' : 'text-gray-900 dark:text-gray-100'"
+          >
             {{ v.result }}
           </span>
           }
@@ -57,13 +70,12 @@
       </div>
       }
     </div>
-
-    @if (!last) {
-    <p-divider></p-divider>
-    }
   </div>
-  } @empty {
-  <div class="empty-state">
+
+  @if (!last) {
+  <p-divider styleClass="my-4"></p-divider>
+  } } @empty {
+  <div class="text-center p-4 text-gray-500">
     {{ 'document.verifications.no-data' | translate }}
   </div>
   }

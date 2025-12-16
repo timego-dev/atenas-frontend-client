@@ -1,10 +1,11 @@
 import { Component, Input } from '@angular/core';
 import { CardModule } from 'primeng/card';
+import { FieldsetModule } from 'primeng/fieldset';
 
 @Component({
   selector: 'app-document-mrz',
   standalone: true,
-  imports: [CardModule],
+  imports: [CardModule, FieldsetModule],
   templateUrl: './document-mrz.html',
 })
 export class DocumentMrzComponent {
