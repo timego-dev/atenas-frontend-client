@@ -42,19 +42,33 @@ describe('Auxiliars page', () => {
       expect(auxiliaresPage.auxiliares.length).toBe(0);
       expect(auxiliaresPage.editDialogVisible).toBeFalse();
       expect(auxiliaresPage.editAuxiliar).toBeDefined;
-
+    });
+    it('should have 4 auxiliars', () => {
       // TODO: comprovar que s'han llegit 4 camps auxiliars
+      expect(auxiliaresPage.auxiliares().length).toBe(4);
+    });
 
-      // TODO: comprovar que estan per ordre alfabètic pel camp "alias"
+    // TODO: comprovar que hi ha 3 que son requerits
+    it('should be 3 people required', () => {
+      const requerits = auxiliaresPage.auxiliares().filter((a) => a.required).length;
+      expect(requerits).toBeDefined();
+      expect(requerits).toBe(3);
+    });
 
-      var anterior = '';
+    // TODO: comprovar que estan per ordre alfabètic pel camp "alias"
+    it('should be in alphabetical order by "alias"', () => {
+      let order = true;
+      let nomAnterior = '';
+      auxiliaresPage.auxiliares().forEach((a) => {
+        const actual = a.alias.toLowerCase();
 
-      auxiliaresPage.auxiliares().forEach((aux) => {
-        expect(aux.alias > anterior).toBeTrue();
-        anterior = aux.alias;
+        if (actual < nomAnterior) {
+          order = false;
+        }
+
+        nomAnterior = actual;
       });
-
-      // TODO: comprovar que hi ha 3 que son requerits
+      expect(order).toBeFalse();
     });
 
     it('should add a new auxiliar', fakeAsync(() => {

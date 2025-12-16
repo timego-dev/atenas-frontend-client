@@ -158,7 +158,6 @@ describe('Usuarios service', () => {
           fail();
         },
         error(err: HttpErrorResponse) {
-          console.log(err);
           expect(err.status).toBe(404);
         },
       });

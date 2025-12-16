@@ -7,6 +7,8 @@ import {
   ChangeDetectionStrategy,
   inject,
   computed,
+  model,
+  effect,
 } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CommonModule } from '@angular/common';
@@ -17,6 +19,7 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TabsModule } from 'primeng/tabs';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { DialogModule } from 'primeng/dialog';
 
 // Tipos y Servicios
 import { BaseDocumentScanner, IDocumentListener } from '../../types/BaseDocumentService';
@@ -26,7 +29,7 @@ import { CaptureOptions } from '../../types/CaptureOptions';
 import { ScannerCapturedData } from '../../types/DocumentCaptureData';
 
 // Componentes
-import { ConnectionModalComponent } from '../connection-modal/connection-card.component';
+import { ConnectionModalComponent } from '../connection-card/connection-card.component';
 import { DocumentImagesComponent } from '../../components/document-images/document-images';
 import { DocumentMrzComponent } from '../../components/document-mrz/document-mrz';
 import { DocumentScannerVerificationsComponent } from '../../components/document-scanner-verifications/document-scanner-verifications';
@@ -41,6 +44,7 @@ import { DocumentScannerVerificationsComponent } from '../../components/document
     ProgressSpinnerModule,
     ButtonModule,
     TabsModule,
+    DialogModule,
     ConnectionModalComponent,
     DocumentImagesComponent,
     DocumentMrzComponent,
@@ -50,10 +54,13 @@ import { DocumentScannerVerificationsComponent } from '../../components/document
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocumentListener {
+  // Models
+  visible = model<boolean>(false);
+
   // Outputs
   onLeave = output<void>();
   onCaptured = output<ScannerCapturedData>();
-  handleErrors = output<string>();
+  onError = output<string>();
 
   // Signals
   textInstruccions = signal<string>('');
@@ -84,6 +91,14 @@ export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocu
       .get('document.wait-initialization')
       .pipe(take(1))
       .subscribe((v) => this.textInstruccions.set(v));
+    effect(() => {
+      if (this.visible()) {
+        this.resetState();
+        this.connectSignalR();
+      } else {
+        this.documentService.documentStop();
+      }
+    });
   }
 
   async ngOnInit() {
@@ -101,10 +116,10 @@ export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocu
       if (connected) {
         await this.documentService.init();
       } else {
-        this.handleErrors.emit(this.translate.instant('document.error.error-connection'));
+        this.onError.emit(this.translate.instant('document.error.error-connection'));
       }
     } catch {
-      this.handleErrors.emit(this.translate.instant('document.error.error-document-msg'));
+      this.onError.emit(this.translate.instant('document.error.error-document-msg'));
     }
   }
 
@@ -164,10 +179,10 @@ export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocu
     } catch {}
 
     if (!error) {
-      this.handleErrors.emit(this.translate.instant('document.error.message'));
+      this.onError.emit(this.translate.instant('document.error.message'));
       return;
     }
-    this.handleErrors.emit(this.translate.instant('document.error.message'));
+    this.onError.emit(this.translate.instant('document.error.message'));
   }
 
   private async startDocumentCapture() {
@@ -180,7 +195,7 @@ export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocu
       };
       await this.documentService.documentStart(config);
     } catch {
-      this.handleErrors.emit(this.translate.instant('document.error.error-document-msg'));
+      this.onError.emit(this.translate.instant('document.error.error-document-msg'));
     }
   }
 
@@ -195,7 +210,27 @@ export class DocumentScannerCaptureComponent implements OnInit, OnDestroy, IDocu
       this.textInstruccions.set(this.translate.instant('document.wait-initialization'));
       await this.connectSignalR();
     } catch {
-      this.handleErrors.emit(this.translate.instant('document.error.error-document-msg'));
+      this.onError.emit(this.translate.instant('document.error.error-document-msg'));
+    }
+  }
+
+  private resetState() {
+    // 1. Reiniciar propiedades primitivas
+    this.isFirstFaceRead = true;
+
+    // 2. Reiniciar Signals
+    this.isCaptureEnabled.set(false);
+    this.isConnectionBlocking.set(false);
+    this.isReviewMode.set(false);
+    this.capturedData.set(null);
+
+    // 3. Reiniciar texto
+    this.textInstruccions.set(this.translate.instant('document.wait-initialization'));
+
+    // 4. Limpiar timers si existen en el servicio
+    if (this.documentService.readDocumentTimer) {
+      clearTimeout(this.documentService.readDocumentTimer);
+      this.documentService.readDocumentTimer = undefined;
     }
   }
 }

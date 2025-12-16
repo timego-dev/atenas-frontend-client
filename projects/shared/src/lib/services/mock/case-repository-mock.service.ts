@@ -271,7 +271,7 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
 
     let resolutionActivity: ActivityDto | null = null;
 
-    if (isSolved) {
+    if (isSolved || isClarification) {
       resolutionActivity = generateResolutionActivity(expert!, creationDate, caseResolution);
       activities.push(resolutionActivity);
     }
