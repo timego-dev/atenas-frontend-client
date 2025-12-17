@@ -6,7 +6,7 @@ export interface CaseDto extends CaseSummaryDto {
   activities: ActivityDto[];
 }
 
-export interface CaseSummaryDto {
+export interface LightCaseSumaryDto {
   id: string;
   trackingNumber: string;
   caseStatus: CaseStatus;
@@ -40,6 +40,17 @@ export interface CaseSummaryDto {
   authority?: string | null;
 
   documentAttachmentType: DocumentAttachmentType;
+}
+
+export interface CaseSummaryDto extends LightCaseSumaryDto {
+  caseGroup?: CaseGroupDto | null;
+}
+
+export interface CaseGroupDto {
+  id: string;
+  groupedBy: UserSummaryDto;
+  groupedWhen: Date;
+  cases: LightCaseSumaryDto[];
 }
 
 export interface UserSummaryDto {

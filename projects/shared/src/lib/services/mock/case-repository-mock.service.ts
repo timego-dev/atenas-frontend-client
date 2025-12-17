@@ -1,6 +1,12 @@
 import { of, Observable, throwError, generate, switchMap } from 'rxjs';
 import { CaseRepositoryService } from '../case-repository.service';
-import { CaseDto, CaseSummaryDto, UserSummaryDto } from '@shared/models/case/query/case.dto';
+import {
+  CaseDto,
+  CaseGroupDto,
+  CaseSummaryDto,
+  LightCaseSumaryDto,
+  UserSummaryDto,
+} from '@shared/models/case/query/case.dto';
 import { AthenasMessageDto } from '@shared/models/case/command/athenas-message.dto';
 import {
   DIGITAL_ATTACHMENT_VIDEO_2,
@@ -207,15 +213,29 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
   }
 
   private generateMockCases(count = 100): CaseDto[] {
-    return Array.from({ length: count }, () => this.generateMockCase()).sort(
-      (a, b) => b.lastConsultation.getTime() - a.lastConsultation.getTime()
-    );
+    const cases = Array.from({ length: count }, () => this.generateMockCase());
+
+    const groups = this.generateCaseGroups(cases);
+
+    // Attach CaseGroupDto to cases
+    groups.forEach((group) => {
+      group.cases.forEach((c) => {
+        const fullCase = cases.find((x) => x.id === c.id);
+        if (fullCase) {
+          fullCase.caseGroup = group;
+          fullCase.caseGroupId = group.id;
+        }
+      });
+    });
+
+    return cases.sort((a, b) => b.lastConsultation.getTime() - a.lastConsultation.getTime());
   }
 
   private generateCitizenDocumentData(): CitizenDocumentData {
+    let countryCode = randomCountryCode();
     return {
-      citizenship: randomCountryCode(), //Implement this method, should be a country code
-      issuingCountry: randomName(),
+      citizenship: countryCode, //Implement this method, should be a country code
+      issuingCountry: getCountryNameFromCode(countryCode),
       issuingDate: randomDateYearsAgo(1, 10),
       citizenName: randomName(),
       citizenSurnames: randomName(),
@@ -289,16 +309,104 @@ export class CaseRepositoryMockService extends BaseMockApiService implements Cas
       lastResolution,
       creator,
       expert,
-      caseGroupId: null,
       auxiliarValues: randomAuxiliarValues(),
       alerts: [],
-      personalId: `PID-${Math.floor(100000 + Math.random() * 900000)}`,
-      documentNumber: `DOC-${Math.floor(100000 + Math.random() * 900000)}`,
-      citizenName: randomName(),
-      dateOfBirth: randomDateYearsAgo(20, 40),
-      documentAttachmentType: randomElement(Object.values(DocumentAttachmentType)),
+      personalId: citizen.personalId,
+      documentNumber: citizen.documentNumber,
+      citizenName: citizen.citizenName,
+      citizenSurnames: citizen.citizenSurnames,
+      gender: citizen.gender,
+      issuingCountry: citizen.issuingCountry,
+      issuingDate: citizen.issuingDate,
+      citizenship: citizen.citizenship,
+      dateOfBirth: citizen.dateOfBirth,
+      documentAttachmentType: attachment.documentDvAttachment?.documentType!,
       activities,
     };
+  }
+
+  private generateCaseGroups(cases: CaseDto[]): CaseGroupDto[] {
+    const shuffled = [...cases].sort(() => Math.random() - 0.5);
+    const groupedSubset = shuffled.slice(0, Math.floor(cases.length / 2));
+
+    const usedIds = new Set<string>();
+    const groups: CaseGroupDto[] = [];
+
+    for (const original of groupedSubset) {
+      if (usedIds.has(original.id)) continue;
+
+      const groupSize = randomInt(2, 3);
+
+      const related = cases
+        .filter((c) => c.id !== original.id && !usedIds.has(c.id))
+        .slice(0, groupSize - 1);
+
+      // Clone data
+      related.forEach((rc) => {
+        this.generateRelatedCase(original, rc);
+        usedIds.add(rc.id);
+      });
+
+      usedIds.add(original.id);
+
+      const allCases = [original, ...related];
+
+      const group: CaseGroupDto = {
+        id: generateGuid(),
+        groupedBy: original.creator,
+        groupedWhen: original.creationDate,
+        cases: allCases.map((c) => this.toLightCase(c)),
+      };
+
+      groups.push(group);
+    }
+
+    return groups;
+  }
+
+  private generateRelatedCase(source: CaseDto, target: CaseDto): void {
+    // ---- Copy personal fields ----
+    target.citizenship = source.citizenship;
+    target.gender = source.gender;
+    target.documentNumber = source.documentNumber;
+    target.citizenName = source.citizenName;
+    target.citizenSurnames = source.citizenSurnames;
+    target.dateOfBirth = source.dateOfBirth;
+    target.issuingCountry = source.issuingCountry;
+    target.issuingDate = source.issuingDate;
+    target.personalId = source.personalId;
+    target.documentAttachmentType = source.documentAttachmentType;
+
+    // ---- Clone last consultation attachment ----
+    const sourceConsultation = this.getLastConsultation(source);
+    const targetConsultation = this.getLastConsultation(target);
+
+    if (!sourceConsultation || !targetConsultation) return;
+
+    const sourceAttachment = sourceConsultation.attachments?.[0];
+    const targetAttachment = targetConsultation.attachments?.[0];
+
+    if (!sourceAttachment || !targetAttachment) return;
+
+    // Deep clone (VERY IMPORTANT)
+    if (targetAttachment.documentDvAttachment?.scannerDvData !== undefined) {
+      let cloned = structuredClone(sourceAttachment.documentDvAttachment?.scannerDvData);
+      if (cloned) targetAttachment.documentDvAttachment.scannerDvData = cloned;
+    }
+  }
+
+  private getLastConsultation(caseDto: CaseDto): ConsultationActivityDto | null {
+    return (
+      caseDto.activities
+        ?.filter((a) => a.type === 'CONSULTATION')
+        .sort((a, b) => a.creationDate.getTime() - b.creationDate.getTime())
+        .at(-1)?.consultation ?? null
+    );
+  }
+
+  private toLightCase(c: CaseSummaryDto): LightCaseSumaryDto {
+    const { caseGroup, ...light } = c;
+    return light;
   }
 }
 
@@ -1084,6 +1192,36 @@ function randomCountryCode(): string {
   return randomElement(codes);
 }
 
+function getCountryNameFromCode(code: string): string {
+  const countryMap: { [key: string]: string } = {
+    ESP: 'Spain',
+    FRA: 'France',
+    DEU: 'Germany',
+    ITA: 'Italy',
+    PRT: 'Portugal',
+    GBR: 'United Kingdom',
+    USA: 'United States of America',
+    CAN: 'Canada',
+    MEX: 'Mexico',
+    BRA: 'Brazil',
+    ARG: 'Argentina',
+    CHL: 'Chile',
+    COL: 'Colombia',
+    PER: 'Peru',
+    AUS: 'Australia',
+    NZL: 'New Zealand',
+    JPN: 'Japan',
+    CHN: 'China',
+    KOR: 'South Korea',
+    IND: 'India',
+    ZAF: 'South Africa',
+    MAR: 'Morocco',
+    EGY: 'Egypt',
+    TUR: 'Turkey',
+  };
+  return countryMap[code] || code;
+}
+
 function randomFutureDate(minYears: number, maxYears: number): Date {
   const years = Math.floor(Math.random() * (maxYears - minYears + 1)) + minYears;
   const now = new Date();
@@ -1156,6 +1294,10 @@ function randomAuxiliarValues() {
       value: `${(36 + rng.next() * 6).toFixed(2).replace('.', ',')}`,
     },
   ];
+}
+
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 export class CaseValidator {
