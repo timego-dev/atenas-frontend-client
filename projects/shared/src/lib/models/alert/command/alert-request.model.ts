@@ -1,10 +1,8 @@
-import { RuleGroup } from "../query/alert-response.model";
+import { RuleGroup } from '../query/alert-response.model';
 
 export class AlertRequestDto {
   id: string = '';
   name: string = '';
-  description: string = '';
-  category: string = '';
   active: boolean = true;
   nCases: number = 0;
   nCounterfeits: number = 0;
