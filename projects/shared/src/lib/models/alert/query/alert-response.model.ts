@@ -11,8 +11,6 @@ export interface RuleClause {
 export class AlertResponseDto {
   id: string = '';
   name: string = '';
-  description: string = '';
-  category: string = '';
   nCases: number = 0;
   nCounterfeits: number = 0;
   lastModifiedBy: string = '';
