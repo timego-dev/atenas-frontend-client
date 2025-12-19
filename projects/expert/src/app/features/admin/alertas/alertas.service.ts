@@ -34,28 +34,20 @@ export class AlertasService {
   // ==================== CRUD Operations ====================
 
   getAlertas(filter?: AlertFilterOptions): Observable<AlertResponseDto[]> {
-    // return this.alertRepository
-    //   .getAll()
-    //   .pipe(map((alerts) => alerts.map((alert) => this.deserializeAlert(alert))));
     return this.alertRepository.getAll();
   }
 
   getById(id: string): Observable<AlertResponseDto> {
-    // return this.alertRepository.getById(id).pipe(map((alert) => this.deserializeAlert(alert)));
     return this.alertRepository.getById(id);
   }
 
   create(alerta: AlertRequestDto): Observable<AlertResponseDto> {
     const payload = this.serializeRules(alerta);
-    // return this.alertRepository.create(payload).pipe(map((alert) => this.deserializeAlert(alert)));
     return this.alertRepository.create(payload);
   }
 
   update(id: string, alerta: AlertRequestDto): Observable<AlertResponseDto> {
     const payload = this.serializeRules(alerta);
-    // return this.alertRepository
-    //   .update(id, payload)
-    //   .pipe(map((alert) => this.deserializeAlert(alert)));
     return this.alertRepository.update(id, payload);
   }
 
@@ -94,8 +86,8 @@ export class AlertasService {
         return `${value}`;
       }
 
-      if (!isNaN(Date.parse(value))) {
-        return value.toISOString().substring(0, 10);
+      if (this.isDateString(value)) {
+        return this.formatDateValue(value);
       }
 
       return `${value}`;
@@ -208,15 +200,11 @@ export class AlertasService {
         (token.startsWith("'") && token.endsWith("'")) ||
         (token.startsWith('"') && token.endsWith('"'))
       ) {
-        return token.slice(1, -1);
+        return this.isDateString(token) ? new Date(token) : token.slice(1, -1);
       }
 
       if (!isNaN(Number(token))) {
         return Number(token);
-      }
-
-      if (!isNaN(Date.parse(token))) {
-        return new Date(token);
       }
 
       return token;
@@ -321,6 +309,23 @@ export class AlertasService {
   }
 
   // ==================== Helper Methods ====================
+
+  private isDateString(value: any): boolean {
+    const date = new Date(value);
+    return !isNaN(date.getTime()) && (value instanceof Date || value?.includes('-'));
+  }
+
+  private formatDateValue(value: Date): string {
+    if (!value) {
+      return '';
+    }
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+
+    // Add quote for DateTime type
+    return `'${year}-${month}-${day}'`;
+  }
 
   private isRuleClause(item: RuleGroup | RuleClause): item is RuleClause {
     return 'field' in item;

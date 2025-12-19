@@ -46,33 +46,6 @@ import { MultiSelectModule } from 'primeng/multiselect';
         }
       </div>
 
-      <div>
-        <label for="description" class="block font-bold mb-3">Descripción</label>
-        <textarea
-          id="description"
-          pTextarea
-          [(ngModel)]="alert().description"
-          rows="3"
-          fluid
-        ></textarea>
-      </div>
-      <div>
-        <label for="category" class="block font-bold mb-3">Categoría</label>
-        <p-select
-          inputId="category"
-          [(ngModel)]="alert().category"
-          [options]="docTypeList"
-          optionLabel="name"
-          optionValue="code"
-          placeholder="Selecciona la categoría"
-          fluid
-          appendTo="body"
-        ></p-select>
-
-        @if(submitted() && !alert().category) {
-        <small class="text-red-500">La categoría es obligatoria</small>
-        }
-      </div>
       @if(alert().id) {
       <div class="grid grid-cols-2 gap-4">
         <div>
@@ -258,30 +231,29 @@ import { MultiSelectModule } from 'primeng/multiselect';
       ></p-datepicker>
       } @else if(getFieldType(clause.field) === AlertFieldType.SexList || getFieldType(clause.field)
       === AlertFieldType.DocTypeList || getFieldType(clause.field) === AlertFieldType.CountryList) {
-        @if (clause.operator === 'En' || clause.operator === 'No en') {
-          <!-- MULTI SELECT -->
-          <p-multiselect
-            [(ngModel)]="clause.value"
-            [options]="getCodeListForField(clause.field)"
-            optionLabel="name"
-            optionValue="code"
-            placeholder="Selección múltiple"
-            fluid
-            appendTo="body"
-          ></p-multiselect>
-          } @else {
-          <!-- SINGLE SELECT -->
-          <p-select
-            [(ngModel)]="clause.value"
-            [options]="getCodeListForField(clause.field)"
-            optionLabel="name"
-            optionValue="code"
-            placeholder="Selecciona"
-            fluid
-            appendTo="body"
-          ></p-select>
-        }
-      } @else if(getFieldType(clause.field) === AlertFieldType.Number) {
+      @if (clause.operator === 'En' || clause.operator === 'No en') {
+      <!-- MULTI SELECT -->
+      <p-multiselect
+        [(ngModel)]="clause.value"
+        [options]="getCodeListForField(clause.field)"
+        optionLabel="name"
+        optionValue="code"
+        placeholder="Selección múltiple"
+        fluid
+        appendTo="body"
+      ></p-multiselect>
+      } @else {
+      <!-- SINGLE SELECT -->
+      <p-select
+        [(ngModel)]="clause.value"
+        [options]="getCodeListForField(clause.field)"
+        optionLabel="name"
+        optionValue="code"
+        placeholder="Selecciona"
+        fluid
+        appendTo="body"
+      ></p-select>
+      } } @else if(getFieldType(clause.field) === AlertFieldType.Number) {
       <p-inputNumber [(ngModel)]="clause.value" placeholder="Valor" fluid></p-inputNumber>
       } @else {
       <input pInputText [(ngModel)]="clause.value" placeholder="Texto" fluid />

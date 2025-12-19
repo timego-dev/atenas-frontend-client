@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -48,11 +48,10 @@ export class AlertasPage implements OnInit {
   editDialog = false;
   submitted = false;
 
-  @ViewChild('dt') table!: Table;
+  table = viewChild<Table>('dt');
 
   cols: Column[] = [
     { field: 'name', header: 'Nombre' },
-    { field: 'category', header: 'Categoría' },
     { field: 'active', header: 'Activo' },
     { field: 'lastModifiedAt', header: 'Última modificación' },
   ];
@@ -77,7 +76,7 @@ export class AlertasPage implements OnInit {
   }
 
   onGlobalFilter(event: Event) {
-    this.table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
+    this.table()?.filterGlobal((event.target as HTMLInputElement).value, 'contains');
   }
 
   openNew() {

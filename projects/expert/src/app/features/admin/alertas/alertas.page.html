@@ -4,7 +4,7 @@
   [rows]="10"
   [columns]="cols"
   [paginator]="true"
-  [globalFilterFields]="['name', 'category', 'active', 'lastModifiedAt']"
+  [globalFilterFields]="['name', 'active', 'lastModifiedAt']"
   [rowHover]="false"
   dataKey="id"
   currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} alertas"
@@ -32,8 +32,7 @@
   <!-- TABLE HEADER -->
   <ng-template #header>
     <tr>
-      <th>Alias</th>
-      <th>Categoría</th>
+      <th style="width: 70%;">Alias</th>
       <th>Activo</th>
       <th>Última modificación</th>
     </tr>
@@ -47,8 +46,6 @@
           {{ alerta.name }}
         </button>
       </td>
-
-      <td>{{ alerta.category }}</td>
 
       <td>
         @if (alerta.active) {
